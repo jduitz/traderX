@@ -183,6 +183,9 @@ case "${STATE_ID}" in
   014-fdc3-intent-interoperability)
     state_allowed_roots=("${C2_COMPONENT_DIRS[@]}" "kubernetes-runtime" "tilt-kubernetes-dev-loop" "fdc3-intent-interoperability")
     ;;
+  016-cdm-generic-instruments)
+    state_allowed_roots=("${ORDER_COMPONENT_DIRS[@]}" "ingress" "cdm-generic-instruments" "postgres-database-replacement")
+    ;;
 esac
 
 state_allows_dir() {
@@ -346,6 +349,9 @@ case "${STATE_ID}" in
     ;;
   009-order-management-matcher)
     compose_file_rel="order-management-matcher/docker-compose.yml"
+    ;;
+  016-cdm-generic-instruments)
+    compose_file_rel="cdm-generic-instruments/docker-compose.yml"
     ;;
   *)
     compose_file_rel=""

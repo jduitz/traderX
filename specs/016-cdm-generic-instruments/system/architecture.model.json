@@ -1,0 +1,192 @@
+{
+  "title": "CDM Generic Instruments",
+  "stateId": "016-cdm-generic-instruments",
+  "parentState": "009-order-management-matcher",
+  "description": "Replaces TraderX's two-string stock concept with an instrument model shaped after the FINOS Common Domain Model. Reference data serves /instruments with CDM asset identifiers and security types, and ETFs join equities in the seed universe. The runtime topology is inherited from state 009 unchanged.",
+  "mermaidDirection": "LR",
+  "nodes": [
+    {
+      "id": "developer",
+      "label": "Developer",
+      "kind": "actor",
+      "description": "Local developer using this state."
+    },
+    {
+      "id": "openfigi",
+      "label": "OpenFIGI (build time)",
+      "kind": "actor",
+      "description": "Symbology source consulted once, offline, to bake FIGI identifiers into seed data. Never called at runtime."
+    },
+    {
+      "id": "app_runtime",
+      "label": "TraderX App Runtime",
+      "kind": "boundary",
+      "description": "State 009 order-management runtime, carried forward with a CDM-shaped instrument model."
+    },
+    {
+      "id": "obs_runtime",
+      "label": "Observability Runtime",
+      "kind": "boundary",
+      "description": "LGTM + OTel stack inherited from state 007 unchanged."
+    },
+    {
+      "id": "ingress",
+      "label": "NGINX Ingress",
+      "kind": "service",
+      "description": "Routes UI, API, and order admin traffic. Unchanged."
+    },
+    {
+      "id": "trade_ui",
+      "label": "Angular Trade UI",
+      "kind": "service",
+      "description": "Trade ticket, blotters, and admin tab. Fetches the instrument list from /instruments."
+    },
+    {
+      "id": "reference_data",
+      "label": "Reference Data",
+      "kind": "service",
+      "description": "Serves /instruments and /instruments/{ticker}. CDM Security-shaped records with BBGTICKER and FIGI identifiers. /stocks is removed, not aliased."
+    },
+    {
+      "id": "instrument_seed",
+      "label": "Instrument Seed Data",
+      "kind": "service",
+      "description": "data/instruments.csv plus the supplemental seed list. Identifiers and security types baked in offline; equities and ETFs."
+    },
+    {
+      "id": "trade_service",
+      "label": "Trade Service",
+      "kind": "service",
+      "description": "Validates a trade's security against /instruments/{ticker} before publishing it."
+    },
+    {
+      "id": "order_matcher",
+      "label": "Order Matcher",
+      "kind": "service",
+      "description": "Matches open orders and emits lifecycle and fill events. Unchanged; now exercised with ETFs."
+    },
+    {
+      "id": "price_publisher",
+      "label": "Price Publisher",
+      "kind": "service",
+      "description": "Publishes pricing.<TICKER> ticks. Supported universe extended with five ETFs to keep the inherited alignment contract."
+    },
+    {
+      "id": "nats",
+      "label": "NATS Broker",
+      "kind": "service",
+      "description": "Realtime transport for pricing, trade, position, and order subjects. No subject changes."
+    },
+    {
+      "id": "trade_processor",
+      "label": "Trade Processor",
+      "kind": "service",
+      "description": "Consumes fills and persists trades/positions. Unchanged."
+    },
+    {
+      "id": "prometheus",
+      "label": "Prometheus",
+      "kind": "service",
+      "description": "Scrapes order metrics and blackbox probes."
+    },
+    {
+      "id": "blackbox",
+      "label": "Blackbox Exporter",
+      "kind": "service",
+      "description": "Probes runtime endpoints. Its reference-data target moves to /instruments."
+    },
+    {
+      "id": "grafana",
+      "label": "Grafana",
+      "kind": "service",
+      "description": "Inherited dashboards, re-scoped to the traderx-state-016 compose project."
+    }
+  ],
+  "edges": [
+    {
+      "from": "openfigi",
+      "to": "instrument_seed",
+      "label": "Bakes FIGI + security type (offline, once)"
+    },
+    {
+      "from": "instrument_seed",
+      "to": "reference_data",
+      "label": "Loaded and mapped onto CDM at startup"
+    },
+    {
+      "from": "developer",
+      "to": "ingress",
+      "label": "Uses app and admin UI"
+    },
+    {
+      "from": "ingress",
+      "to": "trade_ui",
+      "label": "Serves UI"
+    },
+    {
+      "from": "ingress",
+      "to": "reference_data",
+      "label": "Routes /reference-data/instruments"
+    },
+    {
+      "from": "trade_ui",
+      "to": "reference_data",
+      "label": "Lists instruments for the tickets"
+    },
+    {
+      "from": "trade_service",
+      "to": "reference_data",
+      "label": "Validates ticker via /instruments/{ticker}"
+    },
+    {
+      "from": "order_matcher",
+      "to": "trade_service",
+      "label": "Submits fills as trades"
+    },
+    {
+      "from": "trade_service",
+      "to": "nats",
+      "label": "Publishes validated trades"
+    },
+    {
+      "from": "order_matcher",
+      "to": "nats",
+      "label": "Publishes fills and status"
+    },
+    {
+      "from": "price_publisher",
+      "to": "nats",
+      "label": "Publishes pricing.<TICKER> ticks"
+    },
+    {
+      "from": "nats",
+      "to": "trade_processor",
+      "label": "Delivers trades for persistence"
+    },
+    {
+      "from": "prometheus",
+      "to": "blackbox",
+      "label": "Scrapes probe metrics"
+    },
+    {
+      "from": "blackbox",
+      "to": "reference_data",
+      "label": "HTTP probes /instruments"
+    },
+    {
+      "from": "prometheus",
+      "to": "order_matcher",
+      "label": "Scrapes /metrics"
+    },
+    {
+      "from": "developer",
+      "to": "grafana",
+      "label": "Views inherited observability"
+    },
+    {
+      "from": "grafana",
+      "to": "prometheus",
+      "label": "Queries metrics"
+    }
+  ]
+}
