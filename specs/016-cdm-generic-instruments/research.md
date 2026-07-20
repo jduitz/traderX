@@ -88,9 +88,9 @@ calls OpenFIGI.
   - Mitigation: not reasoned about, exercised. The smoke test orders and force-fills an ETF and
     asserts a position appears, which only happens if validation and the trade path both accepted it.
 - **Risk: behavior drift from the parent state.**
-  - Mitigation: the inherited helpers that take no compose path are chained live; the compose-bound
-    checks are restated. See `tests/smoke/README.md` and TD-01601 for why the parent's smoke script
-    is not chained wholesale.
+  - Mitigation: the parent's smoke script is chained wholesale (following the `014 -> 012 -> 011`
+    convention), so 016 picks up 009's checks automatically instead of asserting a stale snapshot.
+    See `tests/smoke/README.md` and TD-01601 (resolved).
 
 ## Rejected Alternatives
 

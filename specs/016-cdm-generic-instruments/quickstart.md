@@ -43,8 +43,8 @@ curl -s -o /dev/null -w '%{http_code}\n' localhost:18085/stocks   # 404
 ./scripts/test-state-016-cdm-generic-instruments.sh --skip-messaging   # faster
 ```
 
-See `tests/smoke/README.md` for what is asserted, and for why this state restates some of state
-`009`'s checks instead of chaining its smoke script.
+See `tests/smoke/README.md` for what is asserted, and for how this state chains state `009`'s smoke
+script (following the `014 -> 012 -> 011` convention) on top of its own instrument checks.
 
 ## 5) Stop Runtime
 

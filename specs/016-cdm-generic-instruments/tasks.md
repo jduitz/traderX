@@ -51,9 +51,9 @@
 ## Follow-ups
 
 - [x] T01624 (TD-01601) Generalize state `009`'s smoke harness so `016` can chain it, per the
-      `014 -> 012 -> 011` convention. Blocked on removing the dead `scripts/**` deletion hunks from
-      state `004`'s patchset, which currently freeze the byte content of every repo script. See
-      `tests/smoke/README.md`.
+      `014 -> 012 -> 011` convention. This first required removing the dead `scripts/**` deletion
+      hunks from state `004`'s patchset (done, fork PR #1, merge `c3a7a04`), which had frozen the
+      byte content of every repo script. See `tests/smoke/README.md`.
 - [ ] T01625 (TD-01402) Carry CDM symbology to the C3/FDC3 line, which this state does not close.
 - [ ] T01626 (TD-01602) Rename `companyName` when the surrogate-ID migration already touches its 14
       consumers.

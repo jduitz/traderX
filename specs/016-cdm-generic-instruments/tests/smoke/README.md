@@ -81,11 +81,3 @@ with `--skip-messaging`, which is the intended escape hatch. The same local
 workaround used for 008/009 (pointing `tradeFeedUrl` in the frontend
 `environment*.ts` files at `:8081`) applies to 016's generated tree, but it is
 a local diagnostic aid and must not be captured into the state patchset.
-
-The restated checks are a snapshot and will drift from 009. They are scoped to
-what this state can plausibly break: every order and trade runs its security
-through the trade-service ticker validation that 016 repointed at
-`/instruments`, so the ETF order-to-position path is the assertion carrying the
-most weight here. 009's Grafana and Prometheus dashboard assertions are not
-restated — 016 does not touch observability, and copying them would add drift
-risk for no coverage.

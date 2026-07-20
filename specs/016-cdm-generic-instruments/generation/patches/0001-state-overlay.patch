@@ -4,11 +4,11 @@ index 0000000..e28d117
 --- /dev/null
 +++ b/cdm-generic-instruments/README.md
 @@ -0,0 +1,32 @@
-+## TraderX State 009 Runtime
++## TraderX State 016 Runtime
 +
 +This directory defines the compose runtime for:
 +
-+- `009-order-management-matcher`
++- `016-cdm-generic-instruments`
 +
 +It extends pricing + observability runtime with:
 +
@@ -34,7 +34,7 @@ index 0000000..e28d117
 +- Dashboards are anonymous Viewer surfaces through ingress for demos.
 +- Local admin access is available at the direct Grafana URL.
 +- The generated start script prints the active admin credential on startup.
-+- Defaults are state-scoped: `TRADERX_GRAFANA_ADMIN_USER` falls back to `traderx-admin`; `TRADERX_GRAFANA_ADMIN_PASSWORD` falls back to `traderx-state-009`.
++- Defaults are state-scoped: `TRADERX_GRAFANA_ADMIN_USER` falls back to `traderx-admin`; `TRADERX_GRAFANA_ADMIN_PASSWORD` falls back to `traderx-state-016`.
 +- Override those values before startup for any shared or long-lived environment.
 diff --git a/cdm-generic-instruments/docker-compose.yml b/cdm-generic-instruments/docker-compose.yml
 new file mode 100644
@@ -350,7 +350,7 @@ index 0000000..f1be242
 +    image: grafana/grafana:11.1.0
 +    environment:
 +      GF_SECURITY_ADMIN_USER: "${TRADERX_GRAFANA_ADMIN_USER:-traderx-admin}"
-+      GF_SECURITY_ADMIN_PASSWORD: "${TRADERX_GRAFANA_ADMIN_PASSWORD:-traderx-state-009}"
++      GF_SECURITY_ADMIN_PASSWORD: "${TRADERX_GRAFANA_ADMIN_PASSWORD:-traderx-state-016}"
 +      GF_USERS_ALLOW_SIGN_UP: "false"
 +      GF_AUTH_ANONYMOUS_ENABLED: "${TRADERX_GRAFANA_ANONYMOUS_ENABLED:-true}"
 +      GF_AUTH_ANONYMOUS_ORG_ROLE: "${TRADERX_GRAFANA_ANONYMOUS_ORG_ROLE:-Viewer}"
@@ -428,7 +428,7 @@ index 0000000..cb08448
 +      },
 +      "targets": [
 +        {
-+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"$service\"}[1m]))",
++          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"}[1m]))",
 +          "refId": "A"
 +        }
 +      ],
@@ -460,7 +460,7 @@ index 0000000..cb08448
 +      },
 +      "targets": [
 +        {
-+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
++          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
 +          "refId": "A"
 +        }
 +      ],
@@ -487,7 +487,7 @@ index 0000000..cb08448
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-009\",service=~\"$service\"}",
++          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"}",
 +          "refId": "A"
 +        }
 +      ],
@@ -514,7 +514,7 @@ index 0000000..cb08448
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-009\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
++          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
 +          "refId": "A"
 +        }
 +      ],
@@ -546,7 +546,7 @@ index 0000000..cb08448
 +        "label": "Service",
 +        "multi": true,
 +        "name": "service",
-+        "query": "label_values({compose_project=\"traderx-state-009\"}, service)",
++        "query": "label_values({compose_project=\"traderx-state-016\"}, service)",
 +        "type": "query"
 +      }
 +    ]
@@ -667,9 +667,9 @@ index 0000000..c580204
 +    {"id": 1, "type": "stat", "title": "NATS Monitor Endpoint", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }, "targets": [{ "refId": "A", "expr": "max(probe_success{job=\"traderx-http-probe\",instance=\"http://nats-broker:8222/varz\"})" }], "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}}},
 +    {"id": 2, "type": "stat", "title": "Ingress NATS-WS Route", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }, "targets": [{ "refId": "A", "expr": "max(probe_success{job=\"traderx-http-probe\",instance=\"http://ingress:8080/nats-ws\"})" }], "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}, {"color": "green", "value": 1}]}}}},
 +    {"id": 3, "type": "timeseries", "title": "NATS + Gateway Endpoint Latency", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }, "targets": [{ "refId": "A", "expr": "probe_duration_seconds{job=\"traderx-http-probe\",instance=~\"http://nats-broker:8222/varz|http://ingress:8080/nats-ws\"}" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 4, "type": "timeseries", "title": "NATS + Messaging Service Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"nats-broker|trade-service|trade-processor|web-front-end-angular\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 5, "type": "logs", "title": "NATS Broker Logs", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-009\",service=\"nats-broker\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}},
-+    {"id": 6, "type": "logs", "title": "Messaging Errors (Trade/Processor/Web)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-009\",service=~\"trade-service|trade-processor|web-front-end-angular\"} |~ \"(?i)(error|warn|exception|fail|nats|websocket)\"" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
++    {"id": 4, "type": "timeseries", "title": "NATS + Messaging Service Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"nats-broker|trade-service|trade-processor|web-front-end-angular\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
++    {"id": 5, "type": "logs", "title": "NATS Broker Logs", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=\"nats-broker\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}},
++    {"id": 6, "type": "logs", "title": "Messaging Errors (Trade/Processor/Web)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=~\"trade-service|trade-processor|web-front-end-angular\"} |~ \"(?i)(error|warn|exception|fail|nats|websocket)\"" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
 +  ]
 +}
 diff --git a/cdm-generic-instruments/observability/grafana/dashboards/traderx-observability-control-plane.json b/cdm-generic-instruments/observability/grafana/dashboards/traderx-observability-control-plane.json
@@ -904,7 +904,7 @@ index 0000000..13838fe
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-009\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
++          "expr": "{compose_project=\"traderx-state-016\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
 +          "refId": "A"
 +        }
 +      ],
@@ -1110,7 +1110,7 @@ index 0000000..6d7dd13
 +      "targets": [
 +        {
 +          "refId": "A",
-+          "expr": "{compose_project=\"traderx-state-009\",service=\"order-matcher\"}"
++          "expr": "{compose_project=\"traderx-state-016\",service=\"order-matcher\"}"
 +        }
 +      ],
 +      "options": {
@@ -1393,8 +1393,8 @@ index 0000000..31945ab
 +    {"id": 3, "type": "stat", "title": "Pricing Endpoint p95 (5m)", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }, "targets": [{ "refId": "A", "expr": "quantile_over_time(0.95, probe_duration_seconds{job=\"traderx-http-probe\",instance=\"http://price-publisher:18100/prices/IBM\"}[5m])" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}},
 +    {"id": 4, "type": "stat", "title": "Trade API p95 (5m)", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 }, "targets": [{ "refId": "A", "expr": "quantile_over_time(0.95, probe_duration_seconds{job=\"traderx-http-probe\",instance=\"http://trade-service:18092/v3/api-docs\"}[5m])" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}},
 +    {"id": 5, "type": "timeseries", "title": "Pricing + Trade Endpoints Success", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }, "targets": [{ "refId": "A", "expr": "probe_success{job=\"traderx-http-probe\",instance=~\"http://price-publisher:18100/.*|http://trade-service:18092/.*|http://trade-processor:18091/system/health\"}" }], "fieldConfig": {"defaults": {"min": 0, "max": 1}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 6, "type": "timeseries", "title": "Pricing Pipeline Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 7, "type": "logs", "title": "Pipeline Logs (Price / Trade / Position)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-009\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
++    {"id": 6, "type": "timeseries", "title": "Pricing Pipeline Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
++    {"id": 7, "type": "logs", "title": "Pipeline Logs (Price / Trade / Position)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
 +  ]
 +}
 diff --git a/cdm-generic-instruments/observability/grafana/dashboards/traderx-runtime-health.json b/cdm-generic-instruments/observability/grafana/dashboards/traderx-runtime-health.json
