@@ -50,7 +50,7 @@
 
 ## Follow-ups
 
-- [ ] T01624 (TD-01601) Generalize state `009`'s smoke harness so `016` can chain it, per the
+- [x] T01624 (TD-01601) Generalize state `009`'s smoke harness so `016` can chain it, per the
       `014 -> 012 -> 011` convention. Blocked on removing the dead `scripts/**` deletion hunks from
       state `004`'s patchset, which currently freeze the byte content of every repo script. See
       `tests/smoke/README.md`.
