@@ -283,44 +283,6 @@ else
   echo "[info] state 009 lifecycle scripts are not shipped with this state; nothing to check"
 fi
 
-# ---------------------------------------------------------------------------
-# Inherited state 009 behavior.
-#
-# scripts/test-state-009-order-management-matcher.sh cannot be invoked as-is:
-# it resolves its compose file from a fixed `order-management-matcher/` path,
-# and 016's runtime directory is `cdm-generic-instruments/`. Teaching it to take
-# that path from the environment is a one-line change, but state 004's patchset
-# embeds the full text of every script under scripts/ as deletion hunks, so any
-# edit there breaks generation from 004 onward. See tests/smoke/README.md.
-#
-# So the split below is deliberate. The three helpers 009's smoke calls are all
-# fully parameterized, and those are invoked live, unmodified: when they change,
-# 016 picks the change up. Only the compose-bound checks are restated here, and
-# only where 016 could plausibly break them.
-# ---------------------------------------------------------------------------
-
-echo "[check] inherited: compose services running under this state's project"
-docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" ps
-running_services="$(docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" ps --status running --services | wc -l | tr -d ' ')"
-if [[ "${running_services}" -lt 19 ]]; then
-  echo "[error] expected 19+ running services, got ${running_services}"
-  exit 1
-fi
-echo "[info] running services=${running_services}"
-
-echo "[check] inherited: order matcher health and lifecycle metrics"
-curl -fsS "http://localhost:18110/health" >/dev/null || {
-  echo "[error] expected order matcher health endpoint to be reachable"
-  exit 1
-}
-matcher_metrics="$(curl -fsS "http://localhost:18110/metrics")"
-for metric in traderx_orders_open_total traderx_orders_unfilled_total traderx_order_events_total; do
-  printf '%s\n' "${matcher_metrics}" | rg -q "^${metric}" || {
-    echo "[error] missing order matcher metric ${metric}"
-    exit 1
-  }
-done
-
 # The order and trade paths both run every security through trade-service's
 # ticker validation, which this state repointed at /instruments. An ETF exercises
 # the new CDM securityType end to end: validation, matching, trade, position.
@@ -402,22 +364,19 @@ if [[ "${spy_position_observed}" -ne 1 ]]; then
 fi
 echo "[info] SPY position moved ${pre_spy_qty} -> ${expected_spy_qty} through the inherited trade pipeline"
 
-echo "[check] inherited: api explorer pubsub inspector contract (live parent helper)"
-bash "${REPO_ROOT}/scripts/test-api-explorer-pubsub-inspector.sh" \
-  "${INGRESS_URL}" \
-  "specs/016-cdm-generic-instruments/system/messaging-subject-map.md"
-
-echo "[check] inherited: web-front-end state-aware UX contract (live parent helper)"
-TRADERX_LOCAL_RUNTIME_SCRIPT=1 "${REPO_ROOT}/scripts/test-web-angular-baseline-ux-contract.sh" \
-  "${TARGET_ROOT}/web-front-end/angular"
-
+echo "[check] inherited state 009 behavior (chained parent smoke)"
+# Chaining the parent rather than re-asserting a snapshot of its checks,
+# following scripts/test-state-014 -> 012 -> 011. TRADERX_COMPOSE_FILE plus the
+# state-scoped project name and Grafana credential are what point the parent's
+# compose-bound checks at 016's runtime instead of 009's.
+chained_args=("${INGRESS_URL}")
 if [[ "${SKIP_MESSAGING}" -eq 1 ]]; then
-  echo "[info] skipping messaging smoke step (--skip-messaging)"
-else
-  echo "[check] inherited: messaging subjects (live parent helper)"
-  TRADERX_LOCAL_RUNTIME_SCRIPT=1 "${REPO_ROOT}/scripts/test-messaging-009-order-management-matcher.sh" \
-    "${INGRESS_URL}" "http://localhost:18092" "22214" "44044" \
-    "specs/016-cdm-generic-instruments/system/messaging-subject-map.md"
+  chained_args+=("--skip-messaging")
 fi
+TRADERX_COMPOSE_FILE="${COMPOSE_FILE}" \
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
+TRADERX_GRAFANA_ADMIN_USER="${TRADERX_GRAFANA_ADMIN_USER:-traderx-admin}" \
+TRADERX_GRAFANA_ADMIN_PASSWORD="${TRADERX_GRAFANA_ADMIN_PASSWORD:-traderx-state-016}" \
+  "${REPO_ROOT}/scripts/test-state-009-order-management-matcher.sh" "${chained_args[@]}"
 
 echo "[done] state 016 CDM generic instruments smoke tests passed"

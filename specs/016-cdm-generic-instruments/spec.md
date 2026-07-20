@@ -127,12 +127,13 @@ TD-01402 stays open until then.
 
 - TD-01402 remains open on the C3/FDC3 line. This state addresses the same debt on the C2 line only;
   see "Lineage tradeoff".
-- TD-01601: This state's smoke test does not chain state `009`'s smoke script, unlike the
-  `014 -> 012 -> 011` convention. `test-state-009` resolves its compose file from a fixed path, and
-  the one-line fix is blocked because state `004`'s patchset embeds the full text of every script
-  under `scripts/` as deletion hunks, so editing any of them breaks generation from `004` onward. The
-  inherited helpers that take no compose path are chained live; the compose-bound checks are restated.
-  See `tests/smoke/README.md`.
+- TD-01601 (**resolved**): This state's smoke test originally could not chain state `009`'s smoke
+  script because state `004`'s patchset embedded the full text of every script under `scripts/` as
+  deletion hunks, so editing any of them broke generation from `004` onward. Those dead hunks were
+  removed (fork PR #1, merge `c3a7a04`), `test-state-009` gained an env-overridable compose path
+  (`TRADERX_COMPOSE_FILE`), and 016's smoke now chains the parent following the `014 -> 012 -> 011`
+  convention. Remnant: state `010`'s patch still pins `status-`/`stop-state-009-*-generated.sh`;
+  those two scripts must not be edited until `010` gets the same cleanup. See `tests/smoke/README.md`.
 - TD-01602: `companyName` is retained as the JSON field name, which is semantically imperfect for an
   ETF. Renaming it reaches 14 consumers across `trade-service`, the reference-data contract, and
   three states' frontend overrides, for no CDM benefit. It should be renamed when the surrogate-ID

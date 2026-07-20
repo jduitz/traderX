@@ -38,37 +38,36 @@ permits `BBGTICKER`-only rows in the seed data:
 
 ## Inherited state 009 behavior
 
-State 014 chains its parent's smoke script (`test-state-014` calls
-`test-state-012`, which calls `test-state-011`). **State 016 does not**, and the
-reason is worth recording.
+State 016 chains its parent's smoke script, following the existing convention
+(`test-state-014` calls `test-state-012`, which calls `test-state-011`): the
+smoke invokes `scripts/test-state-009-order-management-matcher.sh` with
 
-`scripts/test-state-009-order-management-matcher.sh` resolves its compose file
-from a fixed `order-management-matcher/` path. 016's runtime directory is
-`cdm-generic-instruments/`, so the parent's script cannot find 016's compose
-project. Everything else it needs is already environment-overridable
-(`COMPOSE_PROJECT_NAME`, `TRADERX_GRAFANA_ADMIN_PASSWORD`), and teaching it to
-read the compose path from the environment too is a one-line change.
+- `TRADERX_COMPOSE_FILE` pointing at 016's compose file (009's script defaults
+  to its own `order-management-matcher/` path; the env override was added for
+  this),
+- `COMPOSE_PROJECT_NAME=traderx-state-016`, and
+- `TRADERX_GRAFANA_ADMIN_PASSWORD=traderx-state-016` (state-scoped default),
 
-That one-line change is currently blocked.
-`specs/004-containerized-compose-runtime/generation/patches/0001-state-overlay.patch`
-carries `deleted file mode` hunks for every script under `scripts/`, and a git
-deletion hunk embeds the deleted file's entire text. Editing any of those
-scripts therefore makes the 004 patch fail to apply, breaking generation for 004
-and every state below it. The deletions are themselves no-ops — the runtime
-harness copies those scripts straight back at the end of every generation — but
-they pin the bytes regardless. Generalizing 009's test harness is a follow-on
-task, and it should remove those dead hunks first.
+plus 016's ingress URL and a pass-through of `--skip-messaging`. When 009's
+checks change, 016 picks the changes up automatically instead of asserting a
+stale snapshot.
 
-Until then, 016 splits the inherited coverage:
+Historical note: 016 originally could not chain 009's script. The state 004
+patchset carried `deleted file mode` hunks for every script under `scripts/`,
+which pinned their exact bytes — editing any of them broke generation for 004
+and every state below it, so even the one-line env-override in `test-state-009`
+was off the table, and 016 restated 009's compose-bound checks instead. Those
+dead hunks were removed (fork PR #1, merge `c3a7a04`), verified
+behavior-neutral, and the chaining above replaced the restated checks. One
+remnant: the state 010 patch still pins
+`scripts/status-state-009-order-management-matcher-generated.sh` and
+`scripts/stop-state-009-order-management-matcher-generated.sh` — do not edit
+those two files until 010's patch gets the same cleanup.
 
-- **Chained live**, so improvements to them are picked up automatically. The
-  three helpers 009's smoke calls are all fully parameterized and take no
-  compose path: `test-api-explorer-pubsub-inspector.sh`,
-  `test-web-angular-baseline-ux-contract.sh`, and
-  `test-messaging-009-order-management-matcher.sh`.
-- **Restated**, because they are compose-bound: running service count, order
-  matcher health and lifecycle metrics, and the order create/cancel/force-fill
-  path through to a trade and a position.
+On top of the chained parent run, this smoke keeps one 016-specific lifecycle
+check: the SPY order create/cancel and force-fill-to-position path, because an
+ETF exercising trade-service's `/instruments/{ticker}` validation end to end is
+this state's own contribution.
 
 ### Local environment note
 
