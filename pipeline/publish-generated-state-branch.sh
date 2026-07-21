@@ -446,6 +446,9 @@ snapshot_keep_paths_for_state() {
     014-fdc3-intent-interoperability)
       printf '%s\n' "${C2_COMPONENT_DIRS[@]}" "kubernetes-runtime" "tilt-kubernetes-dev-loop" "fdc3-intent-interoperability" ".github" "runtime"
       ;;
+    016-cdm-generic-instruments)
+      printf '%s\n' "${ORDER_COMPONENT_DIRS[@]}" "ingress" "cdm-generic-instruments" "postgres-database-replacement" ".github" "runtime"
+      ;;
     *)
       echo "[fail] missing explicit snapshot keep-path policy for ${STATE_ID}"
       echo "[hint] add ${STATE_ID} to snapshot_keep_paths_for_state and install-generated-ci-assets.sh state_allowed_roots"
@@ -876,6 +879,13 @@ EOF
 - Extends UI blotters with pricing/value/P&L visualization while preserving baseline trade/account workflows.
 EOF
       ;;
+    016-cdm-generic-instruments)
+      cat <<'EOF'
+- Builds on state `009` and preserves order-management, pricing, and observability runtime behavior.
+- Replaces the two-string stock concept with an instrument model shaped after the FINOS Common Domain Model, carrying CDM asset identifiers (`BBGTICKER`, `FIGI`) and security types.
+- Replaces `/stocks` with `/instruments` as a declared, non-aliased break, and seeds ETFs alongside equities so a second CDM `securityType` is exercised at runtime.
+EOF
+      ;;
     014-fdc3-intent-interoperability)
       cat <<'EOF'
 - Builds on state `012` and preserves C3 runtime behavior.
@@ -1195,6 +1205,18 @@ EOF
 - Order matcher metrics: `http://localhost:18110/metrics`
 EOF
       ;;
+    016-cdm-generic-instruments)
+      cat <<'EOF'
+- UI (ingress): `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Instruments: `http://localhost:18085/instruments`
+- Instruments (ingress): `http://localhost:8080/reference-data/instruments`
+- Grafana dashboards (ingress): `http://localhost:8080/grafana/`
+- Grafana local admin: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+- Order matcher health: `http://localhost:18110/health`
+EOF
+      ;;
     010-kubernetes-runtime|011-tilt-kubernetes-dev-loop|012-platform-convergence-c3|013-radius-kubernetes-platform)
       cat <<'EOF'
 - UI (ingress): `http://localhost:8080`
@@ -1244,6 +1266,16 @@ EOF
 - Local admin URL: `http://localhost:3001`
 - The start script prints the active local admin credential.
 - Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-009`.
+EOF
+      ;;
+    016-cdm-generic-instruments)
+      cat <<'EOF'
+## Grafana Access
+
+- Public dashboards: `http://localhost:8080/grafana/`
+- Local admin URL: `http://localhost:3001`
+- The start script prints the active local admin credential.
+- Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-016`.
 EOF
       ;;
   esac
@@ -1361,6 +1393,14 @@ EOF
 - Understand how pricing streams integrate with existing account-scoped event flows.
 - Review trade execution price stamping and position cost-basis aggregation logic.
 - Validate realtime UI valuation behavior (position value, totals, and P&L) under live price ticks.
+EOF
+      ;;
+    016-cdm-generic-instruments)
+      cat <<'EOF'
+- Understand how an industry standard (FINOS CDM) is adopted as a subset: what the asset identifier and taxonomy layer buys, and why the derivative economics layer is skipped.
+- Compare a two-string `Security` against a CDM `Security`-shaped record with multiple asset identifiers, and see why the taxonomy stays documentation rather than a runtime union.
+- Review how a resource is replaced rather than aliased, and how a state declares a breaking contract change without disturbing its ancestors.
+- Validate that an ETF flows through validation, matching, trade, and position exactly as an equity does.
 EOF
       ;;
     014-fdc3-intent-interoperability)
@@ -3104,6 +3144,64 @@ Status / stop:
 ```
 EOF
       ;;
+    016-cdm-generic-instruments)
+      cat > "${SNAPSHOT_DIR}/RUN_FROM_CLONE.md" <<'EOF'
+# Run From Clone
+
+Prerequisites:
+- Docker Desktop (or Docker Engine + Compose plugin)
+
+Start:
+
+```bash
+./scripts/start-state-016-cdm-generic-instruments-generated.sh
+./scripts/start-state-016-cdm-generic-instruments-generated.sh --skip-build
+```
+
+Endpoints:
+- UI / ingress: `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Ingress health: `http://localhost:8080/health`
+- Instruments: `http://localhost:18085/instruments`
+- Instruments (ingress): `http://localhost:8080/reference-data/instruments`
+- Order matcher health: `http://localhost:18110/health`
+- Grafana dashboards: `http://localhost:8080/grafana/`
+- Grafana local admin: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+
+Look at the instrument model:
+
+```bash
+# An equity: CDM Equity / Ordinary, with BBGTICKER + FIGI identifiers
+curl -s http://localhost:18085/instruments/IBM
+
+# An ETF: CDM Fund / ExchangeTradedFund
+curl -s http://localhost:18085/instruments/SPY
+
+# /stocks was replaced by /instruments, not aliased
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:18085/stocks
+```
+
+Grafana access:
+- Dashboards are anonymous Viewer surfaces through ingress.
+- The start script prints the active local admin credential.
+- Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-016`.
+
+Smoke test:
+
+```bash
+./scripts/test-state-016-cdm-generic-instruments.sh
+./scripts/test-state-016-cdm-generic-instruments.sh --skip-messaging
+```
+
+Status / stop:
+
+```bash
+./scripts/status-state-016-cdm-generic-instruments-generated.sh
+./scripts/stop-state-016-cdm-generic-instruments-generated.sh
+```
+EOF
+      ;;
     008-pricing-awareness-market-data)
       cat > "${SNAPSHOT_DIR}/RUN_FROM_CLONE.md" <<'EOF'
 # Run From Clone
@@ -3661,7 +3759,7 @@ case "${STATE_ID}" in
   004-containerized-compose-runtime)
     install_containerized_clone_harness
     ;;
-  005-postgres-database-replacement|006-messaging-nats-replacement|007-observability-lgtm-compose|008-pricing-awareness-market-data|009-order-management-matcher)
+  005-postgres-database-replacement|006-messaging-nats-replacement|007-observability-lgtm-compose|008-pricing-awareness-market-data|009-order-management-matcher|016-cdm-generic-instruments)
     install_state_compose_clone_harness "${STATE_ID}"
     ;;
   010-kubernetes-runtime)

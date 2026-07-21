@@ -240,6 +240,16 @@ case "${STATE_ID}" in
     copy_script_if_exists "test-state-012-platform-convergence-c3.sh"
     copy_script_if_exists "test-state-014-fdc3-intent-interoperability.sh"
     ;;
+  016-cdm-generic-instruments)
+    copy_script_if_exists "start-state-016-cdm-generic-instruments-generated.sh"
+    copy_script_if_exists "stop-state-016-cdm-generic-instruments-generated.sh"
+    copy_script_if_exists "status-state-016-cdm-generic-instruments-generated.sh"
+    copy_script_if_exists "test-state-016-cdm-generic-instruments.sh"
+    # This state's smoke chains its parent's, which is already copied above with
+    # every other test-*.sh, and runs against 016's compose project.
+    copy_script_if_exists "test-state-009-order-management-matcher.sh"
+    copy_script_if_exists "test-messaging-009-order-management-matcher.sh"
+    ;;
 esac
 
 case "${STATE_ID}" in
@@ -905,6 +915,48 @@ Smoke test:
 ```
 EOF
       ;;
+    016-cdm-generic-instruments)
+      cat > "${TARGET_ROOT}/RUN_FROM_GENERATED.md" <<'EOF'
+# Run From Generated (State 016)
+
+Start (choose one):
+
+```bash
+# Full start (build + start)
+./scripts/start-state-016-cdm-generic-instruments-generated.sh
+
+# Fast restart (reuse existing artifacts; skips build)
+./scripts/start-state-016-cdm-generic-instruments-generated.sh --skip-build
+```
+
+Look at the instrument model:
+
+```bash
+# An equity: CDM Equity / Ordinary, with BBGTICKER + FIGI identifiers
+curl -s http://localhost:18085/instruments/IBM
+
+# An ETF: CDM Fund / ExchangeTradedFund
+curl -s http://localhost:18085/instruments/SPY
+
+# /stocks was replaced, not aliased
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:18085/stocks
+```
+
+Status / stop:
+
+```bash
+./scripts/status-state-016-cdm-generic-instruments-generated.sh
+./scripts/stop-state-016-cdm-generic-instruments-generated.sh
+```
+
+Smoke test:
+
+```bash
+./scripts/test-state-016-cdm-generic-instruments.sh
+./scripts/test-state-016-cdm-generic-instruments.sh --skip-messaging
+```
+EOF
+      ;;
     *)
       cat > "${TARGET_ROOT}/RUN_FROM_GENERATED.md" <<'EOF'
 # Run From Generated
@@ -995,6 +1047,20 @@ EOF
 - Grafana (ingress): `http://localhost:8080/grafana`
 - Prometheus (ingress): `http://localhost:8080/prometheus`
 - Sail sidecar UI: `http://localhost:8090`
+EOF
+      ;;
+    016-cdm-generic-instruments)
+      cat <<'EOF'
+- UI (ingress): `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Trade page: `http://localhost:8080/trade`
+- Instruments: `http://localhost:18085/instruments`
+- Instruments (ingress): `http://localhost:8080/reference-data/instruments`
+- Account service route: `http://localhost:8080/account-service/account/22214`
+- Position service route: `http://localhost:8080/position-service/positions/22214`
+- Order matcher: `http://localhost:18110/health`
+- Grafana (ingress): `http://localhost:8080/grafana`
+- Prometheus (ingress): `http://localhost:8080/prometheus`
 EOF
       ;;
     *)

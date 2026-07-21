@@ -22,8 +22,10 @@ fi
 
 mkdir -p "${CONTRACTS_ROOT}"
 
+# The inspector needs a message bus, which arrives with the NATS replacement in
+# state 006. 015 is a docs pack rather than a generated state.
 case "${STATE_ID}" in
-  006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*)
+  006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*|016-*)
     PUBSUB_INSPECTOR_ENABLED=1
     ;;
 esac
@@ -920,6 +922,18 @@ const deriveRuntimeBasePath = (def) => {
 const targetHas = (relativePath) =>
   fs.existsSync(path.join(targetRoot, relativePath));
 
+// Service contracts default to the state 001 baseline. A state that changes a
+// component's API republishes the contract in its own pack, and that copy wins,
+// so the explorer documents the API the state actually ships rather than the
+// baseline one.
+const resolveContractPath = (def) => {
+  const stateLocal = path.join('specs', stateId, 'contracts', def.id, 'openapi.yaml');
+  if (fs.existsSync(path.join(root, stateLocal))) {
+    return stateLocal;
+  }
+  return def.contractPath;
+};
+
 const contracts = [];
 const services = [];
 
@@ -929,7 +943,8 @@ for (const def of serviceDefs) {
   }
 
   const contractName = `${def.id}-openapi.yaml`;
-  const contractFile = def.contractPath ? path.join(root, def.contractPath) : null;
+  const resolvedContractPath = resolveContractPath(def);
+  const contractFile = resolvedContractPath ? path.join(root, resolvedContractPath) : null;
   const hasContract = Boolean(contractFile && fs.existsSync(contractFile));
   if (hasContract) {
     const outFile = path.join(contractsRoot, contractName);

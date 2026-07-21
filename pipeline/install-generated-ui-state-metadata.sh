@@ -114,6 +114,9 @@ const pubSubInspectorEnabled = stateNo >= 8;
 const proxyMode = stateNo >= 2;
 const baseOrigin = proxyMode ? '' : 'http://localhost';
 
+// State 016 replaces reference-data's /stocks with /instruments.
+const referenceDataPath = stateNo >= 16 ? '/instruments' : '/stocks';
+
 const statusChecks = [];
 const pushCheck = (id, name, url, expectedStatuses) => {
   statusChecks.push({ id, name, url, expectedStatuses });
@@ -122,7 +125,7 @@ const pushCheck = (id, name, url, expectedStatuses) => {
 if (proxyMode) {
   pushCheck('edge-health', 'Edge/Ingress Health', '/health', [200]);
   pushCheck('account-service', 'Account Service', '/account-service/account/22214', [200]);
-  pushCheck('reference-data', 'Reference Data', '/reference-data/stocks', [200]);
+  pushCheck('reference-data', 'Reference Data', `/reference-data${referenceDataPath}`, [200]);
   pushCheck('position-service', 'Position Service', '/position-service/health/alive', [200]);
   pushCheck('trade-service', 'Trade Service', '/trade-service/v3/api-docs', [200]);
   pushCheck('people-service', 'People Service', '/people-service/People/GetPerson?LogonId=user01', [200]);
@@ -144,7 +147,7 @@ if (proxyMode) {
   }
 } else {
   pushCheck('account-service', 'Account Service', `${baseOrigin}:18088/account/22214`, [200]);
-  pushCheck('reference-data', 'Reference Data', `${baseOrigin}:18085/stocks`, [200]);
+  pushCheck('reference-data', 'Reference Data', `${baseOrigin}:18085${referenceDataPath}`, [200]);
   pushCheck('position-service', 'Position Service', `${baseOrigin}:18090/health/alive`, [200]);
   pushCheck('trade-service', 'Trade Service', `${baseOrigin}:18092/v3/api-docs`, [200]);
   pushCheck('people-service', 'People Service', `${baseOrigin}:18089/People/GetPerson?LogonId=user01`, [200]);

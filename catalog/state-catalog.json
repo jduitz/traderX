@@ -395,6 +395,29 @@
         "branch": "code/generated-state-014-fdc3-intent-interoperability",
         "tag": "generated/014-fdc3-intent-interoperability/v1"
       }
+    },
+    {
+      "id": "016-cdm-generic-instruments",
+      "title": "CDM Generic Instruments",
+      "status": "implemented",
+      "track": "functional",
+      "convergenceLevel": "none",
+      "isConvergence": false,
+      "dottedParents": [],
+      "primaryLineageRole": "canonical",
+      "featurePack": "specs/016-cdm-generic-instruments",
+      "previous": [
+        "009-order-management-matcher"
+      ],
+      "generation": {
+        "mode": "implemented",
+        "entrypoint": "bash pipeline/generate-state.sh 016-cdm-generic-instruments",
+        "runtime": "./scripts/start-state-016-cdm-generic-instruments-generated.sh"
+      },
+      "publish": {
+        "branch": "code/generated-state-016-cdm-generic-instruments",
+        "tag": "generated/016-cdm-generic-instruments/v1"
+      }
     }
   ]
 }

@@ -33,6 +33,7 @@ tracks:
       - 008-pricing-awareness-market-data
       - 009-order-management-matcher
       - 014-fdc3-intent-interoperability
+      - 016-cdm-generic-instruments
   nonfunctional:
     description: "Non-functional overlays (observability, resilience, operations)."
     states:
@@ -147,3 +148,10 @@ stateCatalog:
     isConvergence: false
     lineageRole: canonical
     spec: specs/014-fdc3-intent-interoperability/spec.md
+  - id: 016-cdm-generic-instruments
+    previous:
+      - 009-order-management-matcher
+    convergenceLevel: none
+    isConvergence: false
+    lineageRole: canonical
+    spec: specs/016-cdm-generic-instruments/spec.md
