@@ -45,7 +45,7 @@
       "id": "reference_data",
       "label": "Reference Data",
       "kind": "service",
-      "description": "Serves /instruments and /instruments/{ticker}. CDM Security-shaped records with BBGTICKER and FIGI identifiers. /stocks is removed, not aliased."
+      "description": "Serves /instruments and `/instruments/{ticker}`. CDM Security-shaped records with BBGTICKER and FIGI identifiers. /stocks is removed, not aliased."
     },
     {
       "id": "instrument_seed",
@@ -57,7 +57,7 @@
       "id": "trade_service",
       "label": "Trade Service",
       "kind": "service",
-      "description": "Validates a trade's security against /instruments/{ticker} before publishing it."
+      "description": "Validates a trade's security against `/instruments/{ticker}` before publishing it."
     },
     {
       "id": "order_matcher",
@@ -69,7 +69,7 @@
       "id": "price_publisher",
       "label": "Price Publisher",
       "kind": "service",
-      "description": "Publishes pricing.<TICKER> ticks. Supported universe extended with five ETFs to keep the inherited alignment contract."
+      "description": "Publishes `pricing.<TICKER>` ticks. Supported universe extended with five ETFs to keep the inherited alignment contract."
     },
     {
       "id": "nats",
