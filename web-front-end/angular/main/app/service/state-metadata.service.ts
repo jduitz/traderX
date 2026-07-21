@@ -14,7 +14,7 @@ const DEFAULT_STATUS_CHECKS: StatusCheckDefinition[] = [
     {
         id: 'reference-data',
         name: 'Reference Data',
-        url: `${window.location.protocol}//${window.location.hostname}:18085/stocks`,
+        url: `${window.location.protocol}//${window.location.hostname}:18085/instruments`,
         expectedStatuses: [200]
     },
     {

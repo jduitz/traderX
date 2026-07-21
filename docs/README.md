@@ -1,6 +1,6 @@
 # Generated Docs
 
-This folder provides generated learning-oriented documentation for state `009-order-management-matcher`.
+This folder provides generated learning-oriented documentation for state `016-cdm-generic-instruments`.
 
 - [Learning Index](./learning/README.md)
 - [Component List](./learning/component-list.md)

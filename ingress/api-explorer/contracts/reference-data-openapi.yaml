@@ -1,7 +1,11 @@
 openapi: 3.0.0
 info:
   title: TraderSpec Reference Data Service
-  version: "1.0.0"
+  version: "2.0.0"
+  description: >-
+    Instrument reference data shaped after the FINOS Common Domain Model (CDM).
+    State 016 replaces /stocks and /stocks/{ticker} with /instruments and
+    /instruments/{ticker}; the removed paths are not aliased.
 paths:
   /health:
     get:
@@ -13,21 +17,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Health"
-  /stocks:
+  /instruments:
     get:
-      summary: List all stocks
+      summary: List all instruments
       responses:
         "200":
-          description: Stock list
+          description: Instrument list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Security"
-  /stocks/{ticker}:
+                  $ref: "#/components/schemas/Instrument"
+  /instruments/{ticker}:
     get:
-      summary: Find stock by ticker
+      summary: Find instrument by ticker
       parameters:
       - name: ticker
         in: path
@@ -36,27 +40,147 @@ paths:
           type: string
       responses:
         "200":
-          description: Stock found
+          description: Instrument found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Security"
+                $ref: "#/components/schemas/Instrument"
         "404":
           description: Not found
 components:
   schemas:
-    Security:
+    Instrument:
       type: object
+      description: >-
+        A CDM Security-shaped record plus its asset identifiers. CDM's
+        Asset -> Instrument -> Security choice tree is the taxonomy this maps
+        onto; the runtime record is flat.
       required:
       - ticker
       - companyName
+      - currency
+      - securityType
+      - identifiers
       properties:
         ticker:
           type: string
+          description: Instrument key. Equals the BBGTICKER identifier value.
           example: AAPL
         companyName:
           type: string
+          description: >-
+            Human-readable display name, sourced from the seed file rather than
+            from OpenFIGI.
           example: Apple Inc.
+        currency:
+          type: string
+          description: ISO 4217 currency code. USD throughout state 016.
+          example: USD
+        securityType:
+          $ref: "#/components/schemas/SecurityTypeEnum"
+        equityType:
+          allOf:
+          - $ref: "#/components/schemas/EquityType"
+          description: Present if and only if securityType is Equity.
+        fundType:
+          allOf:
+          - $ref: "#/components/schemas/FundProductTypeEnum"
+          description: Present if and only if securityType is Fund.
+        identifiers:
+          type: array
+          minItems: 1
+          description: >-
+            Every instrument carries BBGTICKER. Instruments in the supported
+            ticker set also carry FIGI. ISIN and CUSIP are valid identifierType
+            values but are unpopulated, as those symbologies are licensed.
+          items:
+            $ref: "#/components/schemas/AssetIdentifier"
+    AssetIdentifier:
+      type: object
+      description: CDM AssetIdentifier.
+      required:
+      - identifier
+      - identifierType
+      properties:
+        identifier:
+          type: string
+          example: BBG000BLNNH6
+        identifierType:
+          $ref: "#/components/schemas/AssetIdTypeEnum"
+    AssetIdTypeEnum:
+      type: string
+      description: >-
+        CDM AssetIdTypeEnum, which extends ProductIdTypeEnum. State 016
+        populates BBGTICKER and FIGI only.
+      enum:
+      - BBGID
+      - BBGTICKER
+      - CUSIP
+      - FIGI
+      - ISDACRP
+      - ISIN
+      - Name
+      - REDID
+      - RIC
+      - Other
+      - Sicovam
+      - SEDOL
+      - UPI
+      - Valoren
+      - Wertpapier
+      - CurrencyCode
+      - ExchangeCode
+      - ClearingCode
+      example: BBGTICKER
+    SecurityTypeEnum:
+      type: string
+      description: CDM SecurityTypeEnum. State 016 emits Equity and Fund only.
+      enum:
+      - Debt
+      - Equity
+      - Fund
+      - Warrant
+      - Certificate
+      example: Equity
+    EquityType:
+      type: object
+      description: CDM EquityType.
+      required:
+      - equityType
+      properties:
+        equityType:
+          $ref: "#/components/schemas/EquityTypeEnum"
+        depositaryReceipt:
+          allOf:
+          - $ref: "#/components/schemas/DepositaryReceiptTypeEnum"
+          description: Present only when equityType is DepositaryReceipt.
+    EquityTypeEnum:
+      type: string
+      description: CDM EquityTypeEnum.
+      enum:
+      - Ordinary
+      - NonConvertiblePreference
+      - DepositaryReceipt
+      - ConvertiblePreference
+      example: Ordinary
+    DepositaryReceiptTypeEnum:
+      type: string
+      description: CDM DepositaryReceiptTypeEnum.
+      enum:
+      - ADR
+      - GDR
+      - IDR
+      - EDR
+      example: ADR
+    FundProductTypeEnum:
+      type: string
+      description: CDM FundProductTypeEnum.
+      enum:
+      - MoneyMarketFund
+      - ExchangeTradedFund
+      - MutualFund
+      - OtherFund
+      example: ExchangeTradedFund
     Health:
       type: object
       required:

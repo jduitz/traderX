@@ -1,12 +1,14 @@
 # Functional Testing Guide
 
-State: `009-order-management-matcher`
+State: `016-cdm-generic-instruments`
 
 This guide captures intended functional behavior for this generated snapshot branch.
 
 ## What Should Work
 
-- Generated code snapshot for TraderX state transition.
+- Builds on state `009` and preserves order-management, pricing, and observability runtime behavior.
+- Replaces the two-string stock concept with an instrument model shaped after the FINOS Common Domain Model, carrying CDM asset identifiers (`BBGTICKER`, `FIGI`) and security types.
+- Replaces `/stocks` with `/instruments` as a declared, non-aliased break, and seeds ETFs alongside equities so a second CDM `securityType` is exercised at runtime.
 
 ## Suggested Functional Validation
 
@@ -18,18 +20,14 @@ This guide captures intended functional behavior for this generated snapshot bra
 ## Smoke Test Commands
 
 ```bash
-./scripts/test-state-009-order-management-matcher.sh
-```
-```bash
-./scripts/test-state-009-order-management-matcher.sh --skip-messaging
-./scripts/test-messaging-009-order-management-matcher.sh
+./scripts/test-state-016-cdm-generic-instruments.sh
 ```
 
 ## Canonical References
 
-- Spec pack: `specs/009-order-management-matcher`
+- Spec pack: `specs/016-cdm-generic-instruments`
 - Runtime guide: [RUN_FROM_CLONE.md](./RUN_FROM_CLONE.md)
 - Snapshot learning guide: [LEARNING.md](./LEARNING.md)
 - Snapshot metadata: [STATE.md](./STATE.md)
-- Canonical Getting Started (main): https://github.com/finos/traderX/blob/main/docs/spec-kit/getting-started-with-traderx.md
-- Canonical SpecKit docs (source commit): https://github.com/finos/traderX/tree/f0056d6753b9a76295ce40ede1f32c30bd2c5f27/docs/spec-kit
+- Canonical Getting Started (main): https://github.com/jduitz/traderX/blob/main/docs/spec-kit/getting-started-with-traderx.md
+- Canonical SpecKit docs (source commit): https://github.com/jduitz/traderX/tree/25ea8b839e2fdd1dfe9b77f8917e3d5e4a8260bd/docs/spec-kit

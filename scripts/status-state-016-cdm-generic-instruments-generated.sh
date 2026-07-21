@@ -10,9 +10,9 @@ if [[ "${TRADERX_LOCAL_RUNTIME_SCRIPT:-0}" != "1" ]]; then
     exec "${LOCAL_RUNTIME_SCRIPT}" "$@"
   fi
 fi
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-009}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-016}"
 GRAFANA_PORT="${GRAFANA_PORT:-3001}"
-COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/order-management-matcher/docker-compose.yml"
+COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/cdm-generic-instruments/docker-compose.yml"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[error] docker command not found"
@@ -21,7 +21,7 @@ fi
 
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "[info] compose file not found: ${COMPOSE_FILE}"
-  echo "[hint] run: bash pipeline/generate-state.sh 009-order-management-matcher"
+  echo "[hint] run: bash pipeline/generate-state.sh 016-cdm-generic-instruments"
   exit 0
 fi
 
@@ -39,6 +39,7 @@ printf "%-30s %-8s %s\n" "------------------------------" "--------" "---"
 for target in \
   "ingress-health|http://localhost:8080/health" \
   "ingress-ui|http://localhost:8080/" \
+  "reference-data-instruments|http://localhost:18085/instruments" \
   "order-matcher-health|http://localhost:18110/health" \
   "order-matcher-metrics|http://localhost:18110/metrics" \
   "price-publisher|http://localhost:18100/health" \

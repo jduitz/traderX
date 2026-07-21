@@ -5,7 +5,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Wrapper purpose: stable, state-local test entrypoint.
 # This may delegate across multiple numbered state scripts to maximize reuse.
 # Execution flow:
+#  - scripts/test-state-016-cdm-generic-instruments.sh
+#  - scripts/start-state-009-order-management-matcher-generated.sh
+#  - scripts/start-state-016-cdm-generic-instruments-generated.sh
 #  - scripts/test-state-009-order-management-matcher.sh
+#  - scripts/start-grafana-traderx-dashboards.sh
 #  - scripts/test-api-explorer-pubsub-inspector.sh
 #  - scripts/test-messaging-009-order-management-matcher.sh
 #  - scripts/test-web-angular-baseline-ux-contract.sh
@@ -13,4 +17,4 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #  - scripts/test-order-create-pubsub-smoke.sh
 #  - scripts/test-realtime-order-stream-overlay.sh
 
-exec "${ROOT}/scripts/test-state-009-order-management-matcher.sh" "$@"
+exec "${ROOT}/scripts/test-state-016-cdm-generic-instruments.sh" "$@"

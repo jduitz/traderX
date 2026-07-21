@@ -25,7 +25,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"$service\"}[1m]))",
+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"}[1m]))",
           "refId": "A"
         }
       ],
@@ -57,7 +57,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (service) (rate({compose_project=\"traderx-state-009\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
           "refId": "A"
         }
       ],
@@ -84,7 +84,7 @@
       },
       "targets": [
         {
-          "expr": "{compose_project=\"traderx-state-009\",service=~\"$service\"}",
+          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"}",
           "refId": "A"
         }
       ],
@@ -111,7 +111,7 @@
       },
       "targets": [
         {
-          "expr": "{compose_project=\"traderx-state-009\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
+          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
           "refId": "A"
         }
       ],
@@ -143,7 +143,7 @@
         "label": "Service",
         "multi": true,
         "name": "service",
-        "query": "label_values({compose_project=\"traderx-state-009\"}, service)",
+        "query": "label_values({compose_project=\"traderx-state-016\"}, service)",
         "type": "query"
       }
     ]

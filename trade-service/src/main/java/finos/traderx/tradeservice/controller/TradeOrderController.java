@@ -68,7 +68,7 @@ public class TradeOrderController {
   }
 
   private boolean validateTicker(String ticker) {
-    String url = this.referenceDataServiceAddress + "/stocks/" + ticker;
+    String url = this.referenceDataServiceAddress + "/instruments/" + ticker;
     try {
       ResponseEntity<Security> response = this.restTemplate.getForEntity(url, Security.class);
       log.info("Validate ticker {}", response.getBody());

@@ -1,25 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { loadCsvData } from '../data-loader/load-csv-data';
-import { Stock } from './stock.model';
+import { Instrument } from './instrument.model';
 
 @Injectable()
-export class StocksService {
-  private readonly stocks: Promise<Stock[]>;
+export class InstrumentsService {
+  private readonly instruments: Promise<Instrument[]>;
 
   constructor() {
     const supportedTickers = this.parseSupportedTickers(
       process.env.REFERENCE_DATA_SUPPORTED_TICKERS
     );
     const maxTickers = this.parsePositiveInt(process.env.REFERENCE_DATA_MAX_TICKERS);
-    this.stocks = loadCsvData({ supportedTickers, maxTickers });
+    this.instruments = loadCsvData({ supportedTickers, maxTickers });
   }
 
-  async findAll(): Promise<Stock[]> {
-    return this.stocks;
+  async findAll(): Promise<Instrument[]> {
+    return this.instruments;
   }
 
-  async findByTicker(ticker: string): Promise<Stock | undefined> {
-    return (await this.stocks).find((stock) => stock.ticker === ticker);
+  async findByTicker(ticker: string): Promise<Instrument | undefined> {
+    return (await this.instruments).find((instrument) => instrument.ticker === ticker);
   }
 
   private parseSupportedTickers(input?: string): Set<string> | undefined {

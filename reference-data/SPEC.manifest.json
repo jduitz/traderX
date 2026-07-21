@@ -9,7 +9,7 @@
     "buildTool": "npm",
     "sourcePath": "generated/code/components/reference-data-specfirst",
     "targetPath": "apps/reference-data",
-    "notes": "Provides /stocks and /stocks/{ticker}."
+    "notes": "Provides /instruments and /instruments/{ticker}."
   },
   "runtime": {
     "defaultPort": 18085,

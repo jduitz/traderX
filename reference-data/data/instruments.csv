@@ -1,0 +1,511 @@
+Symbol,Security,SEC filings,GICS Sector,GICS Sub-Industry,Headquarters Location,Date first added,CIK,Founded,FIGI,SecurityType
+MMM,3M,reports,Industrials,Industrial Conglomerates,"Saint Paul, Minnesota",09/08/1976,66740,1902,BBG000BP52R2,Common Stock
+AOS,A. O. Smith,reports,Industrials,Building Products,"Milwaukee, Wisconsin",26/07/2017,91142,1916,BBG000BC1L02,Common Stock
+ABT,Abbott,reports,Health Care,Health Care Equipment,"North Chicago, Illinois",31/03/1964,1800,1888,BBG000B9ZXB4,Common Stock
+ABBV,AbbVie,reports,Health Care,Pharmaceuticals,"North Chicago, Illinois",31/12/2012,1551152,2013 (1888),BBG0025Y4RY4,Common Stock
+ABMD,Abiomed,reports,Health Care,Health Care Equipment,"Danvers, Massachusetts",31/05/2018,815094,1981,BBG000C101X4,Common Stock
+ACN,Accenture,reports,Information Technology,IT Consulting & Other Services,"Dublin, Ireland",06/07/2011,1467373,1989,BBG000D9D830,Common Stock
+ATVI,Activision Blizzard,reports,Communication Services,Interactive Home Entertainment,"Santa Monica, California",31/08/2015,718877,2008,BBG000CVWGS6,Common Stock
+ADM,ADM,reports,Consumer Staples,Agricultural Products,"Chicago, Illinois",29/07/1981,7084,1902,BBG000BB6WG8,Common Stock
+ADBE,Adobe,reports,Information Technology,Application Software,"San Jose, California",05/05/1997,796343,1982,BBG000BB5006,Common Stock
+ADP,ADP,reports,Information Technology,Data Processing & Outsourced Services,"Roseland, New Jersey",31/03/1981,8670,1949,BBG000JG0547,Common Stock
+AAP,Advance Auto Parts,reports,Consumer Discretionary,Automotive Retail,"Raleigh, North Carolina",09/07/2015,1158449,1932,BBG000F7RCJ1,Common Stock
+AES,AES,reports,Utilities,Independent Power Producers & Energy Traders,"Arlington, Virginia",02/10/1998,874761,1981,BBG000C23KJ3,Common Stock
+AFL,Aflac,reports,Financials,Life & Health Insurance,"Columbus, Georgia",28/05/1999,4977,1955,BBG000BBBNC6,Common Stock
+A,Agilent Technologies,reports,Health Care,Health Care Equipment,"Santa Clara, California",05/06/2000,1090872,1999,BBG000C2V3D6,Common Stock
+AIG,AIG,reports,Financials,Property & Casualty Insurance,"New York City, New York",31/03/1980,5272,1919,BBG000BBDZG3,Common Stock
+APD,Air Products,reports,Materials,Industrial Gases,"Allentown, Pennsylvania",30/04/1985,2969,1940,BBG000BC4JJ4,Common Stock
+AKAM,Akamai,reports,Information Technology,Internet Services & Infrastructure,"Cambridge, Massachusetts",12/07/2007,1086222,1998,BBG000BJQWD2,Common Stock
+ALK,Alaska Air Group,reports,Industrials,Airlines,"Seattle, Washington",13/05/2016,766421,1985,BBG000BBL0Y1,Common Stock
+ALB,Albemarle,reports,Materials,Specialty Chemicals,"Charlotte, North Carolina",01/07/2016,915913,1994,BBG000BJ26K7,Common Stock
+ARE,Alexandria,reports,Real Estate,Office REITs,"Pasadena, California",20/03/2017,1035443,1994,BBG000BC33T9,REIT
+ALGN,Align,reports,Health Care,Health Care Supplies,"San Jose, California",19/06/2017,1097149,1997,BBG000BRNLL2,Common Stock
+ALLE,Allegion,reports,Industrials,Building Products,"New York City, New York",02/12/2013,1579241,1908,BBG003PS7JV1,Common Stock
+LNT,Alliant Energy,reports,Utilities,Electric Utilities,"Madison, Wisconsin",01/07/2016,352541,1917,BBG000DW4Q75,Common Stock
+ALL,Allstate,reports,Financials,Property & Casualty Insurance,"Northfield Township, Illinois",13/07/1995,899051,1931,BBG000BVMGF2,Common Stock
+GOOGL,Alphabet (Class A),reports,Communication Services,Interactive Media & Services,"Mountain View, California",03/04/2014,1652044,1998,BBG009S39JX6,Common Stock
+GOOG,Alphabet (Class C),reports,Communication Services,Interactive Media & Services,"Mountain View, California",03/04/2006,1652044,1998,BBG009S3NB30,Common Stock
+MO,Altria,reports,Consumer Staples,Tobacco,"Richmond, Virginia",04/03/1957,764180,1985,BBG000BP6LJ8,Common Stock
+AMZN,Amazon,reports,Consumer Discretionary,Internet & Direct Marketing Retail,"Seattle, Washington",18/11/2005,1018724,1994,BBG000BVPV84,Common Stock
+AMCR,Amcor,reports,Materials,Paper Packaging,"Warmley, Bristol, United Kingdom",07/06/2019,1748790,2019 (1860),BBG00LNJRQ09,Common Stock
+AMD,AMD,reports,Information Technology,Semiconductors,"Santa Clara, California",,2488,1969,BBG000BBQCY0,Common Stock
+AEE,Ameren,reports,Utilities,Multi-Utilities,"St. Louis, Missouri",19/09/1991,1002910,1902,BBG000B9X8C0,Common Stock
+AAL,American Airlines Group,reports,Industrials,Airlines,"Fort Worth, Texas",23/03/2015,6201,1934,BBG005P7Q881,Common Stock
+AEP,American Electric Power,reports,Utilities,Electric Utilities,"Columbus, Ohio",04/03/1957,4904,1906,BBG000BB9KF2,Common Stock
+AXP,American Express,reports,Financials,Consumer Finance,"New York City, New York",30/06/1976,4962,1850,BBG000BCQZS4,Common Stock
+AMT,American Tower,reports,Real Estate,Specialized REITs,"Boston, Massachusetts",19/11/2007,1053507,1995,BBG000B9XYV2,REIT
+AWK,American Water,reports,Utilities,Water Utilities,"Camden, New Jersey",04/03/2016,1410636,1886,BBG000TRJ294,Common Stock
+AMP,Ameriprise Financial,reports,Financials,Asset Management & Custody Banks,"Minneapolis, Minnesota",03/10/2005,820027,1894,BBG000G3QLY3,Common Stock
+ABC,AmerisourceBergen,reports,Health Care,Health Care Distributors,"Chesterbrook, Pennsylvania",30/08/2001,1140859,1985,,
+AME,Ametek,reports,Industrials,Electrical Components & Equipment,"Berwyn, Pennsylvania",23/09/2013,1037868,1930,BBG000B9XG87,Common Stock
+AMGN,Amgen,reports,Health Care,Biotechnology,"Thousand Oaks, California",02/01/1992,318154,1980,BBG000BBS2Y0,Common Stock
+APH,Amphenol,reports,Information Technology,Electronic Components,"Wallingford, Connecticut",30/09/2008,820313,1932,BBG000B9YJ35,Common Stock
+ADI,Analog Devices,reports,Information Technology,Semiconductors,"Wilmington, Massachusetts",12/10/1999,6281,1965,BBG000BB6G37,Common Stock
+ANSS,Ansys,reports,Information Technology,Application Software,"Canonsburg, Pennsylvania",19/06/2017,1013462,1969,BBG000GXZ4W7,Common Stock
+ANTM,Anthem,reports,Health Care,Managed Health Care,"Indianapolis, Indiana",25/07/2002,1156039,2014 (1946),,
+AON,Aon,reports,Financials,Insurance Brokers,"London, UK",23/04/1996,315293,1982 (1919),BBG00SSQFPK6,Common Stock
+APA,APA Corporation,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",28/07/1997,6769,1954,BBG00YTS96G2,Common Stock
+AAPL,Apple,reports,Information Technology,"Technology Hardware, Storage & Peripherals","Cupertino, California",30/11/1982,320193,1977,BBG000B9XRY4,Common Stock
+AMAT,Applied Materials,reports,Information Technology,Semiconductor Equipment,"Santa Clara, California",16/03/1995,6951,1967,BBG000BBPFB9,Common Stock
+APTV,Aptiv,reports,Consumer Discretionary,Auto Parts & Equipment,"Dublin, Ireland",24/12/2012,1521332,1994,BBG01R914LT5,Common Stock
+ANET,Arista,reports,Information Technology,Communications Equipment,"Santa Clara, California",28/08/2018,1596532,2004,BBG000N2HDY5,Common Stock
+AIZ,Assurant,reports,Financials,Multi-line Insurance,"New York City, New York",10/04/2007,1267238,1892,BBG000BZX1N5,Common Stock
+T,AT&T,reports,Communication Services,Integrated Telecommunication Services,"Dallas, Texas",1983-11-30 (1957-03-04),732717,1983 (1885),BBG000BSJK37,Common Stock
+ATO,Atmos Energy,reports,Utilities,Gas Utilities,"Dallas, Texas",15/02/2019,731802,1906,BBG000BRNGM2,Common Stock
+ADSK,Autodesk,reports,Information Technology,Application Software,"San Rafael, California",01/12/1989,769397,1982,BBG000BM7HL0,Common Stock
+AZO,AutoZone,reports,Consumer Discretionary,Specialty Stores,"Memphis, Tennessee",02/01/1997,866787,1979,BBG000C7LMS8,Common Stock
+AVB,AvalonBay Communities,reports,Real Estate,Residential REITs,"Arlington, Virginia[3]",10/01/2007,915912,1978,BBG000BLPBL5,REIT
+AVY,Avery Dennison,reports,Materials,Paper Packaging,"Glendale, California",31/12/1987,8818,1990,BBG000BCQ4P6,Common Stock
+BKR,Baker Hughes,reports,Energy,Oil & Gas Equipment & Services,"Houston, Texas",07/07/2017,1701605,2017,BBG00GBVBK51,Common Stock
+BLL,Ball,reports,Materials,Metal & Glass Containers,"Broomfield, Colorado",31/10/1984,9389,1880,,
+BAC,Bank of America,reports,Financials,Diversified Banks,"Charlotte, North Carolina",30/06/1976,70858,1998 (1923 / 1874),BBG000BCTLF6,Common Stock
+BBWI,Bath & Body Works,reports,Consumer Discretionary,Specialty Stores,"Columbus, Ohio",30/09/1983,701985,1963,BBG000BNGTQ7,Common Stock
+BAX,Baxter,reports,Health Care,Health Care Equipment,"Deerfield, Illinois",30/09/1972,10456,1931,BBG000BCVJ77,Common Stock
+BDX,Becton Dickinson,reports,Health Care,Health Care Equipment,"Franklin Lakes, New Jersey",30/09/1972,10795,1897,BBG000BCZYD3,Common Stock
+WRB,Berkley,reports,Financials,Property & Casualty Insurance,"Greenwich, Connecticut",05/12/2019,11544,1967,BBG000BD1HP2,Common Stock
+BRK.B,Berkshire Hathaway,reports,Financials,Multi-Sector Holdings,"Omaha, Nebraska",16/02/2010,1067983,1839,BBG000DWG505,Common Stock
+BBY,Best Buy,reports,Consumer Discretionary,Computer & Electronics Retail,"Richfield, Minnesota",29/06/1999,764478,1966,BBG000BCWCG1,Common Stock
+BIO,Bio-Rad,reports,Health Care,Life Sciences Tools & Services,"Hercules, California",22/06/2020,12208,1952,BBG000DY28W5,Common Stock
+TECH,Bio-Techne,reports,Health Care,Life Sciences Tools & Services,"Minneapolis, Minnesota",30/08/2021,842023,1976,BBG000C15114,Common Stock
+BIIB,Biogen,reports,Health Care,Biotechnology,"Cambridge, Massachusetts",13/11/2003,875045,1978,BBG000C17X76,Common Stock
+BLK,BlackRock,reports,Financials,Asset Management & Custody Banks,"New York City, New York",04/04/2011,1364742,1988,BBG01PSW2WN4,Common Stock
+BK,BNY Mellon,reports,Financials,Asset Management & Custody Banks,"New York City, New York",31/03/1995,1390777,1784,,
+BA,Boeing,reports,Industrials,Aerospace & Defense,"Chicago, Illinois",04/03/1957,12927,1916,BBG000BCSST7,Common Stock
+BKNG,Booking Holdings,reports,Consumer Discretionary,Internet & Direct Marketing Retail,"Norwalk, Connecticut",06/11/2009,1075531,1996,BBG000BLBVN4,Common Stock
+BWA,BorgWarner,reports,Consumer Discretionary,Auto Parts & Equipment,"Auburn Hills, Michigan",19/12/2011,908255,1880,BBG000BJ49H3,Common Stock
+BXP,Boston Properties,reports,Real Estate,Office REITs,"Boston, Massachusetts",03/04/2006,1037540,1970,BBG000BS5CM9,REIT
+BSX,Boston Scientific,reports,Health Care,Health Care Equipment,"Marlborough, Massachusetts[4]",24/02/1995,885725,1979,BBG000C0LW92,Common Stock
+BMY,Bristol Myers Squibb,reports,Health Care,Health Care Distributors,"New York City, New York",04/03/1957,14272,1989,BBG000DQLV23,Common Stock
+AVGO,Broadcom,reports,Information Technology,Semiconductors,"San Jose, California",08/05/2014,1730168,1961,BBG00KHY5S69,Common Stock
+BR,Broadridge,reports,Information Technology,Data Processing & Outsourced Services,"Lake Success, New York",18/06/2018,1383312,1962,BBG000PPFKQ7,Common Stock
+BRO,Brown & Brown,reports,Financials,Insurance Brokers,"Daytona Beach, Florida",20/09/2021,79282,1939,BBG000BWSGF4,Common Stock
+BF.B,Brown-Forman,reports,Consumer Staples,Distillers & Vintners,"Louisville, Kentucky",31/10/1982,14693,1870,BBG000BD2NY8,Common Stock
+CHRW,C.H. Robinson,reports,Industrials,Air Freight & Logistics,"Eden Prairie, Minnesota",02/03/2007,1043277,1905,BBG000BTCH57,Common Stock
+CDNS,Cadence,reports,Information Technology,Application Software,"San Jose, California",18/09/2017,813672,1988,BBG000C13CD9,Common Stock
+CZR,Caesars Entertainment,reports,Consumer Discretionary,Casinos & Gaming,"Reno, Nevada",22/03/2021,1590895,1973,BBG0074Q3NK6,Common Stock
+CPB,Campbell's,reports,Consumer Staples,Packaged Foods & Meats,"Camden, New Jersey",04/03/1957,16732,1869,BBG000BG4202,Common Stock
+COF,Capital One,reports,Financials,Consumer Finance,"Tysons Corner, Virginia",01/07/1998,927628,1994,BBG000BGKTF9,Common Stock
+CAH,Cardinal Health,reports,Health Care,Health Care Distributors,"Dublin, Ohio",27/05/1997,721371,1971,BBG000D898T9,Common Stock
+KMX,CarMax,reports,Consumer Discretionary,Specialty Stores,"Richmond, Virginia",28/06/2010,1170010,1993,BBG000BLMZK6,Common Stock
+CCL,Carnival,reports,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Miami, Florida",22/12/1998,815097,1972,BBG000BF6LY3,Common Stock
+CARR,Carrier,reports,Industrials,Building Products,"Palm Beach Gardens, Florida",03/04/2020,1783180,2020 (1915),BBG00RP5HYS8,Common Stock
+CTLT,Catalent,reports,Health Care,Pharmaceuticals,"Somerset, New Jersey",21/09/2020,1596783,2007,BBG005XR47P5,Common Stock
+CAT,Caterpillar,reports,Industrials,Construction Machinery & Heavy Trucks,"Deerfield, Illinois",04/03/1957,18230,1925,BBG000BF0K17,Common Stock
+CBOE,Cboe,reports,Financials,Financial Exchanges & Data,"Chicago, Illinois",01/03/2017,1374310,1973,BBG000QH56C1,Common Stock
+CBRE,CBRE,reports,Real Estate,Real Estate Services,"Dallas, Texas",10/11/2006,1138118,1906,BBG000C04224,Common Stock
+CDW,CDW,reports,Information Technology,Technology Distributors,"Lincolnshire, Illinois",23/09/2019,1402057,1984,BBG001P63B80,Common Stock
+CE,Celanese,reports,Materials,Specialty Chemicals,"Irving, Texas",24/12/2018,1306830,1918,BBG000JYP7L8,Common Stock
+CNC,Centene,reports,Health Care,Managed Health Care,"St. Louis, Missouri",30/03/2016,1071739,1984,BBG000BDXCJ5,Common Stock
+CNP,CenterPoint Energy,reports,Utilities,Multi-Utilities,"Houston, Texas",31/07/1985,1130310,1882,BBG000FDBX90,Common Stock
+CDAY,Ceridian,reports,Information Technology,Application Software,"Minneapolis, Minnesota",20/09/2021,1725057,1992,,
+CERN,Cerner,reports,Health Care,Health Care Technology,"North Kansas City, Missouri",30/04/2010,804753,1979,BBG000BFDLV8,Common Stock
+CF,CF Industries,reports,Materials,Fertilizers & Agricultural Chemicals,"Deerfield, Illinois",27/08/2008,1324404,1946,BBG000BWJFZ4,Common Stock
+CRL,Charles River,reports,Health Care,Life Sciences Tools & Services,"Wilmington, Massachusetts",14/05/2021,1100682,1947,BBG000BG5BL8,Common Stock
+SCHW,Charles Schwab,reports,Financials,Investment Banking & Brokerage,"Westlake, Texas",02/06/1997,316709,1971,BBG000BSLZY7,Common Stock
+CHTR,Charter Communications,reports,Communication Services,Cable & Satellite,"Stamford, Connecticut",08/09/2016,1091667,1993,BBG000VPGNR2,Common Stock
+CVX,Chevron,reports,Energy,Integrated Oil & Gas,"San Ramon, California",04/03/1957,93410,1879,BBG000K4ND22,Common Stock
+CMG,Chipotle Mexican Grill,reports,Consumer Discretionary,Restaurants,"Newport Beach, California",28/04/2011,1058090,1993,BBG000QX74T1,Common Stock
+CB,Chubb,reports,Financials,Property & Casualty Insurance,"Zurich, Switzerland",15/07/2010,896159,1985,BBG000BR14K5,Common Stock
+CHD,Church & Dwight,reports,Consumer Staples,Household Products,"Ewing, New Jersey",29/12/2015,313927,1847,BBG000BFJT36,Common Stock
+CI,Cigna,reports,Health Care,Managed Health Care,"Bloomfield, Connecticut",30/06/1976,1739940,1982,BBG00KXRCDP0,Common Stock
+CINF,Cincinnati Financial,reports,Financials,Property & Casualty Insurance,"Fairfield, Ohio",18/12/1997,20286,1950,BBG000BFPK65,Common Stock
+CTAS,Cintas,reports,Industrials,Diversified Support Services,"Mason, Ohio",01/03/2001,723254,1929,BBG000H3YXF8,Common Stock
+CSCO,Cisco,reports,Information Technology,Communications Equipment,"San Jose, California",01/12/1993,858877,1984,BBG000C3J3C9,Common Stock
+C,Citigroup,reports,Financials,Diversified Banks,"New York City, New York",31/05/1988,831001,1998,BBG000FY4S11,Common Stock
+CFG,Citizens,reports,Financials,Regional Banks,"Providence, Rhode Island",29/01/2016,759944,1828,BBG006Q0HY77,Common Stock
+CTXS,Citrix,reports,Information Technology,Application Software,"Fort Lauderdale, Florida",01/12/1999,877890,1989,BBG000FQ6PY6,Common Stock
+CLX,Clorox,reports,Consumer Staples,Household Products,"Oakland, California",31/03/1969,21076,1913,BBG000BFS7D3,Common Stock
+CME,CME Group,reports,Financials,Financial Exchanges & Data,"Chicago, Illinois",11/08/2006,1156375,1848,BBG000BHLYP4,Common Stock
+CMS,CMS Energy,reports,Utilities,Multi-Utilities,"Jackson, Michigan",03/05/1999,811156,1886,BBG000BFVXX0,Common Stock
+KO,Coca-Cola,reports,Consumer Staples,Soft Drinks,"Atlanta, Georgia",04/03/1957,21344,1886,BBG000BMX289,Common Stock
+CTSH,Cognizant,reports,Information Technology,IT Consulting & Other Services,"Teaneck, New Jersey",17/11/2006,1058290,1994,BBG000BBDV81,Common Stock
+CL,Colgate-Palmolive,reports,Consumer Staples,Household Products,"New York City, New York",04/03/1957,21665,1806,BBG000BFQYY3,Common Stock
+CMCSA,Comcast,reports,Communication Services,Cable & Satellite,"Philadelphia, Pennsylvania",19/11/2002,1166691,1963,BBG000BFT2L4,Common Stock
+CMA,Comerica,reports,Financials,Diversified Banks,"Dallas, Texas",01/12/1995,28412,1849,BBG000C75N77,Common Stock
+CAG,Conagra Brands,reports,Consumer Staples,Packaged Foods & Meats,"Chicago, Illinois",31/08/1983,23217,1919,BBG000BDXGP9,Common Stock
+COP,ConocoPhillips,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",04/03/1957,1163165,2002,BBG000BQQH30,Common Stock
+ED,Con Edison,reports,Utilities,Electric Utilities,"New York City, New York",,1047862,1823,BBG000BHLYS1,Common Stock
+STZ,Constellation Brands,reports,Consumer Staples,Distillers & Vintners,"Victor, New York",01/07/2005,16918,1945,BBG000J1QLT0,Common Stock
+CEG,Constellation Energy,reports,Utilities,Multi-Utilities,"Baltimore, Maryland",02/02/2022,1868275,1999,BBG014KFRNP7,Common Stock
+COO,CooperCompanies,reports,Health Care,Health Care Supplies,"San Ramon, California",23/09/2016,711404,1958,BBG000BG3445,Common Stock
+CPRT,Copart,reports,Industrials,Diversified Support Services,"Dallas, Texas",02/07/2018,900075,1982,BBG000BM9RH1,Common Stock
+GLW,Corning,reports,Information Technology,Electronic Components,"Corning, New York",,24741,1851,BBG000BKFZM4,Common Stock
+CTVA,Corteva,reports,Materials,Fertilizers & Agricultural Chemicals,"Wilmington, Delaware",03/06/2019,1755672,2019,BBG00BN969C1,Common Stock
+COST,Costco,reports,Consumer Staples,Hypermarkets & Super Centers,"Issaquah, Washington",01/10/1993,909832,1976,BBG000F6H8W8,Common Stock
+CTRA,Coterra,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",23/06/2008,858470,2021 (1989),BBG000C3GN47,Common Stock
+CCI,Crown Castle,reports,Real Estate,Specialized REITs,"Houston, Texas",14/03/2012,1051470,1994,BBG000FV1Z23,REIT
+CSX,CSX,reports,Industrials,Railroads,"Jacksonville, Florida",30/09/1967,277948,1980,BBG000BGJRC8,Common Stock
+CMI,Cummins,reports,Industrials,Industrial Machinery,"Columbus, Indiana",31/03/1965,26172,1919,BBG000BGPTV6,Common Stock
+CVS,CVS Health,reports,Health Care,Health Care Services,"Woonsocket, Rhode Island",04/03/1957,64803,1996,BBG000BGRY34,Common Stock
+DHI,D.R. Horton,reports,Consumer Discretionary,Homebuilding,"Arlington, Texas",22/06/2005,882184,1978,BBG000DQTXY6,Common Stock
+DHR,Danaher,reports,Health Care,Health Care Equipment,"Washington, D.C.",,313616,1969,BBG000BH3JF8,Common Stock
+DRI,Darden,reports,Consumer Discretionary,Restaurants,"Orlando, Florida",,940944,1938,BBG000BBNYF6,Common Stock
+DVA,DaVita,reports,Health Care,Health Care Facilities,"Denver, Colorado",31/07/2008,927066,1979,BBG000MQ1SN9,Common Stock
+DE,Deere & Co.,reports,Industrials,Agricultural & Farm Machinery,"Moline, Illinois",04/03/1957,315189,1837,BBG000BH1NH9,Common Stock
+DAL,Delta Air Lines,reports,Industrials,Airlines,"Atlanta, Georgia",11/09/2013,27904,1929,BBG000R7Z112,Common Stock
+XRAY,Dentsply Sirona,reports,Health Care,Health Care Supplies,"Charlotte, North Carolina",14/11/2008,818479,2016 (1969),BBG000BX57K1,Common Stock
+DVN,Devon,reports,Energy,Oil & Gas Exploration & Production,"Oklahoma City, Oklahoma",30/08/2000,1090012,1971,BBG000BBVJZ8,Common Stock
+DXCM,DexCom,reports,Health Care,Health Care Equipment,"San Diego, California",12/05/2020,1093557,1999,BBG000QTF8K1,Common Stock
+FANG,Diamondback,reports,Energy,Oil & Gas Exploration & Production,"Midland, Texas",03/12/2018,1539838,2007,BBG002PHSYX9,Common Stock
+DLR,Digital Realty,reports,Real Estate,Specialized REITs,"Austin, Texas",18/05/2016,1297996,2004,BBG000Q5ZRM7,REIT
+DFS,Discover,reports,Financials,Consumer Finance,"Riverwoods, Illinois",02/07/2007,1393612,1985,BBG000QBR5J5,Common Stock
+DISCA,Discovery (Series A),reports,Communication Services,Broadcasting,"New York City, New York",01/03/2010,1437107,1985,BBG000CHWP52,Common Stock
+DISCK,Discovery (Series C),reports,Communication Services,Broadcasting,"New York City, New York",07/08/2014,1437107,1985,BBG000VMWHH5,Common Stock
+DISH,Dish,reports,Communication Services,Cable & Satellite,"Meridian, Colorado",13/03/2017,1001082,1980,BBG000C2YHG9,Common Stock
+DIS,Disney,reports,Communication Services,Movies & Entertainment,"Burbank, California",30/06/1976,1744489,1923,BBG000BH4R78,Common Stock
+DG,Dollar General,reports,Consumer Discretionary,General Merchandise Stores,"Goodlettsville, Tennessee",03/12/2012,29534,1939,BBG000NV1KK7,Common Stock
+DLTR,Dollar Tree,reports,Consumer Discretionary,General Merchandise Stores,"Chesapeake, Virginia",19/12/2011,935703,1986,BBG000BSC0K9,Common Stock
+D,Dominion Energy,reports,Utilities,Electric Utilities,"Richmond, Virginia",,715957,1983,BBG000BGVW60,Common Stock
+DPZ,Domino's,reports,Consumer Discretionary,Restaurants,"Ann Arbor, Michigan",12/05/2020,1286681,1960,BBG000P458P3,Common Stock
+DOV,Dover,reports,Industrials,Industrial Machinery,"Downers Grove, Illinois",31/10/1985,29905,1955,BBG000BHB3M6,Common Stock
+DOW,Dow,reports,Materials,Commodity Chemicals,"Midland, Michigan",01/04/2019,1751788,2019,BBG00BN96922,Common Stock
+DTE,DTE,reports,Utilities,Multi-Utilities,"Detroit, Michigan",04/03/1957,936340,1995,BBG000BB29X4,Common Stock
+DUK,Duke Energy,reports,Utilities,Electric Utilities,"Charlotte, North Carolina",30/06/1976,1326160,1904,BBG000BHGDH5,Common Stock
+DRE,Duke Realty,reports,Real Estate,Industrial REITs,"Indianapolis, Indiana",26/07/2017,783280,1972,BBG000BHD8S7,REIT
+DD,DuPont,reports,Materials,Specialty Chemicals,"Wilmington, Delaware",02/04/2019,1666700,2017,BBG00BN961G4,Common Stock
+DXC,DXC Technology,reports,Information Technology,IT Consulting & Other Services,"Tysons Corner, Virginia",04/04/2017,1688568,2017,BBG00FN64XT9,Common Stock
+EMN,Eastman,reports,Materials,Diversified Chemicals,"Kingsport, Tennessee",01/01/1994,915389,1920,BBG000BLW530,Common Stock
+ETN,Eaton,reports,Industrials,Electrical Components & Equipment,"Dublin, Ireland",,1551182,1911,BBG000BJ3PD2,Common Stock
+EBAY,eBay,reports,Consumer Discretionary,Internet & Direct Marketing Retail,"San Jose, California",22/07/2002,1065088,1995,BBG000C43RR5,Common Stock
+ECL,Ecolab,reports,Materials,Specialty Chemicals,"Saint Paul, Minnesota",31/01/1989,31462,1923,BBG000BHKYH4,Common Stock
+EIX,Edison International,reports,Utilities,Electric Utilities,"Rosemead, California",04/03/1957,827052,1886,BBG000D7RKJ5,Common Stock
+EW,Edwards Lifesciences,reports,Health Care,Health Care Equipment,"Irvine, California",01/04/2011,1099800,1958,BBG000BRXP69,Common Stock
+EA,Electronic Arts,reports,Communication Services,Interactive Home Entertainment,"Redwood City, California",22/07/2002,712515,1982,BBG000BP0KQ8,Common Stock
+EMR,Emerson,reports,Industrials,Electrical Components & Equipment,"Ferguson, Missouri",31/03/1965,32604,1890,BBG000BHX7N2,Common Stock
+ENPH,Enphase,reports,Information Technology,Electronic Components,"Fremont, California",07/01/2021,1463101,2006,BBG001R3MNY9,Common Stock
+ETR,Entergy,reports,Utilities,Electric Utilities,"New Orleans, Louisiana",04/03/1957,65984,1913,BBG000C1FQS9,Common Stock
+EOG,EOG Resources,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",02/11/2000,821189,1999,BBG000BZ9223,Common Stock
+EPAM,EPAM,reports,Information Technology,IT Consulting & Other Services,"Newtown, Pennsylvania",14/12/2021,1352010,1993,BBG000MHTV89,Common Stock
+EFX,Equifax,reports,Industrials,Research & Consulting Services,"Atlanta, Georgia",19/06/1997,33185,1899,BBG000BHPL78,Common Stock
+EQIX,Equinix,reports,Real Estate,Specialized REITs,"Redwood City, California",20/03/2015,1101239,1998,BBG000MBDGM6,REIT
+EQR,Equity Residential,reports,Real Estate,Residential REITs,"Chicago, Illinois",03/12/2001,906107,1969,BBG000BG8M31,REIT
+ESS,Essex,reports,Real Estate,Residential REITs,"San Mateo, California",02/04/2014,920522,1971,BBG000CGJMB9,REIT
+EL,Est e Lauder Companies,reports,Consumer Staples,Personal Products,"New York City, New York",05/01/2006,1001250,1946,BBG000FKJRC5,Common Stock
+ETSY,Etsy,reports,Consumer Discretionary,Internet & Direct Marketing Retail,"New York City, New York",21/09/2020,1370637,2005,BBG000N7MXL8,Common Stock
+RE,Everest,reports,Financials,Reinsurance,"Hamilton, Bermuda",19/06/2017,1095073,1973,,
+EVRG,Evergy,reports,Utilities,Electric Utilities,"Kansas City, Missouri",05/06/2018,1711269,1909,BBG00H433CR2,Common Stock
+ES,Eversource,reports,Utilities,Multi-Utilities,"Hartford, Connecticut",,72741,1966,BBG000BQ87N0,Common Stock
+EXC,Exelon,reports,Utilities,Multi-Utilities,"Chicago, Illinois",04/03/1957,1109357,2000,BBG000J6XT05,Common Stock
+EXPE,Expedia Group,reports,Consumer Discretionary,Internet & Direct Marketing Retail,"Seattle, Washington",02/10/2007,1324424,1996,BBG000QY3XZ2,Common Stock
+EXPD,Expeditors,reports,Industrials,Air Freight & Logistics,"Seattle, Washington",10/10/2007,746515,1979,BBG000BJ5GK2,Common Stock
+EXR,Extra Space Storage,reports,Real Estate,Specialized REITs,"Salt Lake City, Utah",19/01/2016,1289490,1977,BBG000PV27K3,REIT
+XOM,ExxonMobil,reports,Energy,Integrated Oil & Gas,"Irving, Texas",04/03/1957,34088,1999,BBG023CY9MM1,Common Stock
+FFIV,F5,reports,Information Technology,Communications Equipment,"Seattle, Washington",20/12/2010,1048695,1996,BBG000CXYSZ6,Common Stock
+FDS,FactSet,reports,Financials,Financial Exchanges & Data,"Norwalk, Connecticut",20/12/2021,1013237,1978,BBG000BDJL83,Common Stock
+FAST,Fastenal,reports,Industrials,Building Products,"Winona, Minnesota",15/09/2008,815556,1967,BBG000BJ8YN7,Common Stock
+FRT,Federal Realty,reports,Real Estate,Retail REITs,"Rockville, Maryland",01/02/2016,34903,1962,BBG000BJVN28,REIT
+FDX,FedEx,reports,Industrials,Air Freight & Logistics,"Memphis, Tennessee",31/12/1980,1048911,1971,BBG000BJF1Z8,Common Stock
+FITB,Fifth Third Bank,reports,Financials,Regional Banks,"Cincinnati, Ohio",,35527,1858,BBG000BJL3N0,Common Stock
+FRC,First Republic,reports,Financials,Regional Banks,"San Francisco, California",02/01/2019,1132979,1985,,
+FE,FirstEnergy,reports,Utilities,Electric Utilities,"Akron, Ohio",,1031296,1997,BBG000BB6M98,Common Stock
+FIS,FIS,reports,Information Technology,Data Processing & Outsourced Services,"Jacksonville, Florida",10/11/2006,1136893,1968,BBG000BK2F42,Common Stock
+FISV,Fiserv,reports,Information Technology,Data Processing & Outsourced Services,"Brookfield, Wisconsin",02/04/2001,798354,1984,BBG000BJKPG0,Common Stock
+FLT,Fleetcor,reports,Information Technology,Data Processing & Outsourced Services,"Norcross, Georgia",20/06/2018,1175454,2000,,
+FMC,FMC,reports,Materials,Fertilizers & Agricultural Chemicals,"Philadelphia, Pennsylvania",19/08/2009,37785,1883,BBG000BJP882,Common Stock
+F,Ford,reports,Consumer Discretionary,Automobile Manufacturers,"Dearborn, Michigan",04/03/1957,37996,1903,BBG000BQPC32,Common Stock
+FTNT,Fortinet,reports,Information Technology,Systems Software,"Sunnyvale, California",11/10/2018,1262039,2000,BBG000BCMBG4,Common Stock
+FTV,Fortive,reports,Industrials,Industrial Machinery,"Everett, Washington",01/07/2016,1659166,2016,BBG00BLVZ228,Common Stock
+FBHS,Fortune Brands,reports,Industrials,Building Products,"Deerfield, Illinois",22/06/2016,1519751,2011 (1969),,
+FOXA,Fox Corporation (Class A),reports,Communication Services,Movies & Entertainment,"New York City, New York",01/07/2013,1754301,2019,BBG00JHNJW99,Common Stock
+FOX,Fox Corporation (Class B),reports,Communication Services,Movies & Entertainment,"New York City, New York",18/09/2015,1754301,2019,BBG00JHNKJY8,Common Stock
+BEN,Franklin Resources,reports,Financials,Asset Management & Custody Banks,"San Mateo, California",,38777,1947,BBG000BD0TF8,Common Stock
+FCX,Freeport-McMoRan,reports,Materials,Copper,"Phoenix, Arizona",,831259,1912,BBG000BJDB15,Common Stock
+AJG,Gallagher,reports,Financials,Insurance Brokers,"Rolling Meadows, Illinois",31/05/2016,354190,1927,BBG000BBHXQ3,Common Stock
+GRMN,Garmin,reports,Consumer Discretionary,Consumer Electronics,"Schaffhausen, Switzerland",12/12/2012,1121788,1989,BBG000C4LN67,Common Stock
+IT,Gartner,reports,Information Technology,IT Consulting & Other Services,"Stamford, Connecticut",05/04/2017,749251,1979,BBG000BB65D0,Common Stock
+GE,GE,reports,Industrials,Industrial Conglomerates,"Boston, Massachusetts",,40545,1892,BBG000BK6MB5,Common Stock
+GNRC,Generac,reports,Industrials,Electrical Components & Equipment,"Waukesha, Wisconsin",22/03/2021,1474735,1959,BBG000PQ4W72,Common Stock
+GD,General Dynamics,reports,Industrials,Aerospace & Defense,"Falls Church, Virginia",04/03/1957,40533,1899,BBG000BK67C7,Common Stock
+GIS,General Mills,reports,Consumer Staples,Packaged Foods & Meats,"Golden Valley, Minnesota",31/03/1969,40704,1856,BBG000BKCFC2,Common Stock
+GPC,Genuine Parts,reports,Consumer Discretionary,Specialty Stores,"Atlanta, Georgia",31/12/1973,40987,1925,BBG000BKL348,Common Stock
+GILD,Gilead,reports,Health Care,Biotechnology,"Foster City, California",01/07/2004,882095,1987,BBG000CKGBP2,Common Stock
+GL,Globe Life,reports,Financials,Life & Health Insurance,"McKinney, Texas",30/04/1989,320335,1900,BBG000BVD6X4,Common Stock
+GPN,Global Payments,reports,Information Technology,Data Processing & Outsourced Services,"Atlanta, Georgia",25/04/2016,1123360,2000,BBG000CX0P89,Common Stock
+GM,GM,reports,Consumer Discretionary,Automobile Manufacturers,"Detroit, Michigan",06/06/2013,1467858,1908,BBG000NDYB67,Common Stock
+GS,Goldman Sachs,reports,Financials,Investment Banking & Brokerage,"New York City, New York",22/07/2002,886982,1869,BBG000C6CFJ5,Common Stock
+GWW,Grainger,reports,Industrials,Industrial Machinery,"Lake Forest, Illinois",30/06/1981,277135,1927,BBG000BKR1D6,Common Stock
+HAL,Halliburton,reports,Energy,Oil & Gas Equipment & Services,"Houston, Texas",04/03/1957,45012,1919,BBG000BKTFN2,Common Stock
+HIG,Hartford (The),reports,Financials,Property & Casualty Insurance,"Hartford, Connecticut",04/03/1957,874766,1810,BBG000G0Z878,Common Stock
+HAS,Hasbro,reports,Consumer Discretionary,Leisure Products,"Pawtucket, Rhode Island",30/09/1984,46080,1923,BBG000BKVJK4,Common Stock
+HCA,HCA Healthcare,reports,Health Care,Health Care Facilities,"Nashville, Tennessee",27/01/2015,860730,1968,BBG000QW7VC1,Common Stock
+PEAK,Healthpeak Properties,reports,Real Estate,Health Care REITs,"Long Beach, California",31/03/2008,765880,1985,,
+HSIC,Henry Schein,reports,Health Care,Health Care Distributors,"Melville, New York",17/03/2015,1000228,1932,BBG000BNMMJ3,Common Stock
+HSY,Hershey's,reports,Consumer Staples,Packaged Foods & Meats,"Hershey, Pennsylvania",04/03/1957,47111,1894,BBG000BLHRS2,Common Stock
+HES,Hess,reports,Energy,Integrated Oil & Gas,"New York City, New York",31/05/1984,4447,1919,BBG000BBD070,Common Stock
+HPE,Hewlett Packard Enterprise,reports,Information Technology,"Technology Hardware, Storage & Peripherals","Houston, Texas",02/11/2015,1645590,2015,BBG0078W3NQ3,Common Stock
+HLT,Hilton Worldwide,reports,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Tysons Corner, Virginia",19/06/2017,1585689,1919,BBG0058KMH30,Common Stock
+HOLX,Hologic,reports,Health Care,Health Care Equipment,"Marlborough, Massachusetts",30/03/2016,859737,1985,BBG000C3NTN5,Common Stock
+HD,Home Depot,reports,Consumer Discretionary,Home Improvement Retail,"Atlanta, Georgia",31/03/1988,354950,1978,BBG000BKZB36,Common Stock
+HON,Honeywell,reports,Industrials,Industrial Conglomerates,"Charlotte, North Carolina",31/03/1964,773840,1906,BBG000H556T9,Common Stock
+HRL,Hormel,reports,Consumer Staples,Packaged Foods & Meats,"Austin, Minnesota",04/03/2009,48465,1891,BBG000BLF8D2,Common Stock
+HST,Host Hotels & Resorts,reports,Real Estate,Hotel & Resort REITs,"Bethesda, Maryland",20/03/2007,1070750,1993,BBG000BL8804,REIT
+HWM,Howmet Aerospace,reports,Industrials,Aerospace & Defense,"Pittsburgh, Pennsylvania",31/03/1964,4281,2016,BBG00DYNJGH9,Common Stock
+HPQ,HP,reports,Information Technology,"Technology Hardware, Storage & Peripherals","Palo Alto, California",31/12/1974,47217,1939 (2015),BBG000KHWT55,Common Stock
+HUM,Humana,reports,Health Care,Managed Health Care,"Louisville, Kentucky",,49071,1961,BBG000BLKK03,Common Stock
+HBAN,Huntington Bancshares,reports,Financials,Regional Banks,"Columbus, Ohio; Detroit, Michigan",,49196,1866,BBG000BKWSR6,Common Stock
+HII,Huntington Ingalls Industries,reports,Industrials,Aerospace & Defense,"Newport News, Virginia",03/01/2018,1501585,2011,BBG001KJ2HM9,Common Stock
+IEX,IDEX,reports,Industrials,Industrial Machinery,"Lake Forest, Illinois",09/08/2019,832101,1988,BBG000C1HN22,Common Stock
+IDXX,Idexx Laboratories,reports,Health Care,Health Care Equipment,"Westbrook, Maine",05/01/2017,874716,1983,BBG000BLRT07,Common Stock
+INFO,IHS Markit,reports,Industrials,Research & Consulting Services,"London, England",02/06/2017,1598014,1959,,
+ITW,Illinois Tool Works,reports,Industrials,Industrial Machinery,"Glenview, Illinois",28/02/1986,49826,1912,BBG000BMBL90,Common Stock
+ILMN,Illumina,reports,Health Care,Life Sciences Tools & Services,"San Diego, California",19/11/2015,1110803,1998,BBG000DSMS70,Common Stock
+INCY,Incyte,reports,Health Care,Biotechnology,"Wilmington, Delaware",28/02/2017,879169,1991,BBG000BNPSQ9,Common Stock
+IR,Ingersoll Rand,reports,Industrials,Industrial Machinery,"Davidson, North Carolina",03/03/2020,1699150,1859,BBG002R1CW27,Common Stock
+INTC,Intel,reports,Information Technology,Semiconductors,"Santa Clara, California",31/12/1976,50863,1968,BBG000C0G1D1,Common Stock
+ICE,Intercontinental Exchange,reports,Financials,Financial Exchanges & Data,"Atlanta, Georgia",26/09/2007,1571949,2000,BBG000C1FB75,Common Stock
+IBM,IBM,reports,Information Technology,IT Consulting & Other Services,"Armonk, New York",04/03/1957,51143,1911,BBG000BLNNH6,Common Stock
+IP,International Paper,reports,Materials,Paper Packaging,"Memphis, Tennessee",04/03/1957,51434,1898,BBG000BM5SR2,Common Stock
+IPG,Interpublic Group,reports,Communication Services,Advertising,"New York City, New York",01/10/1992,51644,1961 (1930),BBG000C90DH9,Common Stock
+IFF,International Flavors & Fragrances,reports,Materials,Specialty Chemicals,"New York City, New York",31/03/1976,51253,1958 (1889),BBG000BLSL58,Common Stock
+INTU,Intuit,reports,Information Technology,Application Software,"Mountain View, California",05/12/2000,896878,1983,BBG000BH5DV1,Common Stock
+ISRG,Intuitive Surgical,reports,Health Care,Health Care Equipment,"Sunnyvale, California",02/06/2008,1035267,1995,BBG000BJPDZ1,Common Stock
+IVZ,Invesco,reports,Financials,Asset Management & Custody Banks,"Atlanta, Georgia",21/08/2008,914208,1935,BBG000BY2Y78,Common Stock
+IPGP,IPG Photonics,reports,Information Technology,Electronic Manufacturing Services,"Oxford, Massachusetts",07/03/2018,1111928,1990,BBG000DCGRL8,Common Stock
+IQV,IQVIA,reports,Health Care,Life Sciences Tools & Services,"Durham, North Carolina",29/08/2017,1478242,1982,BBG00333FYS2,Common Stock
+IRM,Iron Mountain,reports,Real Estate,Specialized REITs,"Boston, Massachusetts",06/01/2009,1020569,1951,BBG000KCZPC3,REIT
+JBHT,J.B. Hunt,reports,Industrials,Trucking,"Lowell, Arkansas",01/07/2015,728535,1961,BBG000BMDBZ1,Common Stock
+JKHY,Jack Henry & Associates,reports,Information Technology,Data Processing & Outsourced Services,"Monett, Missouri",13/11/2018,779152,1976,BBG000BMH2Q7,Common Stock
+J,Jacobs,reports,Industrials,Construction & Engineering,"Dallas, Texas",26/10/2007,52988,1947,BBG019C1BQR4,Common Stock
+JNJ,Johnson & Johnson,reports,Health Care,Pharmaceuticals,"New Brunswick, New Jersey",30/06/1973,200406,1886,BBG000BMHYD1,Common Stock
+JCI,Johnson Controls,reports,Industrials,Building Products,"Cork, Ireland",27/08/2010,833444,1885,BBG000BVWLJ6,Common Stock
+JPM,JPMorgan Chase,reports,Financials,Diversified Banks,"New York City, New York",30/06/1975,19617,2000 (1799 / 1871),BBG000DMBXR2,Common Stock
+JNPR,Juniper Networks,reports,Information Technology,Communications Equipment,"Sunnyvale, California",02/06/2006,1043604,1996,BBG000BY33P5,Common Stock
+K,Kellogg's,reports,Consumer Staples,Packaged Foods & Meats,"Battle Creek, Michigan",11/09/1989,55067,1906,BBG000BMKDM3,Common Stock
+KEY,KeyCorp,reports,Financials,Regional Banks,"Cleveland, Ohio",01/03/1994,91576,1825,BBG000BMQPL1,Common Stock
+KEYS,Keysight Technologies,reports,Information Technology,Electronic Equipment & Instruments,"Santa Rosa, California",06/11/2018,1601046,2014,BBG0059FN811,Common Stock
+KMB,Kimberly-Clark,reports,Consumer Staples,Household Products,"Irving, Texas",04/03/1957,55785,1872,BBG000BMW2Z0,Common Stock
+KIM,Kimco Realty,reports,Real Estate,Retail REITs,"New Hyde Park, New York",04/04/2006,879101,1958,BBG000CN3S73,REIT
+KMI,Kinder Morgan,reports,Energy,Oil & Gas Storage & Transportation,"Houston, Texas",25/05/2012,1506307,1997,BBG0019JZ882,Common Stock
+KLAC,KLA Corporation,reports,Information Technology,Semiconductor Equipment,"Milpitas, California",,319201,1975/1977 (1997),BBG000BMTFR4,Common Stock
+KHC,Kraft Heinz,reports,Consumer Staples,Packaged Foods & Meats,"Chicago, Illinois; Pittsburgh, Pennsylvania",06/07/2015,1637459,2015 (1869),BBG005CPNTQ2,Common Stock
+KR,Kroger,reports,Consumer Staples,Food Retail,"Cincinnati, Ohio",04/03/1957,56873,1883,BBG000BMY992,Common Stock
+LHX,L3Harris Technologies,reports,Industrials,Aerospace & Defense,"Melbourne, Florida",22/09/2008,202058,2019 (1895),BBG000BLGFJ9,Common Stock
+LH,LabCorp,reports,Health Care,Health Care Services,"Burlington, North Carolina",01/11/2004,920148,1978,BBG01MMT6PL7,Common Stock
+LRCX,Lam Research,reports,Information Technology,Semiconductor Equipment,"Fremont, California",29/06/2012,707549,1980,BBG000BNFLM9,Common Stock
+LW,Lamb Weston,reports,Consumer Staples,Packaged Foods & Meats,"Eagle, Idaho",03/12/2018,1679273,2016 (1950),BBG003CVMLQ2,Common Stock
+LVS,Las Vegas Sands,reports,Consumer Discretionary,Casinos & Gaming,"Las Vegas, Nevada",03/10/2019,1300514,1988,BBG000JWD753,Common Stock
+LDOS,Leidos,reports,Industrials,Diversified Support Services,"Reston, Virginia",09/08/2019,1336920,1969,BBG000C23PB0,Common Stock
+LEN,Lennar,reports,Consumer Discretionary,Homebuilding,"Miami, Florida",04/10/2005,920760,1954,BBG000BN5HF7,Common Stock
+LLY,Eli Lilly,reports,Health Care,Pharmaceuticals,"Indianapolis, Indiana",31/12/1970,59478,1876,BBG000BNBDC2,Common Stock
+LNC,Lincoln National,reports,Financials,Multi-line Insurance,"Radnor, Pennsylvania",30/06/1976,59558,1905,BBG000BNC3Y9,Common Stock
+LIN,Linde,reports,Materials,Industrial Gases,"Guildford, England",01/07/1992,1707925,1879,BBG01FND0CC1,Common Stock
+LYV,Live Nation Entertainment,reports,Communication Services,Movies & Entertainment,"Beverly Hills, California",23/12/2019,1335258,2010,BBG000FQ7YR4,Common Stock
+LKQ,LKQ Corporation,reports,Consumer Discretionary,Distributors,"Chicago, Illinois",23/05/2016,1065696,1998,BBG000PXDL44,Common Stock
+LMT,Lockheed Martin,reports,Industrials,Aerospace & Defense,"Bethesda, Maryland",31/07/1984,936468,1995,BBG000C1BW00,Common Stock
+L,Loews Corporation,reports,Financials,Multi-line Insurance,"New York City, New York",,60086,1959,BBG000C45984,Common Stock
+LOW,Lowe's,reports,Consumer Discretionary,Home Improvement Retail,"Mooresville, North Carolina",29/02/1984,60667,1904/1946/1959,BBG000BNDN65,Common Stock
+LUMN,Lumen Technologies,reports,Communication Services,Alternative Carriers,"Monroe, Louisiana",25/03/1999,18926,1983 (1877),BBG000BGLRN3,Common Stock
+LYB,LyondellBasell,reports,Materials,Specialty Chemicals,"Rotterdam, Netherlands",05/09/2012,1489393,2007,BBG000WCFV84,Common Stock
+MTB,M&T Bank,reports,Financials,Regional Banks,"Buffalo, New York",23/02/2004,36270,1856,BBG000D9KWL9,Common Stock
+MRO,Marathon Oil,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",01/05/1991,101778,1887,BBG000C8H633,Common Stock
+MPC,Marathon Petroleum,reports,Energy,Oil & Gas Refining & Marketing,"Findlay, Ohio",01/07/2011,1510295,2009 (1887),BBG001DCCGR8,Common Stock
+MKTX,MarketAxess,reports,Financials,Financial Exchanges & Data,"New York City, New York",01/07/2019,1278021,2000,BBG000BJBZ23,Common Stock
+MAR,Marriott International,reports,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Bethesda, Maryland",,1048286,1927,BBG000BGD7W6,Common Stock
+MMC,Marsh & McLennan,reports,Financials,Insurance Brokers,"New York City, New York",31/08/1987,62709,1905,,
+MLM,Martin Marietta,reports,Materials,Construction Materials,"Raleigh, North Carolina",02/07/2014,916076,1993,BBG000BGYMH7,Common Stock
+MAS,Masco,reports,Industrials,Building Products,"Livonia, Michigan",30/06/1981,62996,1929,BBG000BNNKG9,Common Stock
+MA,Mastercard,reports,Information Technology,Data Processing & Outsourced Services,"Harrison, New York",18/07/2008,1141391,1966,BBG000F1ZSQ2,Common Stock
+MTCH,Match Group,reports,Communication Services,Interactive Media & Services,"Dallas, Texas",20/09/2021,891103,1986,BBG00VT0KNC3,Common Stock
+MKC,McCormick & Company,reports,Consumer Staples,Packaged Foods & Meats,"Hunt Valley, Maryland",20/03/2003,63754,1889,BBG000G6Y5W4,Common Stock
+MCD,McDonald's,reports,Consumer Discretionary,Restaurants,"Chicago, Illinois",30/06/1970,63908,1940,BBG000BNSZP1,Common Stock
+MCK,McKesson Corporation,reports,Health Care,Health Care Distributors,"Irving, Texas",,927653,1833,BBG000DYGNW7,Common Stock
+MDT,Medtronic,reports,Health Care,Health Care Equipment,"Dublin, Ireland",31/10/1986,1613103,1949,BBG000BNWG87,Common Stock
+MRK,Merck,reports,Health Care,Pharmaceuticals,"Kenilworth, New Jersey",04/03/1957,310158,1891,BBG000BPD168,Common Stock
+FB,Meta,reports,Communication Services,Interactive Media & Services,"Menlo Park, California",23/12/2013,1326801,2004,BBG000MM2P62,Common Stock
+MET,MetLife,reports,Financials,Life & Health Insurance,"New York City, New York",,1099219,1868,BBG000BB6KF5,Common Stock
+MTD,Mettler Toledo,reports,Health Care,Life Sciences Tools & Services,"Columbus, Ohio",06/09/2016,1037646,1945,BBG000BZCKH3,Common Stock
+MGM,MGM Resorts,reports,Consumer Discretionary,Casinos & Gaming,"Paradise, Nevada",26/07/2017,789570,1986,BBG000C2BXK4,Common Stock
+MCHP,Microchip,reports,Information Technology,Semiconductors,"Chandler, Arizona",07/09/2007,827054,1989,BBG000BHCP19,Common Stock
+MU,Micron,reports,Information Technology,Semiconductors,"Boise, Idaho",27/09/1994,723125,1978,BBG000C5Z1S3,Common Stock
+MSFT,Microsoft,reports,Information Technology,Systems Software,"Redmond, Washington",01/06/1994,789019,1975,BBG000BPH459,Common Stock
+MAA,Mid-America Apartments,reports,Real Estate,Residential REITs,"Memphis, Tennessee",02/12/2016,912595,1977,BBG000BLMY92,REIT
+MRNA,Moderna,reports,Health Care,Biotechnology,"Cambridge, Massachusetts",21/07/2021,1682852,2010,BBG003PHHZT1,Common Stock
+MHK,Mohawk Industries,reports,Consumer Discretionary,Home Furnishings,"Calhoun, Georgia",23/12/2013,851968,1878,BBG000FLZN98,Common Stock
+TAP,Molson Coors,reports,Consumer Staples,Brewers,"Chicago, Illinois",30/06/1976,24545,"2005 (Molson 1786, Coors 1873)",BBG000BS7KS3,Common Stock
+MDLZ,Mondelez International,reports,Consumer Staples,Packaged Foods & Meats,"Chicago, Illinois",02/10/2012,1103982,2012,BBG000D4LWF6,Common Stock
+MPWR,Monolithic Power Systems,reports,Information Technology,Semiconductors,"Kirkland, Washington",12/02/2021,1280452,1997,BBG000C30L48,Common Stock
+MNST,Monster Beverage,reports,Consumer Staples,Soft Drinks,"Corona, California",28/06/2012,865752,2012 (1935),BBG008NVB1C0,Common Stock
+MCO,Moody's,reports,Financials,Financial Exchanges & Data,"New York City, New York",,1059556,1909,BBG000F86GP6,Common Stock
+MS,Morgan Stanley,reports,Financials,Investment Banking & Brokerage,"New York City, New York",,895421,1935,BBG000BLZRJ2,Common Stock
+MOS,The Mosaic Company,reports,Materials,Fertilizers & Agricultural Chemicals,"Tampa, Florida",26/09/2011,1285785,2004 (1865 / 1909),BBG000BFXHL6,Common Stock
+MSI,Motorola Solutions,reports,Information Technology,Communications Equipment,"Chicago, Illinois",,68505,1928 (2011),BBG000BP8Z50,Common Stock
+MSCI,MSCI,reports,Financials,Financial Exchanges & Data,"New York City, New York",04/04/2018,1408198,1969,BBG000RTDY25,Common Stock
+NDAQ,Nasdaq,reports,Financials,Financial Exchanges & Data,"New York City, New York",22/10/2008,1120193,1971,BBG000F5VVB6,Common Stock
+NTAP,NetApp,reports,Information Technology,"Technology Hardware, Storage & Peripherals","Sunnyvale, California",25/06/1999,1002047,1992,BBG000FP1N32,Common Stock
+NFLX,Netflix,reports,Communication Services,Movies & Entertainment,"Los Gatos, California",20/12/2010,1065280,1997,BBG000CL9VN6,Common Stock
+NWL,Newell Brands,reports,Consumer Discretionary,Housewares & Specialties,"Atlanta, Georgia",30/04/1989,814453,1903,BBG000BQC9V2,Common Stock
+NEM,Newmont,reports,Materials,Gold,"Denver, Colorado",30/06/1969,1164727,1921,BBG000BPWXK1,Common Stock
+NWSA,News Corp (Class A),reports,Communication Services,Publishing,"New York City, New York",01/08/2013,1564708,2013 (1980),BBG0035LY913,Common Stock
+NWS,News Corp (Class B),reports,Communication Services,Publishing,"New York City, New York",18/09/2015,1564708,2013 (1980),BBG0035M2ZB7,Common Stock
+NEE,NextEra Energy,reports,Utilities,Multi-Utilities,"Juno Beach, Florida",30/06/1976,753308,1984 (1925),BBG000BJSBJ0,Common Stock
+NLSN,Nielsen Holdings,reports,Industrials,Research & Consulting Services,"New York City, New York",09/07/2013,1492633,1923,BBG0088CYPX8,Common Stock
+NKE,Nike,reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","Washington County, Oregon",30/11/1988,320187,1964,BBG000C5HS04,Common Stock
+NI,NiSource,reports,Utilities,Multi-Utilities,"Merrillville, Indiana",,1111711,1912,BBG000BPZBB6,Common Stock
+NDSN,Nordson,reports,Industrials,Industrial Machinery,"Westlake, Ohio",15/02/2022,72331,1935,BBG000BPWGR1,Common Stock
+NSC,Norfolk Southern,reports,Industrials,Railroads,"Norfolk, Virginia",04/03/1957,702165,1881/1894 (1980),BBG000BQ5DS5,Common Stock
+NTRS,Northern Trust,reports,Financials,Asset Management & Custody Banks,"Chicago, Illinois",,73124,1889,BBG000BQ74K1,Common Stock
+NOC,Northrop Grumman,reports,Industrials,Aerospace & Defense,"West Falls Church, Virginia",30/06/1985,1133421,"1994 (Northrop 1939, Grumman 1930)",BBG000BQ2C28,Common Stock
+NLOK,NortonLifeLock,reports,Information Technology,Application Software,"Tempe, Arizona",25/03/2003,849399,1982,,
+NCLH,Norwegian Cruise Line Holdings,reports,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Miami, Florida",13/10/2017,1513761,2011 (1966),BBG000BSRN78,Common Stock
+NRG,NRG Energy,reports,Utilities,Independent Power Producers & Energy Traders,"Houston, Texas",29/01/2010,1013871,1992,BBG000D8RG11,Common Stock
+NUE,Nucor,reports,Materials,Steel,"Charlotte, North Carolina",30/04/1985,73309,1940,BBG000BQ8KV2,Common Stock
+NVDA,Nvidia,reports,Information Technology,Semiconductors,"Santa Clara, California",30/11/2001,1045810,1993,BBG000BBJQV0,Common Stock
+NVR,NVR,reports,Consumer Discretionary,Homebuilding,"Reston, Virginia",26/09/2019,906163,1980,BBG000BQBYR3,Common Stock
+NXPI,NXP,reports,Information Technology,Semiconductors,"Eindhoven, Netherlands",22/03/2021,1413447,1953,BBG000BND699,Common Stock
+ORLY,O'Reilly Automotive,reports,Consumer Discretionary,Specialty Stores,"Springfield, Missouri",27/03/2009,898173,1957,BBG000BGYWY6,Common Stock
+OXY,Occidental Petroleum,reports,Energy,Oil & Gas Exploration & Production,"Houston, Texas",31/12/1982,797468,1920,BBG000BQQ2S6,Common Stock
+ODFL,Old Dominion Freight Line,reports,Industrials,Trucking,"Thomasville, North Carolina",09/12/2019,878927,1934,BBG000CHSS88,Common Stock
+OMC,Omnicom Group,reports,Communication Services,Advertising,"New York City, New York",,29989,1986,BBG000BS9489,Common Stock
+OKE,Oneok,reports,Energy,Oil & Gas Storage & Transportation,"Tulsa, Oklahoma",15/03/2010,1039684,1906,BBG000BQHGR6,Common Stock
+ORCL,Oracle,reports,Information Technology,Application Software,"Austin, Texas",31/08/1989,1341439,1977,BBG000BQLTW7,Common Stock
+OGN,Organon & Co.,reports,Health Care,Pharmaceuticals,"Jersey City, New Jersey",03/06/2021,1821825,2021,BBG00ZQRGW24,Common Stock
+OTIS,Otis Worldwide,reports,Industrials,Industrial Machinery,"Farmington, Connecticut",03/04/2020,1781335,2020 (1853),BBG00RP60KV0,Common Stock
+PCAR,Paccar,reports,Industrials,Construction Machinery & Heavy Trucks,"Bellevue, Washington",31/12/1980,75362,1905,BBG000BQVTF5,Common Stock
+PKG,Packaging Corporation of America,reports,Materials,Paper Packaging,"Lake Forest, Illinois",26/07/2017,75677,1959,BBG000BB8SW7,Common Stock
+PARA,Paramount Global,reports,Communication Services,Movies & Entertainment,"New York City, New York",,813828,2019 (1952),BBG000C496P7,Common Stock
+PH,Parker-Hannifin,reports,Industrials,Industrial Machinery,"Cleveland, Ohio",30/11/1985,76334,1917,BBG000BR3KL6,Common Stock
+PAYX,Paychex,reports,Information Technology,Data Processing & Outsourced Services,"Penfield, New York",,723531,1971,BBG000BQSQ38,Common Stock
+PAYC,Paycom,reports,Information Technology,Application Software,"Oklahoma City, Oklahoma",28/01/2020,1590955,1998,BBG0064N0ZZ5,Common Stock
+PYPL,PayPal,reports,Information Technology,Data Processing & Outsourced Services,"San Jose, California",20/07/2015,1633917,1998,BBG0077VNXV6,Common Stock
+PENN,Penn National Gaming,reports,Consumer Discretionary,Casinos & Gaming,"Wyomissing, Pennsylvania",22/03/2021,921738,1972,BBG000CDZLV8,Common Stock
+PNR,Pentair,reports,Industrials,Industrial Machinery,"Worsley, England",01/10/2012,77360,1966,BBG000C221G9,Common Stock
+PBCT,People's United Financial,reports,Financials,Thrifts & Mortgage Finance,"Bridgeport, Connecticut",13/11/2008,1378946,1842,BBG000BQT4L6,Common Stock
+PEP,PepsiCo,reports,Consumer Staples,Soft Drinks,"Purchase, New York",04/03/1957,77476,1898,BBG000DH7JK6,Common Stock
+PKI,PerkinElmer,reports,Health Care,Health Care Equipment,"Waltham, Massachusetts",31/05/1985,31791,1937,,
+PFE,Pfizer,reports,Health Care,Pharmaceuticals,"New York City, New York",04/03/1957,78003,1849,BBG000BR2B91,Common Stock
+PM,Philip Morris International,reports,Consumer Staples,Tobacco,"New York City, New York",31/03/2008,1413329,2008 (1847),BBG000J2XL74,Common Stock
+PSX,Phillips 66,reports,Energy,Oil & Gas Refining & Marketing,"Houston, Texas",01/05/2012,1534701,2012 (1917),BBG00286S4N9,Common Stock
+PNW,Pinnacle West Capital,reports,Utilities,Multi-Utilities,"Phoenix, Arizona",,764622,1985,BBG000BRDSX5,Common Stock
+PXD,Pioneer Natural Resources,reports,Energy,Oil & Gas Exploration & Production,"Irving, Texas",24/09/2008,1038357,1997,BBG000BXRPH1,Common Stock
+PNC,PNC Financial Services,reports,Financials,Regional Banks,"Pittsburgh, Pennsylvania",30/04/1988,713676,1845,BBG000BRD0D8,Common Stock
+POOL,Pool Corporation,reports,Consumer Discretionary,Distributors,"Covington, Louisiana",07/10/2020,945841,1993,BBG000BCVG28,Common Stock
+PPG,PPG Industries,reports,Materials,Specialty Chemicals,"Pittsburgh, Pennsylvania",04/03/1957,79879,1883,BBG000BRJ809,Common Stock
+PPL,PPL,reports,Utilities,Electric Utilities,"Allentown, Pennsylvania",,922224,1920,BBG000BRJL00,Common Stock
+PFG,Principal Financial Group,reports,Financials,Life & Health Insurance,"Des Moines, Iowa",22/07/2002,1126328,1879,BBG000NSCNT7,Common Stock
+PG,Procter & Gamble,reports,Consumer Staples,Personal Products,"Cincinnati, Ohio",04/03/1957,80424,1837,BBG000BR2TH3,Common Stock
+PGR,Progressive Corporation,reports,Financials,Property & Casualty Insurance,"Mayfield Village, Ohio",04/08/1997,80661,1937,BBG000BR37X2,Common Stock
+PLD,Prologis,reports,Real Estate,Industrial REITs,"San Francisco, California",17/07/2003,1045609,1983,BBG000B9Z0J8,REIT
+PRU,Prudential Financial,reports,Financials,Life & Health Insurance,"Newark, New Jersey",22/07/2002,1137774,1875,BBG000HCJMF9,Common Stock
+PEG,PSEG,reports,Utilities,Electric Utilities,"Newark, New Jersey",04/03/1957,788784,1903,BBG000BQZMH4,Common Stock
+PTC,PTC,reports,Information Technology,Application Software,"Boston, Massachusetts",20/04/2021,857005,1985,BBG000C2VBB0,Common Stock
+PSA,Public Storage,reports,Real Estate,Specialized REITs,"Glendale, California",19/08/2005,1393311,1972,BBG000BPPN67,REIT
+PHM,PulteGroup,reports,Consumer Discretionary,Homebuilding,"Atlanta, Georgia",30/04/1984,822416,1956,BBG000BR54L0,Common Stock
+PVH,PVH,reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","New York City, New York",15/02/2013,78239,1881,BBG000BRRG02,Common Stock
+QRVO,Qorvo,reports,Information Technology,Semiconductors,"Greensboro, North Carolina",11/06/2015,1604778,2015,BBG007TJF1N7,Common Stock
+PWR,Quanta Services,reports,Industrials,Construction & Engineering,"Houston, Texas",01/07/2009,1050915,1997,BBG000BBL8V7,Common Stock
+QCOM,Qualcomm,reports,Information Technology,Semiconductors,"San Diego, California",,804328,1985,BBG000CGC1X8,Common Stock
+DGX,Quest Diagnostics,reports,Health Care,Health Care Services,"Secaucus, New Jersey",12/12/2002,1022079,1967,BBG000BN84F3,Common Stock
+RL,Ralph Lauren Corporation,reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","New York City, New York",02/02/2007,1037038,1967,BBG000BS0ZF1,Common Stock
+RJF,Raymond James Financial,reports,Financials,Investment Banking & Brokerage,"St. Petersburg, Florida",20/03/2017,720005,1962,BBG000BS73J1,Common Stock
+RTX,Raytheon Technologies,reports,Industrials,Aerospace & Defense,"Waltham, Massachusetts",,101829,1922,BBG000BW8S60,Common Stock
+O,Realty Income Corporation,reports,Real Estate,Retail REITs,"San Diego, California",07/04/2015,726728,1969,BBG000DHPN63,REIT
+REG,Regency Centers,reports,Real Estate,Retail REITs,"Jacksonville, Florida",02/03/2017,910606,1963,BBG000BL46Q4,REIT
+REGN,Regeneron Pharmaceuticals,reports,Health Care,Biotechnology,"Tarrytown, New York",01/05/2013,872589,1988,BBG000C734W3,Common Stock
+RF,Regions Financial Corporation,reports,Financials,Regional Banks,"Birmingham, Alabama",28/08/1998,1281761,1971,BBG000Q3JN03,Common Stock
+RSG,Republic Services,reports,Industrials,Environmental & Facilities Services,"Phoenix, Arizona",05/12/2008,1060391,1998 (1981),BBG000BPXVJ6,Common Stock
+RMD,ResMed,reports,Health Care,Health Care Equipment,"San Diego, California",26/07/2017,943819,1989,BBG000L4M7F1,Common Stock
+RHI,Robert Half International,reports,Industrials,Human Resource & Employment Services,"Menlo Park, California",05/12/2000,315213,1948,BBG000BS5DR2,Common Stock
+ROK,Rockwell Automation,reports,Industrials,Electrical Components & Equipment,"Milwaukee, Wisconsin",,1024478,1903,BBG000BBCDZ2,Common Stock
+ROL,Rollins,reports,Industrials,Environmental & Facilities Services,"Atlanta, Georgia",01/10/2018,84839,1948,BBG000BSBBP1,Common Stock
+ROP,Roper Technologies,reports,Industrials,Industrial Conglomerates,"Sarasota, Florida",23/12/2009,882835,1981,BBG000F1ZSN5,Common Stock
+ROST,Ross Stores,reports,Consumer Discretionary,Apparel Retail,"Dublin, California",21/12/2009,745732,1982,BBG000BSBZH7,Common Stock
+RCL,Royal Caribbean Group,reports,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Miami, Florida",05/12/2014,884887,1997,BBG000BB5792,Common Stock
+SPGI,S&P Global,reports,Financials,Financial Exchanges & Data,"New York City, New York",,64040,1917,BBG000BP1Q11,Common Stock
+CRM,Salesforce,reports,Information Technology,Application Software,"San Francisco, California",15/09/2008,1108524,1999,BBG000BN2DC2,Common Stock
+SBAC,SBA Communications,reports,Real Estate,Specialized REITs,"Boca Raton, Florida",01/09/2017,1034054,1989,BBG000D2M0Z7,REIT
+SLB,Schlumberger,reports,Energy,Oil & Gas Equipment & Services,"Cura ao, Kingdom of the Netherlands",31/03/1965,87347,1926,BBG000BT41Q8,Common Stock
+STX,Seagate Technology,reports,Information Technology,"Technology Hardware, Storage & Peripherals","Dublin, Ireland",02/07/2012,1137789,1979,BBG0113JGQF0,Common Stock
+SEE,Sealed Air,reports,Materials,Paper Packaging,"Charlotte, North Carolina",04/03/1957,1012100,1960,BBG000C22QV7,Common Stock
+SRE,Sempra Energy,reports,Utilities,Multi-Utilities,"San Diego, California",,1032208,1998,BBG000C2ZCH8,Common Stock
+NOW,ServiceNow,reports,Information Technology,Systems Software,"Santa Clara, California",21/11/2019,1373715,2003,BBG000M1R011,Common Stock
+SHW,Sherwin-Williams,reports,Materials,Specialty Chemicals,"Cleveland, Ohio",30/06/1964,89800,1866,BBG000BSXQV7,Common Stock
+SBNY,Signature Bank,reports,Financials,Regional Banks,"New York City, New York",20/12/2021,1288784,2001,BBG000M6TR37,Common Stock
+SPG,Simon,reports,Real Estate,Retail REITs,"Indianapolis, Indiana",26/06/2002,1063761,2003,BBG000BJ2D31,REIT
+SWKS,Skyworks,reports,Information Technology,Semiconductors,"Woburn, Massachusetts",12/03/2015,4127,2002,BBG000KLB4Q1,Common Stock
+SJM,Smucker,reports,Consumer Staples,Packaged Foods & Meats,"Orrville, Ohio",06/11/2008,91419,1897,BBG000BT1715,Common Stock
+SNA,Snap-on,reports,Industrials,Industrial Machinery,"Kenosha, Wisconsin",30/09/1982,91440,1920,BBG000BT7JW9,Common Stock
+SEDG,SolarEdge,reports,Information Technology,Semiconductor Equipment,"Herzliya, Israel",20/12/2021,1419612,2006,BBG0084BBZY6,Common Stock
+SO,Southern Company,reports,Utilities,Electric Utilities,"Atlanta, Georgia",04/03/1957,92122,1945,BBG000BT9DW0,Common Stock
+LUV,Southwest Airlines,reports,Industrials,Airlines,"Dallas, Texas",01/07/1994,92380,1967,BBG000BNJHS8,Common Stock
+SWK,Stanley Black & Decker,reports,Industrials,Industrial Machinery,"New Britain, Connecticut",30/09/1982,93556,1843,BBG000BTQR96,Common Stock
+SBUX,Starbucks,reports,Consumer Discretionary,Restaurants,"Seattle, Washington",,829224,1971,BBG000CTQBF3,Common Stock
+STT,State Street Corporation,reports,Financials,Asset Management & Custody Banks,"Boston, Massachusetts",,93751,1792,BBG000BKFBD7,Common Stock
+STE,Steris,reports,Health Care,Health Care Equipment,"Dublin, Ireland",23/12/2019,1757898,1985,BBG00MRHG523,Common Stock
+SYK,Stryker Corporation,reports,Health Care,Health Care Equipment,"Kalamazoo, Michigan",12/12/2000,310764,1941,BBG000DN7P92,Common Stock
+SIVB,SVB Financial,reports,Financials,Regional Banks,"Santa Clara, California",19/03/2018,719739,1983,,
+SYF,Synchrony Financial,reports,Financials,Consumer Finance,"Stamford, Connecticut",18/11/2015,1601712,2003,BBG00658F3P3,Common Stock
+SNPS,Synopsys,reports,Information Technology,Application Software,"Mountain View, California",16/03/2017,883241,1986,BBG000BSFRF3,Common Stock
+SYY,Sysco,reports,Consumer Staples,Food Distributors,"Houston, Texas",31/12/1986,96021,1969,BBG000BTVJ25,Common Stock
+TMUS,T-Mobile US,reports,Communication Services,Wireless Telecommunication Services,"Bellevue, Washington",15/07/2019,1283699,1994,BBG000NDV1D4,Common Stock
+TROW,T. Rowe Price,reports,Financials,Asset Management & Custody Banks,"Baltimore, Maryland",,1113169,1937,BBG000BVMPN3,Common Stock
+TTWO,Take-Two Interactive,reports,Communication Services,Interactive Home Entertainment,"New York City, New York",19/03/2018,946581,1993,BBG000BS1YV5,Common Stock
+TPR,Tapestry,reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","New York City, New York",,1116132,2017,BBG000BY29C7,Common Stock
+TGT,Target,reports,Consumer Discretionary,General Merchandise Stores,"Minneapolis, Minnesota",31/12/1976,27419,1902,BBG000H8TVT2,Common Stock
+TEL,TE Connectivity,reports,Information Technology,Electronic Manufacturing Services,"Schaffhausen, Switzerland",17/10/2011,1385157,2007,BBG01Q08MMR1,Common Stock
+TDY,Teledyne Technologies,reports,Industrials,Aerospace & Defense,"Thousand Oaks, California",22/06/2020,1094285,1960,BBG000BMT9T6,Common Stock
+TFX,Teleflex,reports,Health Care,Health Care Equipment,"Wayne, Pennsylvania",18/01/2019,96943,1943,BBG000BV59Y6,Common Stock
+TER,Teradyne,reports,Information Technology,Semiconductor Equipment,"North Reading, Massachusetts",21/09/2020,97210,1960,BBG000BV4DR6,Common Stock
+TSLA,Tesla,reports,Consumer Discretionary,Automobile Manufacturers,"Palo Alto, California",21/12/2020,1318605,2003,BBG000N9MNX3,Common Stock
+TXN,Texas Instruments,reports,Information Technology,Semiconductors,"Dallas, Texas",,97476,1930,BBG000BVV7G1,Common Stock
+TXT,Textron,reports,Industrials,Aerospace & Defense,"Providence, Rhode Island",31/12/1978,217346,1923,BBG000BVVQQ8,Common Stock
+TMO,Thermo Fisher Scientific,reports,Health Care,Life Sciences Tools & Services,"Waltham, Massachusetts",03/08/2004,97745,2006 (1902),BBG000BVDLH9,Common Stock
+TJX,TJX Companies,reports,Consumer Discretionary,Apparel Retail,"Framingham, Massachusetts",30/09/1985,109198,1987,BBG000BV8DN6,Common Stock
+TSCO,Tractor Supply Company,reports,Consumer Discretionary,Specialty Stores,"Brentwood, Tennessee",24/01/2014,916365,1938,BBG000BLXZN1,Common Stock
+TT,Trane Technologies,reports,Industrials,Building Products,"Dublin, Ireland",17/11/2010,1466258,1871,BBG000BM6788,Common Stock
+TDG,TransDigm Group,reports,Industrials,Aerospace & Defense,"Cleveland, Ohio",03/06/2016,1260221,1993,BBG000L8CBX4,Common Stock
+TRV,The Travelers Companies,reports,Financials,Property & Casualty Insurance,"New York City, New York",21/08/2002,86312,1853,BBG000BJ81C1,Common Stock
+TRMB,Trimble,reports,Information Technology,Electronic Equipment & Instruments,"Sunnyvale, California",21/01/2021,864749,1978,BBG000BNPS52,Common Stock
+TFC,Truist Financial,reports,Financials,Regional Banks,"Charlotte, North Carolina",04/12/1997,92230,1872,BBG000BYYLS8,Common Stock
+TWTR,Twitter,reports,Communication Services,Interactive Media & Services,"San Francisco, California",07/06/2018,1418091,2006,BBG000H6HNW3,Common Stock
+TYL,Tyler Technologies,reports,Information Technology,Application Software,"Plano, Texas",22/06/2020,860731,1966,BBG000BVWZF9,Common Stock
+TSN,Tyson Foods,reports,Consumer Staples,Packaged Foods & Meats,"Springdale, Arkansas",10/08/2005,100493,1935,BBG000DKCC19,Common Stock
+UDR,UDR,reports,Real Estate,Residential REITs,"Highlands Ranch, Colorado",07/03/2016,74208,1972,BBG000C41023,REIT
+ULTA,Ulta Beauty,reports,Consumer Discretionary,Specialty Stores,"Bolingbrook, Illinois",18/04/2016,1403568,1990,BBG00FWQ4VD6,Common Stock
+USB,U.S. Bancorp,reports,Financials,Diversified Banks,"Minneapolis, Minnesota",,36104,1968,BBG000FFDM15,Common Stock
+UAA,Under Armour (Class A),reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","Baltimore, Maryland",01/05/2014,1336917,1996,BBG000BXM6V2,Common Stock
+UA,Under Armour (Class C),reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","Baltimore, Maryland",08/04/2016,1336917,1996,BBG009DTD8H2,Common Stock
+UNP,Union Pacific,reports,Industrials,Railroads,"Omaha, Nebraska",04/03/1957,100885,1862,BBG000BW3299,Common Stock
+UAL,United Airlines,reports,Industrials,Airlines,"Chicago, Illinois",03/09/2015,100517,1967,BBG000M65M61,Common Stock
+UNH,UnitedHealth Group,reports,Health Care,Managed Health Care,"Minnetonka, Minnesota",01/07/1994,731766,1977,BBG000CH5208,Common Stock
+UPS,United Parcel Service,reports,Industrials,Air Freight & Logistics,"Sandy Springs, Georgia",22/07/2002,1090727,1907,BBG000L9CV04,Common Stock
+URI,United Rentals,reports,Industrials,Trading Companies & Distributors,"Stamford, Connecticut",20/09/2014,1067701,1997,BBG000BXMFC3,Common Stock
+UHS,Universal Health Services,reports,Health Care,Health Care Facilities,"King of Prussia, Pennsylvania",20/09/2014,352915,1979,BBG000CB8Q50,Common Stock
+VLO,Valero Energy,reports,Energy,Oil & Gas Refining & Marketing,"San Antonio, Texas",,1035002,1980,BBG000BBGGQ1,Common Stock
+VTR,Ventas,reports,Real Estate,Health Care REITs,"Chicago, Illinois",04/03/2009,740260,1998,BBG000FRVHB9,REIT
+VRSN,Verisign,reports,Information Technology,Internet Services & Infrastructure,"Dulles, Virginia",01/02/2006,1014473,1995,BBG000BGKHZ3,Common Stock
+VRSK,Verisk Analytics,reports,Industrials,Research & Consulting Services,"Jersey City, New Jersey",08/10/2015,1442145,1971,BBG000BCZL41,Common Stock
+VZ,Verizon Communications,reports,Communication Services,Integrated Telecommunication Services,"New York City, New York",30/11/1983,732712,1983 (1877),BBG000HS77T5,Common Stock
+VRTX,Vertex Pharmaceuticals,reports,Health Care,Biotechnology,"Cambridge, Massachusetts",23/09/2013,875320,1989,BBG000C1S2X2,Common Stock
+VFC,VF Corporation,reports,Consumer Discretionary,"Apparel, Accessories & Luxury Goods","Denver, Colorado",30/06/1979,103379,1899,BBG000BWCKB6,Common Stock
+VTRS,Viatris,reports,Health Care,Pharmaceuticals,"Pittsburgh, Pennsylvania",23/04/2004,1792044,1961,BBG00Y4RQNH4,Common Stock
+V,Visa,reports,Information Technology,Data Processing & Outsourced Services,"San Francisco, California",21/12/2009,1403161,1958,BBG000PSKYX7,Common Stock
+VNO,Vornado Realty Trust,reports,Real Estate,Office REITs,"New York City, New York",,899689,1982,BBG000BWHD54,REIT
+VMC,Vulcan Materials,reports,Materials,Construction Materials,"Birmingham, Alabama",30/06/1999,1396009,1909,BBG000BWGYF8,Common Stock
+WAB,Wabtec,reports,Industrials,Construction Machinery & Heavy Trucks,"Pittsburgh, Pennsylvania",27/02/2019,943452,1999 (1869),BBG000BDD940,Common Stock
+WMT,Walmart,reports,Consumer Staples,Hypermarkets & Super Centers,"Bentonville, Arkansas",31/08/1982,104169,1962,BBG000BWXBC2,Common Stock
+WBA,Walgreens Boots Alliance,reports,Consumer Staples,Drug Retail,"Deerfield, Illinois",31/12/1979,1618921,2014,BBG000BWLMJ4,Common Stock
+WM,Waste Management,reports,Industrials,Environmental & Facilities Services,"Houston, Texas",,823768,1968,BBG000BWVSR1,Common Stock
+WAT,Waters,reports,Health Care,Health Care Distributors,"Milford, Massachusetts",,1000697,1958,BBG000FQRVM3,Common Stock
+WEC,WEC Energy Group,reports,Utilities,Electric Utilities,"Milwaukee, Wisconsin",31/10/2008,783325,1896,BBG000BWP7D9,Common Stock
+WFC,Wells Fargo,reports,Financials,Diversified Banks,"San Francisco, California",30/06/1976,72971,1852,BBG000BWQFY7,Common Stock
+WELL,Welltower,reports,Real Estate,Health Care REITs,"Toledo, Ohio",30/01/2009,766704,1970,BBG000BKY1G5,REIT
+WST,West Pharmaceutical Services,reports,Health Care,Health Care Supplies,"Exton, Pennsylvania",22/05/2020,105770,1923,BBG000BX24N8,Common Stock
+WDC,Western Digital,reports,Information Technology,"Technology Hardware, Storage & Peripherals","San Jose, California",01/07/2009,106040,1970,BBG000BWNFZ9,Common Stock
+WRK,WestRock,reports,Materials,Paper Packaging,"Atlanta, Georgia",,1732845,2015,BBG008NXC572,Common Stock
+WY,Weyerhaeuser,reports,Real Estate,Specialized REITs,"Seattle, Washington",,106535,1900,BBG000BX3BL3,REIT
+WHR,Whirlpool,reports,Consumer Discretionary,Household Appliances,"Benton Harbor, Michigan",,106640,1911,BBG000BWSV34,Common Stock
+WMB,Williams Companies,reports,Energy,Oil & Gas Storage & Transportation,"Tulsa, Oklahoma",31/03/1975,107263,1908,BBG000BWVCP8,Common Stock
+WTW,Willis Towers Watson,reports,Financials,Insurance Brokers,"London, England",05/01/2016,1140536,2016,BBG000DB3KT1,Common Stock
+WYNN,Wynn Resorts,reports,Consumer Discretionary,Casinos & Gaming,"Paradise, Nevada",14/11/2008,1174922,2002,BBG000LD9JQ8,Common Stock
+XEL,Xcel Energy,reports,Utilities,Multi-Utilities,"Minneapolis, Minnesota",04/03/1957,72903,1909,BBG000BCTQ65,Common Stock
+XYL,Xylem,reports,Industrials,Industrial Machinery,"White Plains, New York",01/11/2011,1524472,2011,BBG001D8R5D0,Common Stock
+YUM,Yum! Brands,reports,Consumer Discretionary,Restaurants,"Louisville, Kentucky",06/10/1997,1041061,1997,BBG000BH3GZ2,Common Stock
+ZBRA,Zebra Technologies,reports,Information Technology,Electronic Equipment & Instruments,"Lincolnshire, Illinois",23/12/2019,877212,1969,BBG000CC7LQ7,Common Stock
+ZBH,Zimmer Biomet,reports,Health Care,Health Care Equipment,"Warsaw, Indiana",07/08/2001,1136869,1927,BBG000BKPL53,Common Stock
+ZION,Zions Bancorp,reports,Financials,Regional Banks,"Salt Lake City, Utah",22/06/2001,109380,1873,BBG000BX9WL1,Common Stock
+ZTS,Zoetis,reports,Health Care,Pharmaceuticals,"Parsippany, New Jersey",21/06/2013,1555280,1952,BBG0039320N9,Common Stock
+SPY,SPDR S&P 500 ETF Trust,reports,Exchange Traded Fund,Large Blend Equity Index,"Boston, Massachusetts",22/01/1993,884394,1993,BBG000BDTBL9,ETP
+QQQ,Invesco QQQ Trust,reports,Exchange Traded Fund,Large Growth Equity Index,"Wheaton, Illinois",10/03/1999,1067839,1999,BBG000BSWKH7,ETP
+IWM,iShares Russell 2000 ETF,reports,Exchange Traded Fund,Small Blend Equity Index,"San Francisco, California",22/05/2000,1100663,2000,BBG000CGC9C4,ETP
+VTI,Vanguard Total Stock Market ETF,reports,Exchange Traded Fund,Total Market Equity Index,"Malvern, Pennsylvania",24/05/2001,36405,2001,BBG000HR9779,ETP
+GLD,SPDR Gold Shares,reports,Exchange Traded Fund,Commodity Gold,"Boston, Massachusetts",18/11/2004,1222333,2004,BBG000CRF6Q8,ETP

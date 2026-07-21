@@ -1,6 +1,6 @@
 # Learning Docs
 
-These docs are generated for the published code snapshot for state `009-order-management-matcher`.
+These docs are generated for the published code snapshot for state `016-cdm-generic-instruments`.
 
 - [Component List](./component-list.md)
 - [System Design](./system-design.md)
@@ -11,6 +11,6 @@ These docs are generated for the published code snapshot for state `009-order-ma
 
 Canonical source remains SpecKit artifacts in the main authoring branch:
 
-- Feature pack: `specs/009-order-management-matcher`
-- Source feature pack at commit: https://github.com/finos/traderX/tree/f0056d6753b9a76295ce40ede1f32c30bd2c5f27/specs/009-order-management-matcher
-- Source architecture model at commit: https://github.com/finos/traderX/blob/f0056d6753b9a76295ce40ede1f32c30bd2c5f27/specs/009-order-management-matcher/system/architecture.model.json
+- Feature pack: `specs/016-cdm-generic-instruments`
+- Source feature pack at commit: https://github.com/jduitz/traderX/tree/25ea8b839e2fdd1dfe9b77f8917e3d5e4a8260bd/specs/016-cdm-generic-instruments
+- Source architecture model at commit: https://github.com/jduitz/traderX/blob/25ea8b839e2fdd1dfe9b77f8917e3d5e4a8260bd/specs/016-cdm-generic-instruments/system/architecture.model.json

@@ -10,12 +10,15 @@ import { environment } from 'main/environments/environment';
     providedIn: 'root'
 })
 export class SymbolService {
-    private stocksUrl = `${environment.refrenceDataUrl}/stocks`;
+    private instrumentsUrl = `${environment.refrenceDataUrl}/instruments`;
     private createTicketUrl = `${environment.tradesUrl}`;
     constructor(private http: HttpClient) { }
 
+    // The method and the Stock model keep their names: renaming them reaches
+    // into the trade page, both tickets, the mocks and their specs, which this
+    // state leaves alone. The endpoint is what moved.
     getStocks(): Observable<Stock[]> {
-        return this.http.get<Stock[]>(this.stocksUrl).pipe(
+        return this.http.get<Stock[]>(this.instrumentsUrl).pipe(
             retry(2),
             catchError(this.handleError)
         );

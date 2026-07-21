@@ -10,8 +10,8 @@ if [[ "${TRADERX_LOCAL_RUNTIME_SCRIPT:-0}" != "1" ]]; then
     exec "${LOCAL_RUNTIME_SCRIPT}" "$@"
   fi
 fi
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-009}"
-COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/order-management-matcher/docker-compose.yml"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-016}"
+COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/cdm-generic-instruments/docker-compose.yml"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[error] docker command not found"
@@ -24,4 +24,4 @@ if [[ ! -f "${COMPOSE_FILE}" ]]; then
 fi
 
 docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" down --remove-orphans
-echo "[done] state 009 order-management runtime stopped"
+echo "[done] state 016 CDM generic instruments runtime stopped"
