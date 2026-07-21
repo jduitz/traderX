@@ -275,6 +275,10 @@ if (( missing > 0 )); then
 fi
 
 if [[ ! -s "${rows_file}" ]]; then
+  if (( scanned_states == 0 )) && (( ALLOW_MISSING == 1 )); then
+    echo "[info] no generated-state branches resolved (allow-missing-branches); skipping dependency consistency check"
+    exit 0
+  fi
   echo "[fail] no dependency rows collected from generated branches"
   exit 1
 fi
