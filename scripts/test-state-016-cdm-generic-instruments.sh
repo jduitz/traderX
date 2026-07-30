@@ -39,7 +39,7 @@ if [[ "${TRADERX_LOCAL_RUNTIME_SCRIPT:-0}" != "1" ]]; then
 fi
 
 TARGET_ROOT="${GENERATED_ROOT}/code/target-generated"
-COMPOSE_FILE="${TARGET_ROOT}/cdm-generic-instruments/docker-compose.yml"
+COMPOSE_FILE="${TRADERX_COMPOSE_FILE:-${TARGET_ROOT}/cdm-generic-instruments/docker-compose.yml}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[error] docker command not found"
