@@ -119,6 +119,7 @@ module.exports = {
         'learning/state-013-radius-kubernetes-platform',
         'learning/state-014-fdc3-intent-interoperability',
         'learning/state-016-cdm-generic-instruments',
+        'learning/state-017-us-treasury-trading',
         'learning-paths/index',
         'spec-kit/spec-kit-learning-path-strategy',
         'spec-kit/state-transition-generation-plan',

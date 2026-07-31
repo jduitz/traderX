@@ -8,7 +8,7 @@ title: "State 016: CDM Generic Instruments"
 
 - Previous state(s): [009-order-management-matcher](/docs/learning/state-009-order-management-matcher)
 - Dotted-line parent(s): none
-- Next state(s): none
+- Next state(s): [017-us-treasury-trading](/docs/learning/state-017-us-treasury-trading)
 
 ## Convergence Metadata
 

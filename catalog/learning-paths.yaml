@@ -34,6 +34,7 @@ tracks:
       - 009-order-management-matcher
       - 014-fdc3-intent-interoperability
       - 016-cdm-generic-instruments
+      - 017-us-treasury-trading
   nonfunctional:
     description: "Non-functional overlays (observability, resilience, operations)."
     states:
@@ -155,3 +156,10 @@ stateCatalog:
     isConvergence: false
     lineageRole: canonical
     spec: specs/016-cdm-generic-instruments/spec.md
+  - id: 017-us-treasury-trading
+    previous:
+      - 016-cdm-generic-instruments
+    convergenceLevel: none
+    isConvergence: false
+    lineageRole: canonical
+    spec: specs/017-us-treasury-trading/spec.md

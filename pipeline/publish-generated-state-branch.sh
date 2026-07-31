@@ -449,6 +449,9 @@ snapshot_keep_paths_for_state() {
     016-cdm-generic-instruments)
       printf '%s\n' "${ORDER_COMPONENT_DIRS[@]}" "ingress" "cdm-generic-instruments" "postgres-database-replacement" ".github" "runtime"
       ;;
+    017-us-treasury-trading)
+      printf '%s\n' "${ORDER_COMPONENT_DIRS[@]}" "ingress" "us-treasury-trading" "postgres-database-replacement" ".github" "runtime"
+      ;;
     *)
       echo "[fail] missing explicit snapshot keep-path policy for ${STATE_ID}"
       echo "[hint] add ${STATE_ID} to snapshot_keep_paths_for_state and install-generated-ci-assets.sh state_allowed_roots"
@@ -886,6 +889,13 @@ EOF
 - Replaces `/stocks` with `/instruments` as a declared, non-aliased break, and seeds ETFs alongside equities so a second CDM `securityType` is exercised at runtime.
 EOF
       ;;
+    017-us-treasury-trading)
+      cat <<'EOF'
+- Builds on state `016` and preserves inherited stock and ETF behavior.
+- Adds five fixed-rate U.S. Treasury Debt instruments with verified FIGIs, auction-price provenance, simulated clean prices, and approximate YTM.
+- Adds long-only face-amount trading, retry-safe synchronous Treasury booking, and unified multi-asset UI behavior.
+EOF
+      ;;
     014-fdc3-intent-interoperability)
       cat <<'EOF'
 - Builds on state `012` and preserves C3 runtime behavior.
@@ -1217,6 +1227,18 @@ EOF
 - Order matcher health: `http://localhost:18110/health`
 EOF
       ;;
+    017-us-treasury-trading)
+      cat <<'EOF'
+- UI (ingress): `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Instruments: `http://localhost:18085/instruments`
+- Treasury quote: `http://localhost:18100/prices/UST-20360515`
+- Grafana dashboards (ingress): `http://localhost:8080/grafana/`
+- Grafana local admin: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+- Order matcher health: `http://localhost:18110/health`
+EOF
+      ;;
     010-kubernetes-runtime|011-tilt-kubernetes-dev-loop|012-platform-convergence-c3|013-radius-kubernetes-platform)
       cat <<'EOF'
 - UI (ingress): `http://localhost:8080`
@@ -1276,6 +1298,16 @@ EOF
 - Local admin URL: `http://localhost:3001`
 - The start script prints the active local admin credential.
 - Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-016`.
+EOF
+      ;;
+    017-us-treasury-trading)
+      cat <<'EOF'
+## Grafana Access
+
+- Public dashboards: `http://localhost:8080/grafana/`
+- Local admin URL: `http://localhost:3001`
+- The start script prints the active local admin credential.
+- Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-017`.
 EOF
       ;;
   esac
@@ -1401,6 +1433,14 @@ EOF
 - Compare a two-string `Security` against a CDM `Security`-shaped record with multiple asset identifiers, and see why the taxonomy stays documentation rather than a runtime union.
 - Review how a resource is replaced rather than aliased, and how a state declares a breaking contract change without disturbing its ancestors.
 - Validate that an ETF flows through validation, matching, trade, and position exactly as an equity does.
+EOF
+      ;;
+    017-us-treasury-trading)
+      cat <<'EOF'
+- Understand how fixed-rate U.S. Treasury Debt instruments extend the CDM-shaped reference model without changing transactional identity.
+- Review clean percent-of-par pricing, approximate YTM, maturity handling, and face-amount valuation.
+- Trace long-only enforcement from early validation and reservations through authoritative position locking.
+- Validate retry-safe synchronous Treasury booking while stocks and ETFs retain their inherited asynchronous route.
 EOF
       ;;
     014-fdc3-intent-interoperability)
@@ -3202,6 +3242,58 @@ Status / stop:
 ```
 EOF
       ;;
+    017-us-treasury-trading)
+      cat > "${SNAPSHOT_DIR}/RUN_FROM_CLONE.md" <<'EOF'
+# Run From Clone
+
+Prerequisites:
+- Docker Desktop (or Docker Engine + Compose plugin)
+
+Start:
+
+```bash
+./scripts/start-state-017-us-treasury-trading-generated.sh
+./scripts/start-state-017-us-treasury-trading-generated.sh --skip-build
+```
+
+Endpoints:
+- UI / ingress: `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Ingress health: `http://localhost:8080/health`
+- Instruments: `http://localhost:18085/instruments`
+- Treasury quote: `http://localhost:18100/prices/UST-20360515`
+- Order matcher health: `http://localhost:18110/health`
+- Grafana dashboards: `http://localhost:8080/grafana/`
+- Grafana local admin: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+
+Inspect the Treasury model and quote:
+
+```bash
+curl -s http://localhost:18085/instruments/UST-20360515
+curl -s http://localhost:18100/prices/UST-20360515
+```
+
+Grafana access:
+- Dashboards are anonymous Viewer surfaces through ingress.
+- The start script prints the active local admin credential.
+- Default convention: user from `TRADERX_GRAFANA_ADMIN_USER` or `traderx-admin`; password from `TRADERX_GRAFANA_ADMIN_PASSWORD` or `traderx-state-017`.
+
+Smoke test:
+
+```bash
+./scripts/test-state-017-us-treasury-trading.sh
+./scripts/test-state-017-us-treasury-trading.sh --skip-messaging
+```
+
+Status / stop:
+
+```bash
+./scripts/status-state-017-us-treasury-trading-generated.sh
+./scripts/stop-state-017-us-treasury-trading-generated.sh
+```
+EOF
+      ;;
     008-pricing-awareness-market-data)
       cat > "${SNAPSHOT_DIR}/RUN_FROM_CLONE.md" <<'EOF'
 # Run From Clone
@@ -3759,7 +3851,7 @@ case "${STATE_ID}" in
   004-containerized-compose-runtime)
     install_containerized_clone_harness
     ;;
-  005-postgres-database-replacement|006-messaging-nats-replacement|007-observability-lgtm-compose|008-pricing-awareness-market-data|009-order-management-matcher|016-cdm-generic-instruments)
+  005-postgres-database-replacement|006-messaging-nats-replacement|007-observability-lgtm-compose|008-pricing-awareness-market-data|009-order-management-matcher|016-cdm-generic-instruments|017-us-treasury-trading)
     install_state_compose_clone_harness "${STATE_ID}"
     ;;
   010-kubernetes-runtime)

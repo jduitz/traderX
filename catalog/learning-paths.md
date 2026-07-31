@@ -32,6 +32,7 @@ This file is generated from `catalog/state-catalog.json`.
 - `009-order-management-matcher`
 - `014-fdc3-intent-interoperability`
 - `016-cdm-generic-instruments`
+- `017-us-treasury-trading`
 
 ### Non-Functional
 
@@ -67,3 +68,4 @@ This file is generated from `catalog/state-catalog.json`.
 | `013-radius-kubernetes-platform` | 012-platform-convergence-c3 | `none` | `false` | `optional` | `specs/013-radius-kubernetes-platform/spec.md` |
 | `014-fdc3-intent-interoperability` | 012-platform-convergence-c3 | `none` | `false` | `canonical` | `specs/014-fdc3-intent-interoperability/spec.md` |
 | `016-cdm-generic-instruments` | 009-order-management-matcher | `none` | `false` | `canonical` | `specs/016-cdm-generic-instruments/spec.md` |
+| `017-us-treasury-trading` | 016-cdm-generic-instruments | `none` | `false` | `canonical` | `specs/017-us-treasury-trading/spec.md` |

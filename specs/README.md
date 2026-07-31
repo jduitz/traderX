@@ -22,6 +22,7 @@ This repository now uses the GitHub Spec Kit canonical structure at repo root:
 - `013-radius-kubernetes-platform`
 - `014-fdc3-intent-interoperability`
 - `016-cdm-generic-instruments`
+- `017-us-treasury-trading`
 
 ## Portal Feature Packs
 

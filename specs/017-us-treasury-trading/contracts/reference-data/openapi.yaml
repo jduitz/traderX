@@ -1,0 +1,272 @@
+openapi: 3.0.0
+info:
+  title: TraderSpec Reference Data Service
+  version: "3.0.0"
+  description: >-
+    Instrument reference data shaped after the FINOS Common Domain Model (CDM).
+    State 017 serves stocks, ETFs, and fixed-rate U.S. Treasuries through
+    asset-neutral instrument keys.
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /instruments:
+    get:
+      summary: List all instruments
+      responses:
+        "200":
+          description: Instrument list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Instrument"
+  /instruments/{instrumentKey}:
+    get:
+      summary: Find instrument by ticker
+      parameters:
+      - name: instrumentKey
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Instrument found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Instrument"
+        "404":
+          description: Not found
+components:
+  schemas:
+    Instrument:
+      type: object
+      description: >-
+        A CDM Security-shaped record plus its asset identifiers. CDM's
+        Asset -> Instrument -> Security choice tree is the taxonomy this maps
+        onto; the runtime record is flat.
+      required:
+      - instrumentKey
+      - displayName
+      - assetClass
+      - currency
+      - securityType
+      - identifiers
+      - matured
+      - observedAt
+      properties:
+        instrumentKey:
+          type: string
+          description: >-
+            TraderX transactional/reference key. It is a ticker for stocks and
+            ETFs and an application display code for Treasuries.
+          example: UST-20280630
+        displayName:
+          type: string
+          example: U.S. Treasury Note 4.125% due June 30, 2028
+        assetClass:
+          type: string
+          enum: [Stock, ETF, US_TREASURY]
+        currency:
+          type: string
+          description: ISO 4217 currency code. USD throughout state 017.
+          example: USD
+        securityType:
+          $ref: "#/components/schemas/SecurityTypeEnum"
+        equityType:
+          allOf:
+          - $ref: "#/components/schemas/EquityType"
+          description: Present if and only if securityType is Equity.
+        fundType:
+          allOf:
+          - $ref: "#/components/schemas/FundProductTypeEnum"
+          description: Present if and only if securityType is Fund.
+        debtEconomics:
+          allOf:
+          - $ref: "#/components/schemas/DebtEconomics"
+          description: Present if and only if securityType is Debt.
+        matured:
+          type: boolean
+        observedAt:
+          type: string
+          format: date-time
+        identifiers:
+          type: array
+          minItems: 1
+          description: >-
+            Stocks and ETFs carry BBGTICKER and FIGI. Treasuries carry their
+            TraderX application code as Other and their external FIGI. CUSIP
+            and ISIN are not persisted.
+          items:
+            $ref: "#/components/schemas/AssetIdentifier"
+    AssetIdentifier:
+      type: object
+      description: CDM AssetIdentifier.
+      required:
+      - identifier
+      - identifierType
+      properties:
+        identifier:
+          type: string
+          example: BBG000BLNNH6
+        identifierType:
+          $ref: "#/components/schemas/AssetIdTypeEnum"
+    AssetIdTypeEnum:
+      type: string
+      description: >-
+        CDM AssetIdTypeEnum, which extends ProductIdTypeEnum. State 017
+        populates BBGTICKER, FIGI, and Other.
+      enum:
+      - BBGID
+      - BBGTICKER
+      - CUSIP
+      - FIGI
+      - ISDACRP
+      - ISIN
+      - Name
+      - REDID
+      - RIC
+      - Other
+      - Sicovam
+      - SEDOL
+      - UPI
+      - Valoren
+      - Wertpapier
+      - CurrencyCode
+      - ExchangeCode
+      - ClearingCode
+      example: BBGTICKER
+    SecurityTypeEnum:
+      type: string
+      description: CDM SecurityTypeEnum. State 017 emits Debt, Equity, and Fund.
+      enum:
+      - Debt
+      - Equity
+      - Fund
+      - Warrant
+      - Certificate
+      example: Equity
+    EquityType:
+      type: object
+      description: CDM EquityType.
+      required:
+      - equityType
+      properties:
+        equityType:
+          $ref: "#/components/schemas/EquityTypeEnum"
+        depositaryReceipt:
+          allOf:
+          - $ref: "#/components/schemas/DepositaryReceiptTypeEnum"
+          description: Present only when equityType is DepositaryReceipt.
+    EquityTypeEnum:
+      type: string
+      description: CDM EquityTypeEnum.
+      enum:
+      - Ordinary
+      - NonConvertiblePreference
+      - DepositaryReceipt
+      - ConvertiblePreference
+      example: Ordinary
+    DepositaryReceiptTypeEnum:
+      type: string
+      description: CDM DepositaryReceiptTypeEnum.
+      enum:
+      - ADR
+      - GDR
+      - IDR
+      - EDR
+      example: ADR
+    FundProductTypeEnum:
+      type: string
+      description: CDM FundProductTypeEnum.
+      enum:
+      - MoneyMarketFund
+      - ExchangeTradedFund
+      - MutualFund
+      - OtherFund
+      example: ExchangeTradedFund
+    DebtEconomics:
+      type: object
+      required:
+      - debtType
+      - issuer
+      - fixedInterest
+      - principalRepayment
+      - issueDate
+      - maturityDate
+      - originalTermYears
+      - priceProvenance
+      properties:
+        debtType:
+          type: string
+          enum: [US_TREASURY_NOTE, US_TREASURY_BOND]
+        issuer:
+          type: string
+        fixedInterest:
+          type: object
+          required: [rateType, couponRatePercent, couponFrequency]
+          properties:
+            rateType:
+              type: string
+              enum: [Fixed]
+            couponRatePercent:
+              type: number
+              format: double
+            couponFrequency:
+              type: string
+              enum: [Semiannual]
+        principalRepayment:
+          type: object
+          required: [style, parAmount]
+          properties:
+            style:
+              type: string
+              enum: [Bullet]
+            parAmount:
+              type: number
+              example: 100
+        issueDate:
+          type: string
+          format: date
+        maturityDate:
+          type: string
+          format: date
+        originalTermYears:
+          type: integer
+          enum: [2, 5, 10, 20, 30]
+        priceProvenance:
+          type: object
+          required: [sourceType, sourceUrl, officialCleanPrice, runtimeSeedCleanPrice, simulated]
+          properties:
+            sourceType:
+              type: string
+              enum: [US_TREASURY_AUCTION_RESULT]
+            sourceUrl:
+              type: string
+              format: uri
+            officialCleanPrice:
+              type: number
+              format: double
+            runtimeSeedCleanPrice:
+              type: number
+              format: double
+            simulated:
+              type: boolean
+    Health:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          example: ok

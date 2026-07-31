@@ -169,6 +169,9 @@ allowed_roots_for_state() {
     016-cdm-generic-instruments)
       printf '%s\n' "${ORDER_COMPONENT_DIRS[@]}" "ingress" "cdm-generic-instruments" "postgres-database-replacement"
       ;;
+    017-us-treasury-trading)
+      printf '%s\n' "${ORDER_COMPONENT_DIRS[@]}" "ingress" "us-treasury-trading" "postgres-database-replacement"
+      ;;
     *)
       return 1
       ;;

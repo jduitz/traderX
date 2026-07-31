@@ -79,8 +79,8 @@ Require-Pattern -File $positionBlotterTs -Pattern 'getAllPositions\(' -Message '
 Require-Pattern -File $positionBlotterTs -Pattern 'mergePositionsBySecurity\(' -Message 'expected cross-account position merge'
 
 Write-Host '[check] security typeahead contract'
-Require-Pattern -File $tradeTicketTs -Pattern 'matchLabel' -Message 'expected synthesized ticker-company match label'
-Require-Pattern -File $tradeTicketTs -Pattern 'return `\$\{stock\.ticker\} - \$\{stock\.companyName\}`;' -Message 'expected ticker-company combined match label'
+Require-Pattern -File $tradeTicketTs -Pattern 'matchLabel' -Message 'expected synthesized instrument display match label'
+Require-Pattern -File $tradeTicketTs -Pattern 'return `\$\{stock\.(ticker|instrumentKey)\} - \$\{stock\.(companyName|displayName)\}`;' -Message 'expected instrument key-display name combined match label'
 Require-Pattern -File $tradeTicketHtml -Pattern 'typeaheadOptionField="matchLabel"' -Message 'expected typeahead to use match label'
 Require-Pattern -File $tradeTicketHtml -Pattern 'autocomplete="off"' -Message 'expected browser autocomplete disabled on security input'
 

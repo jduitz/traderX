@@ -1,0 +1,77 @@
+{
+  "title": "U.S. Treasury Trading",
+  "stateId": "017-us-treasury-trading",
+  "parentState": "016-cdm-generic-instruments",
+  "description": "Adds five fixed-rate Treasuries, clean pricing, long-only validation, and retry-safe synchronous order booking while preserving inherited stock and ETF flows.",
+  "mermaidDirection": "LR",
+  "nodes": [
+    {
+      "id": "trader",
+      "label": "Trader",
+      "kind": "actor",
+      "description": "Uses unified tickets and blotters."
+    },
+    {
+      "id": "ui",
+      "label": "Angular UI",
+      "kind": "component",
+      "description": "Groups stocks, ETFs, and Treasuries."
+    },
+    {
+      "id": "reference",
+      "label": "Reference Data",
+      "kind": "service",
+      "description": "Serves instrumentKey/displayName and CDM-shaped Debt economics."
+    },
+    {
+      "id": "pricing",
+      "label": "Price Publisher",
+      "kind": "service",
+      "description": "Publishes simulated clean prices and approximate YTM."
+    },
+    {
+      "id": "matcher",
+      "label": "Order Matcher",
+      "kind": "service",
+      "description": "Reserves face amount and reconciles pending Treasury executions."
+    },
+    {
+      "id": "tradeService",
+      "label": "Trade Service",
+      "kind": "service",
+      "description": "Keeps inherited asynchronous stock/ETF submission and early Treasury validation."
+    },
+    {
+      "id": "processor",
+      "label": "Trade Processor",
+      "kind": "service",
+      "description": "Authoritative idempotent booking with pessimistic position locking."
+    },
+    {
+      "id": "postgres",
+      "label": "PostgreSQL",
+      "kind": "database",
+      "description": "Stores accounts, orders, pending execution data, trades, and positions."
+    },
+    {
+      "id": "nats",
+      "label": "NATS",
+      "kind": "broker",
+      "description": "Carries price and account-scoped trade/position/order updates."
+    }
+  ],
+  "edges": [
+    { "from": "trader", "to": "ui", "label": "trades" },
+    { "from": "ui", "to": "reference", "label": "discovers instruments" },
+    { "from": "pricing", "to": "nats", "label": "pricing.instrumentKey" },
+    { "from": "ui", "to": "matcher", "label": "limit order" },
+    { "from": "matcher", "to": "tradeService", "label": "stocks and ETFs" },
+    { "from": "matcher", "to": "processor", "label": "Treasury sync booking" },
+    { "from": "tradeService", "to": "nats", "label": "/trades" },
+    { "from": "nats", "to": "processor", "label": "async inherited trades" },
+    { "from": "processor", "to": "reference", "label": "Treasury metadata" },
+    { "from": "processor", "to": "postgres", "label": "locked transaction" },
+    { "from": "matcher", "to": "postgres", "label": "orders and pending data" },
+    { "from": "processor", "to": "nats", "label": "trade and position updates" }
+  ]
+}

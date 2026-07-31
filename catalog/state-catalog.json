@@ -418,6 +418,29 @@
         "branch": "code/generated-state-016-cdm-generic-instruments",
         "tag": "generated/016-cdm-generic-instruments/v1"
       }
+    },
+    {
+      "id": "017-us-treasury-trading",
+      "title": "U.S. Treasury Trading",
+      "status": "implemented",
+      "track": "functional",
+      "convergenceLevel": "none",
+      "isConvergence": false,
+      "dottedParents": [],
+      "primaryLineageRole": "canonical",
+      "featurePack": "specs/017-us-treasury-trading",
+      "previous": [
+        "016-cdm-generic-instruments"
+      ],
+      "generation": {
+        "mode": "implemented",
+        "entrypoint": "bash pipeline/generate-state.sh 017-us-treasury-trading",
+        "runtime": "./scripts/start-state-017-us-treasury-trading-generated.sh"
+      },
+      "publish": {
+        "branch": "code/generated-state-017-us-treasury-trading",
+        "tag": "generated/017-us-treasury-trading/v1"
+      }
     }
   ]
 }

@@ -50,6 +50,7 @@ flowchart TB
   S013_radius_kubernetes_platform["013: Radius Platform on Kubernetes (Optional)"]
   S014_fdc3_intent_interoperability["014: FDC3 Intent Interoperability on C3"]
   S016_cdm_generic_instruments["016: CDM Generic Instruments"]
+  S017_us_treasury_trading["017: U.S. Treasury Trading"]
   S001_baseline_uncontainerized_parity --> S002_edge_proxy_uncontainerized
   S002_edge_proxy_uncontainerized --> S003_agentic_harness_foundation
   S003_agentic_harness_foundation --> S004_containerized_compose_runtime
@@ -64,6 +65,7 @@ flowchart TB
   S012_platform_convergence_c3 --> S013_radius_kubernetes_platform
   S012_platform_convergence_c3 --> S014_fdc3_intent_interoperability
   S009_order_management_matcher --> S016_cdm_generic_instruments
+  S016_cdm_generic_instruments --> S017_us_treasury_trading
   S009_order_management_matcher -.-> S012_platform_convergence_c3
   click S001_baseline_uncontainerized_parity href "/specs/baseline-uncontainerized-parity" "Open State 001 Spec Pack"
   click S002_edge_proxy_uncontainerized href "/specs/edge-proxy-uncontainerized" "Open State 002 Spec Pack"
@@ -80,6 +82,7 @@ flowchart TB
   click S013_radius_kubernetes_platform href "/specs/radius-kubernetes-platform" "Open State 013 Spec Pack"
   click S014_fdc3_intent_interoperability href "/specs/fdc3-intent-interoperability" "Open State 014 Spec Pack"
   click S016_cdm_generic_instruments href "/specs/cdm-generic-instruments" "Open State 016 Spec Pack"
+  click S017_us_treasury_trading href "/specs/us-treasury-trading" "Open State 017 Spec Pack"
   classDef convergence fill:#d7f5dd,stroke:#2e7d32,stroke-width:2px
   class S004_containerized_compose_runtime convergence
   class S007_observability_lgtm_compose convergence
@@ -106,6 +109,7 @@ flowchart TB
 | [`013-radius-kubernetes-platform`](pathname:///specs/radius-kubernetes-platform) | [link](pathname:///specs/radius-kubernetes-platform) | [link](pathname:///specs/radius-kubernetes-platform/system/architecture) | [link](pathname:///specs/radius-kubernetes-platform/system/runtime-topology) | [link](pathname:///docs/learning/state-013-radius-kubernetes-platform) | [code/generated-state-013-radius-kubernetes-platform](https://github.com/finos/traderX/tree/code/generated-state-013-radius-kubernetes-platform) |
 | [`014-fdc3-intent-interoperability`](pathname:///specs/fdc3-intent-interoperability) | [link](pathname:///specs/fdc3-intent-interoperability) | [link](pathname:///specs/fdc3-intent-interoperability/system/architecture) | [link](pathname:///specs/fdc3-intent-interoperability/system/runtime-topology) | [link](pathname:///docs/learning/state-014-fdc3-intent-interoperability) | [code/generated-state-014-fdc3-intent-interoperability](https://github.com/finos/traderX/tree/code/generated-state-014-fdc3-intent-interoperability) |
 | [`016-cdm-generic-instruments`](pathname:///specs/cdm-generic-instruments) | [link](pathname:///specs/cdm-generic-instruments) | [link](pathname:///specs/cdm-generic-instruments/system/architecture) | [link](pathname:///specs/cdm-generic-instruments/system/runtime-topology) | [link](pathname:///docs/learning/state-016-cdm-generic-instruments) | [code/generated-state-016-cdm-generic-instruments](https://github.com/finos/traderX/tree/code/generated-state-016-cdm-generic-instruments) |
+| [`017-us-treasury-trading`](pathname:///specs/us-treasury-trading) | [link](pathname:///specs/us-treasury-trading) | [link](pathname:///specs/us-treasury-trading/system/architecture) | [link](pathname:///specs/us-treasury-trading/system/runtime-topology) | [link](pathname:///docs/learning/state-017-us-treasury-trading) | [code/generated-state-017-us-treasury-trading](https://github.com/finos/traderX/tree/code/generated-state-017-us-treasury-trading) |
 
 ## Swimlane View
 
@@ -131,6 +135,7 @@ flowchart TB
     S009_order_management_matcher["009: Order Management and Matcher [C2]"]
     S014_fdc3_intent_interoperability["014: FDC3 Intent Interoperability on C3"]
     S016_cdm_generic_instruments["016: CDM Generic Instruments"]
+    S017_us_treasury_trading["017: U.S. Treasury Trading"]
   end
   subgraph DEVEX["Devex Track"]
     S010_kubernetes_runtime["010: Kubernetes Runtime on C2"]
@@ -152,6 +157,7 @@ flowchart TB
   S012_platform_convergence_c3 --> S013_radius_kubernetes_platform
   S012_platform_convergence_c3 --> S014_fdc3_intent_interoperability
   S009_order_management_matcher --> S016_cdm_generic_instruments
+  S016_cdm_generic_instruments --> S017_us_treasury_trading
   S009_order_management_matcher -.-> S012_platform_convergence_c3
   classDef convergence fill:#d7f5dd,stroke:#2e7d32,stroke-width:2px
 ```

@@ -186,6 +186,9 @@ case "${STATE_ID}" in
   016-cdm-generic-instruments)
     state_allowed_roots=("${ORDER_COMPONENT_DIRS[@]}" "ingress" "cdm-generic-instruments" "postgres-database-replacement")
     ;;
+  017-us-treasury-trading)
+    state_allowed_roots=("${ORDER_COMPONENT_DIRS[@]}" "ingress" "us-treasury-trading" "postgres-database-replacement")
+    ;;
 esac
 
 state_allows_dir() {
@@ -352,6 +355,9 @@ case "${STATE_ID}" in
     ;;
   016-cdm-generic-instruments)
     compose_file_rel="cdm-generic-instruments/docker-compose.yml"
+    ;;
+  017-us-treasury-trading)
+    compose_file_rel="us-treasury-trading/docker-compose.yml"
     ;;
   *)
     compose_file_rel=""

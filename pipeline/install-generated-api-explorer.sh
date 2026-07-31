@@ -25,7 +25,7 @@ mkdir -p "${CONTRACTS_ROOT}"
 # The inspector needs a message bus, which arrives with the NATS replacement in
 # state 006. 015 is a docs pack rather than a generated state.
 case "${STATE_ID}" in
-  006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*|016-*)
+  006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*|016-*|017-*)
     PUBSUB_INSPECTOR_ENABLED=1
     ;;
 esac

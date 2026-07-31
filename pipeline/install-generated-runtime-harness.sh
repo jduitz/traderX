@@ -250,10 +250,20 @@ case "${STATE_ID}" in
     copy_script_if_exists "test-state-009-order-management-matcher.sh"
     copy_script_if_exists "test-messaging-009-order-management-matcher.sh"
     ;;
+  017-us-treasury-trading)
+    copy_script_if_exists "start-state-017-us-treasury-trading-generated.sh"
+    copy_script_if_exists "stop-state-017-us-treasury-trading-generated.sh"
+    copy_script_if_exists "status-state-017-us-treasury-trading-generated.sh"
+    copy_script_if_exists "test-state-017-us-treasury-trading.sh"
+    copy_script_if_exists "start-state-016-cdm-generic-instruments-generated.sh"
+    copy_script_if_exists "test-state-016-cdm-generic-instruments.sh"
+    copy_script_if_exists "test-state-009-order-management-matcher.sh"
+    copy_script_if_exists "test-messaging-009-order-management-matcher.sh"
+    ;;
 esac
 
 case "${STATE_ID}" in
-  004-*|005-*|006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*)
+  004-*|005-*|006-*|007-*|008-*|009-*|010-*|011-*|012-*|013-*|014-*|016-*|017-*)
     gen_depth="${TRADERX_GENERATION_DEPTH:-0}"
     if (( gen_depth <= 2 )) || [[ "${TRADERX_RUNTIME_NORMALIZE_IN_NESTED_GENERATION:-0}" == "1" ]]; then
       normalize_containerized_compose_cors_origins
@@ -957,6 +967,21 @@ Smoke test:
 ```
 EOF
       ;;
+    017-us-treasury-trading)
+      cat > "${TARGET_ROOT}/RUN_FROM_GENERATED.md" <<'EOF'
+# Run From Generated (State 017)
+
+```bash
+./scripts/start-state-017-us-treasury-trading-generated.sh
+./scripts/status-state-017-us-treasury-trading-generated.sh
+./scripts/test-state-017-us-treasury-trading.sh
+./scripts/stop-state-017-us-treasury-trading-generated.sh
+```
+
+Use `--skip-build` on start for a fast restart and `--skip-messaging` on the
+smoke test only when isolating the inherited browser-WebSocket diagnostic.
+EOF
+      ;;
     *)
       cat > "${TARGET_ROOT}/RUN_FROM_GENERATED.md" <<'EOF'
 # Run From Generated
@@ -1061,6 +1086,19 @@ EOF
 - Order matcher: `http://localhost:18110/health`
 - Grafana (ingress): `http://localhost:8080/grafana`
 - Prometheus (ingress): `http://localhost:8080/prometheus`
+EOF
+      ;;
+    017-us-treasury-trading)
+      cat <<'EOF'
+- UI (ingress): `http://localhost:8080`
+- API explorer (ingress): `http://localhost:8080/api/docs`
+- Trade page: `http://localhost:8080/trade`
+- Instruments: `http://localhost:18085/instruments`
+- Treasury quote example: `http://localhost:18100/prices/UST-20360515`
+- Account 17017 positions: `http://localhost:8080/position-service/positions/17017`
+- Order matcher: `http://localhost:18110/health`
+- Grafana (ingress): `http://localhost:8080/grafana`
+- Prometheus: `http://localhost:9090`
 EOF
       ;;
     *)
