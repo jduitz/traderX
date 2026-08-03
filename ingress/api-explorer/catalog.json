@@ -1,6 +1,6 @@
 {
-  "generatedAtUtc": "2026-07-21T18:58:14.061Z",
-  "stateId": "016-cdm-generic-instruments",
+  "generatedAtUtc": "2026-08-03T19:15:15.957Z",
+  "stateId": "017-us-treasury-trading",
   "mountPath": "/api/docs",
   "pubSubInspectorEnabled": true,
   "services": [
@@ -70,6 +70,13 @@
   ],
   "messagingSubjects": [
     {
+      "subject": "pricing.<instrumentKey>",
+      "pattern": "pricing.*",
+      "wildcard": true,
+      "parameterized": true,
+      "prefillPattern": "pricing.{instrumentKey}"
+    },
+    {
       "subject": "/trades",
       "pattern": "/trades",
       "wildcard": false,
@@ -89,13 +96,6 @@
       "wildcard": false,
       "parameterized": true,
       "prefillPattern": "/accounts/{accountId}/positions"
-    },
-    {
-      "subject": "pricing.<TICKER>",
-      "pattern": "pricing.*",
-      "wildcard": true,
-      "parameterized": true,
-      "prefillPattern": "pricing.{TICKER}"
     },
     {
       "subject": "/accounts/<accountId>/orders",

@@ -6,6 +6,7 @@ import { PositionService } from 'main/app/service/position.service';
 import { Observable } from 'rxjs';
 import { TradeFeedService } from 'main/app/service/trade-feed.service';
 import { PriceSnapshotService } from 'main/app/service/price-snapshot.service';
+import { Stock } from 'main/app/model/symbol.model';
 
 @Component({
     standalone: false,
@@ -18,6 +19,8 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
   @Input() allAccountsMode = false;
   @Input() accountIds: number[] = [];
   @Input() securityFilter = '';
+  @Input() instruments: Stock[] = [];
+  @Input() assetClassFilter: 'All' | 'Stock' | 'ETF' | 'US_TREASURY' = 'All';
   @Output() summaryChange = new EventEmitter<PortfolioSummary>();
   @Output() securitySelected = new EventEmitter<string>();
   positions$: Observable<Position[]>;
@@ -30,14 +33,17 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
   private readonly marketPriceByTicker = new Map<string, number>();
   private readonly marketPriceAsOfByTicker = new Map<string, number>();
   private readonly openPriceByTicker = new Map<string, number>();
+  private readonly approximateYtmByTicker = new Map<string, number>();
 
   columnDefs: ColDef[] = [
     {
       field: 'security',
-      headerName: 'SECURITY'
+      headerName: 'SECURITY',
+      valueFormatter: ({ value }) => this.formatSecurity(value)
     },
     {
-      headerName: 'QUANTITY',
+      headerName: 'QUANTITY / FACE',
+      headerTooltip: 'Quantity / Face Amount',
       field: 'quantity',
       enableCellChangeFlash: true,
       headerClass: 'ag-right-aligned-header',
@@ -45,18 +51,19 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
       valueFormatter: ({ value }) => this.formatInteger(value)
     },
     {
-      headerName: 'AVG COST',
+      headerName: 'AVG COST / CLEAN PURCHASE',
+      headerTooltip: 'Average Cost / Clean Purchase Price',
       field: 'averageCostBasis',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
-      valueFormatter: ({ value }) => this.formatCurrency(value)
+      valueFormatter: ({ value, data }) => this.formatPrice(value, data?.security)
     },
     {
       headerName: 'OPEN',
       field: 'openPrice',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
-      valueFormatter: ({ value }) => this.formatCurrency(value)
+      valueFormatter: ({ value, data }) => this.formatPrice(value, data?.security)
     },
     {
       headerName: 'MKT PRICE',
@@ -64,11 +71,28 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
       enableCellChangeFlash: true,
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
-      cellStyle: ({ value, data }) => this.getMarketPriceCellStyle(value, data?.openPrice),
-      valueFormatter: ({ value, data }) => this.formatMarketPrice(value, data?.openPrice)
+      cellStyle: ({ value, data }) => this.isTreasury(data?.security)
+        ? {}
+        : this.getMarketPriceCellStyle(value, data?.openPrice),
+      valueFormatter: ({ value, data }) => this.formatMarketPrice(value, data?.openPrice, data?.security)
+    },
+    {
+      headerName: 'APPROX YTM',
+      field: 'approximateYtmPercent',
+      valueFormatter: ({ value }) => value == null ? '-' : `${Number(value).toFixed(3)}%`
+    },
+    {
+      headerName: 'COUPON',
+      field: 'couponRatePercent',
+      valueFormatter: ({ value }) => value == null ? '-' : `${Number(value).toFixed(3)}%`
+    },
+    {
+      headerName: 'MATURITY',
+      field: 'maturityDate'
     },
     {
       headerName: 'POSITION VALUE',
+      headerTooltip: 'Position Value',
       field: 'marketValue',
       enableCellChangeFlash: true,
       headerClass: 'ag-right-aligned-header',
@@ -96,7 +120,8 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(change: SimpleChanges) {
-    const scopeChanged = !!change.account || !!change.allAccountsMode || !!change.accountIds;
+    const scopeChanged = !!change.account || !!change.allAccountsMode || !!change.accountIds
+      || !!change.instruments || !!change.assetClassFilter;
     if (change.securityFilter && !scopeChanged) {
       this.applySecurityFilter();
     }
@@ -129,7 +154,7 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
       return;
     }
     const security = data?.security;
-    if (!security) {
+    if (!security || !this.isVisibleSecurity(security)) {
       return;
     }
 
@@ -204,6 +229,9 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     if (tick.openPrice != null && Number.isFinite(Number(tick.openPrice))) {
       this.openPriceByTicker.set(String(tick.ticker || '').trim().toUpperCase(), Number(tick.openPrice));
     }
+    if (tick.approximateYtmPercent != null && Number.isFinite(Number(tick.approximateYtmPercent))) {
+      this.approximateYtmByTicker.set(String(tick.ticker || '').trim().toUpperCase(), Number(tick.approximateYtmPercent));
+    }
     if (!this.gridApi) {
       return;
     }
@@ -225,6 +253,7 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     this.marketPriceByTicker.clear();
     this.marketPriceAsOfByTicker.clear();
     this.openPriceByTicker.clear();
+    this.approximateYtmByTicker.clear();
     this.pendingPosition = [];
 
     this.priceStreamUnsubscribeFn?.();
@@ -252,7 +281,9 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     }
 
     this.tradeService.getPositions(accountId).subscribe((positions: Position[]) => {
-      this.positions = (positions ?? []).map((position: any) => this.recomputePosition(position));
+      this.positions = (positions ?? [])
+        .filter((position: any) => this.isVisibleSecurity(position.security))
+        .map((position: any) => this.recomputePosition(position));
       this.processPendingPositions();
       this.bootstrapSnapshotPrices(this.positions.map((position: any) => position.security));
     }, () => {
@@ -268,7 +299,8 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
 
   private refreshAllAccountsPositions() {
     this.tradeService.getAllPositions().subscribe((positions: Position[]) => {
-      const merged = this.mergePositionsBySecurity(positions ?? []);
+      const merged = this.mergePositionsBySecurity(
+        (positions ?? []).filter((position) => this.isVisibleSecurity(position.security)));
       this.positions = merged;
       if (this.gridApi) {
         this.setGridRowData(merged);
@@ -293,6 +325,9 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
         }
         if (snapshot.openPrice != null && Number.isFinite(Number(snapshot.openPrice))) {
           this.openPriceByTicker.set(String(snapshot.ticker || '').trim().toUpperCase(), Number(snapshot.openPrice));
+        }
+        if (snapshot.approximateYtmPercent != null && Number.isFinite(Number(snapshot.approximateYtmPercent))) {
+          this.approximateYtmByTicker.set(String(snapshot.ticker || '').trim().toUpperCase(), Number(snapshot.approximateYtmPercent));
         }
       }
       if (!changed) {
@@ -373,10 +408,13 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     }
 
     const rows = Array.from(grouped.values()).map((row) => {
-      const averageCostBasis = row.quantity !== 0 ? row.costBasisValue / row.quantity : 0;
+      const treasury = this.isTreasury(row.security);
+      const averageCostBasis = row.quantity !== 0
+        ? row.costBasisValue / row.quantity * (treasury ? 100 : 1)
+        : 0;
       const openPrice = Number(this.openPriceByTicker.get(row.security) ?? row.openPrice ?? averageCostBasis);
       const marketPrice = Number(this.marketPriceByTicker.get(row.security) ?? averageCostBasis);
-      const marketValue = row.quantity * marketPrice;
+      const marketValue = row.quantity * marketPrice / (treasury ? 100 : 1);
       const pnl = marketValue - row.costBasisValue;
       return {
         security: row.security,
@@ -424,8 +462,11 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     const averageCostBasis = Number(position.averageCostBasis ?? position.averagecostbasis ?? 0);
     const openPrice = Number(position.openPrice ?? this.openPriceByTicker.get(security) ?? averageCostBasis);
     const marketPrice = Number(position.marketPrice ?? this.marketPriceByTicker.get(security) ?? averageCostBasis);
-    const marketValue = quantity * marketPrice;
-    const costBasisValue = quantity * averageCostBasis;
+    const instrument = this.instrumentFor(security);
+    const treasury = instrument?.assetClass === 'US_TREASURY';
+    const divisor = treasury ? 100 : 1;
+    const marketValue = quantity * marketPrice / divisor;
+    const costBasisValue = quantity * averageCostBasis / divisor;
     const pnl = marketValue - costBasisValue;
 
     return Object.assign({}, position, {
@@ -436,7 +477,11 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
       marketPrice,
       marketValue,
       costBasisValue,
-      pnl
+      pnl,
+      assetClass: instrument?.assetClass,
+      approximateYtmPercent: this.approximateYtmByTicker.get(security),
+      couponRatePercent: instrument?.debtEconomics?.fixedInterest?.couponRatePercent,
+      maturityDate: instrument?.debtEconomics?.maturityDate
     });
   }
 
@@ -514,10 +559,13 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     }).format(numeric);
   }
 
-  private formatMarketPrice(value: any, openPrice: any): string {
+  private formatMarketPrice(value: any, openPrice: any, security?: string): string {
     const market = Number(value);
     if (!Number.isFinite(market)) {
       return '-';
+    }
+    if (this.isTreasury(security)) {
+      return `${market.toFixed(3)}%`;
     }
     const open = Number(openPrice);
     if (!Number.isFinite(open)) {
@@ -525,6 +573,31 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     }
     const marker = market > open ? '▲' : market < open ? '▼' : '■';
     return `${marker} ${this.formatCurrency(market)}`;
+  }
+
+  private formatPrice(value: any, security?: string): string {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return '-';
+    }
+    return this.isTreasury(security) ? `${numeric.toFixed(3)}%` : this.formatCurrency(numeric);
+  }
+
+  private instrumentFor(security?: string): Stock | undefined {
+    return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+  }
+
+  private formatSecurity(security?: string): string {
+    return this.instrumentFor(security)?.shortDisplayName || security || '-';
+  }
+
+  private isTreasury(security?: string): boolean {
+    return this.instrumentFor(security)?.assetClass === 'US_TREASURY';
+  }
+
+  private isVisibleSecurity(security?: string): boolean {
+    return this.assetClassFilter === 'All'
+      || this.instrumentFor(security)?.assetClass === this.assetClassFilter;
   }
 
   private getMarketPriceCellStyle(value: any, openPrice: any): { [key: string]: string } {

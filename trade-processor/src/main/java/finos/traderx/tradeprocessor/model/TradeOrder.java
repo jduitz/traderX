@@ -12,6 +12,7 @@ public class TradeOrder {
   private BigDecimal price;
   private Integer accountId;
   private TradeSide side;
+  private String sourceOrderId;
 
   public TradeOrder() {}
 
@@ -77,5 +78,13 @@ public class TradeOrder {
 
   public void setSide(TradeSide side) {
     this.side = side;
+  }
+
+  public String getSourceOrderId() {
+    return sourceOrderId;
+  }
+
+  public void setSourceOrderId(String sourceOrderId) {
+    this.sourceOrderId = sourceOrderId;
   }
 }

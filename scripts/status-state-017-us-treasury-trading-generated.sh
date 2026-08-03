@@ -10,9 +10,9 @@ if [[ "${TRADERX_LOCAL_RUNTIME_SCRIPT:-0}" != "1" ]]; then
     exec "${LOCAL_RUNTIME_SCRIPT}" "$@"
   fi
 fi
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-016}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-traderx-state-017}"
 GRAFANA_PORT="${GRAFANA_PORT:-3001}"
-COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/cdm-generic-instruments/docker-compose.yml"
+COMPOSE_FILE="${GENERATED_ROOT}/code/target-generated/us-treasury-trading/docker-compose.yml"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[error] docker command not found"
@@ -21,7 +21,7 @@ fi
 
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "[info] compose file not found: ${COMPOSE_FILE}"
-  echo "[hint] run: bash pipeline/generate-state.sh 016-cdm-generic-instruments"
+  echo "[hint] run: bash pipeline/generate-state.sh 017-us-treasury-trading"
   exit 0
 fi
 

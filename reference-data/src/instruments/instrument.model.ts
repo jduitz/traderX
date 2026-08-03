@@ -32,7 +32,7 @@ export type AssetIdTypeEnum =
   | 'ExchangeCode'
   | 'ClearingCode';
 
-/** CDM SecurityTypeEnum. State 016 only emits Equity and Fund. */
+/** CDM SecurityTypeEnum. State 017 emits Equity, Fund, and Debt. */
 export type SecurityTypeEnum = 'Debt' | 'Equity' | 'Fund' | 'Warrant' | 'Certificate';
 
 /** CDM EquityTypeEnum. */
@@ -68,6 +68,38 @@ export interface EquityType {
   depositaryReceipt?: DepositaryReceiptTypeEnum;
 }
 
+export type AssetClass = 'Stock' | 'ETF' | 'US_TREASURY';
+
+export interface FixedInterestTerms {
+  rateType: 'Fixed';
+  couponRatePercent: number;
+  couponFrequency: 'Semiannual';
+}
+
+export interface PrincipalRepaymentTerms {
+  style: 'Bullet';
+  parAmount: number;
+}
+
+export interface PriceProvenance {
+  sourceType: 'US_TREASURY_AUCTION_RESULT';
+  sourceUrl: string;
+  officialCleanPrice: number;
+  runtimeSeedCleanPrice: number;
+  simulated: true;
+}
+
+export interface DebtEconomics {
+  debtType: 'US_TREASURY_NOTE' | 'US_TREASURY_BOND';
+  issuer: 'United States Department of the Treasury';
+  fixedInterest: FixedInterestTerms;
+  principalRepayment: PrincipalRepaymentTerms;
+  issueDate: string;
+  maturityDate: string;
+  originalTermYears: 2 | 5 | 10 | 20 | 30;
+  priceProvenance: PriceProvenance;
+}
+
 /**
  * CDM Security, minus the layers this state skips (EconomicTerms, Payout,
  * TradableProduct, product qualification).
@@ -77,11 +109,16 @@ export interface EquityType {
  *  - FundSubType:   if securityType <> Fund   then fundType is absent
  */
 export interface Instrument {
-  ticker: string;
-  companyName: string;
+  instrumentKey: string;
+  displayName: string;
+  shortDisplayName?: string;
+  assetClass: AssetClass;
   currency: string;
   securityType: SecurityTypeEnum;
   equityType?: EquityType;
   fundType?: FundProductTypeEnum;
+  debtEconomics?: DebtEconomics;
+  matured: boolean;
+  observedAt: string;
   identifiers: AssetIdentifier[];
 }

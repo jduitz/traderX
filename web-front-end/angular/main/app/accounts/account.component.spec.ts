@@ -6,6 +6,8 @@ import { createAccount, sleep } from 'main/app/test-utils/utils';
 import { AgGridModule } from 'ag-grid-angular';
 import { ButtonCellRendererComponent } from './button-renderer.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('Account tests', () => {
   let comp: AccountComponent;
@@ -17,6 +19,8 @@ describe('Account tests', () => {
         declarations: [AccountComponent],
         imports: [AgGridModule],
         providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
           {
             provide: AccountService,
             useClass: MockAccountService

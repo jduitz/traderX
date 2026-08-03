@@ -17,15 +17,20 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
   @Input() stocks: Stock[];
   @Input() account: Account | undefined;
   @Input() presetSecurity = '';
+  @Input() serverError = '';
 
   @Output() create = new EventEmitter<TradeTicket>();
   @Output() cancel = new EventEmitter();
 
   selectedCompany?: string = undefined;
   ticket: TradeTicket;
-  filteredStocks: Array<Stock & { matchLabel: string }> = [];
+  filteredStocks: Array<Stock & { matchLabel: string; selectorGroup: string }> = [];
+  assetClassFilter: 'All' | 'Stock' | 'ETF' | 'US_TREASURY' = 'All';
+  selectedInstrument?: Stock;
+  selectedQuote?: PriceTick;
   selectedPrice: number | null = null;
   selectedPriceAsOf: string | null = null;
+  validationError = '';
   private selectedPriceTicker: string | null = null;
   private selectedPriceAsOfEpoch = 0;
   private priceStreamUnsubscribeFn?: Function;
@@ -43,20 +48,14 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
       security: ''
     };
 
-    this.filteredStocks = (this.stocks || []).map((stock) => ({
-      ...stock,
-      matchLabel: this.toMatchLabel(stock)
-    }));
+    this.refreshFilteredStocks();
 
     this.applyPresetSecurity(this.presetSecurity);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.stocks) {
-      this.filteredStocks = (this.stocks || []).map((stock) => ({
-        ...stock,
-        matchLabel: this.toMatchLabel(stock)
-      }));
+      this.refreshFilteredStocks();
     }
     if (changes.account && this.ticket) {
       this.ticket.accountId = this.account?.id || 0;
@@ -71,16 +70,20 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onSelect(e: TypeaheadMatch): void {
+    this.validationError = '';
     console.log('Selected value: ', e.value);
     const selectedStock = e.item as Stock & { matchLabel?: string };
-    this.ticket.security = selectedStock.ticker;
-    this.selectedCompany = selectedStock.matchLabel || this.toMatchLabel(selectedStock);
-    this.subscribeToTickerPrice(selectedStock.ticker);
+    this.selectedInstrument = selectedStock;
+    this.ticket.security = selectedStock.instrumentKey;
+    this.selectedCompany = this.toShortLabel(selectedStock);
+    this.subscribeToTickerPrice(selectedStock.instrumentKey);
   }
 
   onBlur(): void {
     if (this.selectedCompany) return;
     this.ticket.security = '';
+    this.selectedInstrument = undefined;
+    this.selectedQuote = undefined;
     this.selectedPrice = null;
     this.selectedPriceAsOf = null;
     this.selectedPriceAsOfEpoch = 0;
@@ -90,8 +93,17 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onCreate() {
-    if (!this.ticket.security || !this.ticket.quantity) {
+    this.validationError = '';
+    if (!this.ticket.security || this.isMatured || (!this.isTreasury && !this.ticket.quantity)) {
       console.warn('Either security is not selected or quanity is not set!');
+      return;
+    }
+    if (this.isTreasury && (!Number.isFinite(this.ticket.quantity) || this.ticket.quantity < 100)) {
+      this.validationError = 'Treasury quantity must be at least 100.';
+      return;
+    }
+    if (this.isTreasury && this.ticket.quantity % 100 !== 0) {
+      this.validationError = 'Treasury quantity must be a multiple of 100.';
       return;
     }
     console.log('create tradeTicket', this.ticket);
@@ -106,12 +118,46 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
     if (this.selectedPrice == null) {
       return 'Streaming...';
     }
+    if (this.isTreasury) {
+      return `${this.selectedPrice.toFixed(3)}% of par`;
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 3,
       maximumFractionDigits: 3
     }).format(this.selectedPrice);
+  }
+
+  onAssetClassFilterChange(): void {
+    this.refreshFilteredStocks();
+  }
+
+  get isTreasury(): boolean {
+    return this.selectedInstrument?.assetClass === 'US_TREASURY';
+  }
+
+  get isMatured(): boolean {
+    return this.isTreasury && (this.selectedQuote?.matured || this.selectedInstrument?.matured) === true;
+  }
+
+  get estimatedCleanValue(): number | null {
+    if (!this.isTreasury || this.selectedPrice == null) {
+      return null;
+    }
+    return this.ticket.quantity * this.selectedPrice / 100;
+  }
+
+  get remainingMaturity(): string {
+    const maturity = this.selectedInstrument?.debtEconomics?.maturityDate;
+    const quoteTime = this.selectedQuote?.quoteTimestamp || this.selectedQuote?.asOf;
+    if (!maturity || !quoteTime) {
+      return '-';
+    }
+    const days = Math.max(0, Math.ceil(
+      (new Date(`${maturity}T00:00:00Z`).getTime() - new Date(quoteTime).getTime()) / 86400000
+    ));
+    return `${days} days`;
   }
 
   formatAsOf(): string {
@@ -145,6 +191,7 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
       if (!snapshot) {
         return;
       }
+      this.selectedQuote = snapshot;
       this.applyPriceCandidate(normalizedTicker, snapshot.price, snapshot.asOf ?? null);
     });
 
@@ -152,6 +199,7 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
       if (!tick || String(tick.ticker || '').trim().toUpperCase() !== normalizedTicker) {
         return;
       }
+      this.selectedQuote = tick;
       this.applyPriceCandidate(normalizedTicker, tick.price, tick.asOf ?? null);
     });
   }
@@ -188,7 +236,34 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private toMatchLabel(stock: Stock): string {
-    return `${stock.ticker} - ${stock.companyName}`;
+    if (stock.assetClass === 'US_TREASURY') {
+      const coupon = stock.debtEconomics?.fixedInterest?.couponRatePercent;
+      const maturity = stock.debtEconomics?.maturityDate;
+      if (coupon != null && maturity) {
+        const maturityDate = new Date(`${maturity}T00:00:00Z`);
+        const month = maturityDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+        const year = String(maturityDate.getUTCFullYear()).slice(-2);
+        return `${this.toShortLabel(stock)} — ${Number(coupon).toFixed(3)}% ${month}-${year}`;
+      }
+      return this.toShortLabel(stock);
+    }
+    return `${stock.instrumentKey} - ${stock.displayName}`;
+  }
+
+  private toShortLabel(stock: Stock): string {
+    return stock.shortDisplayName || stock.instrumentKey;
+  }
+
+  private refreshFilteredStocks(): void {
+    this.filteredStocks = (this.stocks || [])
+      .filter((instrument) => this.assetClassFilter === 'All' || instrument.assetClass === this.assetClassFilter)
+      .map((instrument) => ({
+        ...instrument,
+        selectorGroup: instrument.assetClass === 'US_TREASURY'
+          ? 'U.S. Treasuries'
+          : (instrument.assetClass === 'ETF' ? 'ETFs' : 'Stocks'),
+        matchLabel: this.toMatchLabel(instrument)
+      }));
   }
 
   private applyPresetSecurity(rawSecurity: string): void {
@@ -196,11 +271,12 @@ export class TradeTicketComponent implements OnInit, OnChanges, OnDestroy {
     if (!normalized || !this.ticket) {
       return;
     }
-    const matched = (this.stocks || []).find((stock) => String(stock.ticker || '').toUpperCase() === normalized);
+    const matched = (this.stocks || []).find((stock) => String(stock.instrumentKey || '').toUpperCase() === normalized);
     if (matched) {
-      this.ticket.security = matched.ticker;
-      this.selectedCompany = this.toMatchLabel(matched);
-      this.subscribeToTickerPrice(matched.ticker);
+      this.selectedInstrument = matched;
+      this.ticket.security = matched.instrumentKey;
+      this.selectedCompany = this.toShortLabel(matched);
+      this.subscribeToTickerPrice(matched.instrumentKey);
       return;
     }
     this.ticket.security = normalized;

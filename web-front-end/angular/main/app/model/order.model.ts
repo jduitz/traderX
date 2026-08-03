@@ -12,6 +12,12 @@ export interface OrderRecord {
     status: OrderStatus;
     createdAt: string;
     updatedAt: string;
+    lastExecutionPrice?: number;
+    lastFillQuantity?: number;
+    pendingTradeId?: string;
+    pendingQuantity?: number;
+    pendingPrice?: number;
+    pendingSubmittedAt?: string;
 }
 
 export interface OrderCreateRequest {

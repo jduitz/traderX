@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Wrapper purpose: stable, state-local start entrypoint.
 # This may delegate across multiple numbered state scripts to maximize reuse.
 # Execution flow:
-#  - scripts/start-state-016-cdm-generic-instruments-generated.sh
+#  - scripts/start-state-017-us-treasury-trading-generated.sh
 #  - scripts/start-grafana-traderx-dashboards.sh
 
-exec "${ROOT}/scripts/start-state-016-cdm-generic-instruments-generated.sh" "$@"
+exec "${ROOT}/scripts/start-state-017-us-treasury-trading-generated.sh" "$@"

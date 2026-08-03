@@ -3,6 +3,13 @@ const path = require('path');
 const express = require('express');
 const { connect } = require('nats');
 const yahooFinance = require('yahoo-finance2').default;
+const {
+  approximateYtmPercent,
+  isMatured,
+  normalizeTreasuryQuote,
+  toTreasuryPayload,
+  updateTreasuryCleanPrice
+} = require('./treasury-pricing');
 
 const PORT = Number(process.env.PRICE_PUBLISHER_PORT || '18100');
 const NATS_URL = process.env.NATS_ADDRESS || `nats://${process.env.NATS_BROKER_HOST || 'localhost'}:4222`;
@@ -10,12 +17,25 @@ const BOOTSTRAP_MODE = (process.env.PRICE_BOOTSTRAP_MODE || 'snapshot').toLowerC
 const PUBLISH_INTERVAL_MIN_MS = Number(process.env.PRICE_PUBLISH_INTERVAL_MIN_MS || '750');
 const PUBLISH_INTERVAL_MAX_MS = Number(process.env.PRICE_PUBLISH_INTERVAL_MAX_MS || '1500');
 const PUBLISH_BATCH_RATIO = Number(process.env.PRICE_PUBLISH_BATCH_RATIO || '0.25');
+const TREASURY_PREFIX = 'UST-';
 const TICKERS = (process.env.PRICE_TICKERS || 'AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C')
   .split(',')
   .map((ticker) => ticker.trim().toUpperCase())
   .filter(Boolean);
 
 const SNAPSHOT_PATH = path.join(__dirname, '..', 'data', 'snapshot-prices.json');
+const FIXED_UTC_INSTANT = String(process.env.TRADERX_FIXED_UTC_INSTANT || '').trim();
+
+function now() {
+  if (!FIXED_UTC_INSTANT) {
+    return new Date();
+  }
+  const fixed = new Date(FIXED_UTC_INSTANT);
+  if (Number.isNaN(fixed.getTime())) {
+    throw new Error(`TRADERX_FIXED_UTC_INSTANT is not a valid UTC instant: ${FIXED_UTC_INSTANT}`);
+  }
+  return fixed;
+}
 
 const app = express();
 const state = {
@@ -155,6 +175,9 @@ function assignStartupVolatilityBands() {
 }
 
 async function loadFromYahoo(ticker, snapshotEntry) {
+  if (snapshotEntry?.assetClass === 'US_TREASURY') {
+    throw new Error('Treasury prices must never be requested from Yahoo Finance');
+  }
   const quote = await yahooFinance.quote(ticker);
   const open = Number(quote.regularMarketOpen);
   const close = Number(quote.regularMarketPreviousClose ?? quote.regularMarketPrice);
@@ -168,6 +191,10 @@ async function bootstrapPrices() {
   const snapshot = loadSnapshot();
   for (const ticker of TICKERS) {
     const snapshotEntry = snapshot[ticker];
+    if (snapshotEntry?.assetClass === 'US_TREASURY') {
+      state.prices.set(ticker, normalizeTreasuryQuote(ticker, snapshotEntry));
+      continue;
+    }
     if (BOOTSTRAP_MODE === 'yfinance') {
       try {
         const quote = await loadFromYahoo(ticker, snapshotEntry);
@@ -191,8 +218,18 @@ async function bootstrapPrices() {
   }
 }
 
-function updateTick(ticker) {
+function updateTick(ticker, sharedRoll = Math.random() * 2 - 1) {
   const current = state.prices.get(ticker) || createFallbackQuote(ticker);
+  if (current.assetClass === 'US_TREASURY') {
+    const timestamp = now().toISOString();
+    if (isMatured(current.maturityDate, timestamp)) {
+      return { ...current, matured: true, quoteTimestamp: timestamp };
+    }
+    const nextPrice = updateTreasuryCleanPrice(current, sharedRoll, Math.random() * 2 - 1);
+    const next = { ...current, price: nextPrice, matured: false };
+    state.prices.set(ticker, next);
+    return next;
+  }
   const band = ensureVolatilityBand(ticker, current);
   const low = band.low;
   const high = band.high;
@@ -206,15 +243,20 @@ function updateTick(ticker) {
   return next;
 }
 
-function toPayload(quote) {
-  return {
+function toPayload(quote, timestamp = now().toISOString()) {
+  if (quote.assetClass === 'US_TREASURY') {
+    return toTreasuryPayload(quote, timestamp);
+  }
+  const payload = {
     ticker: quote.ticker,
+    instrumentKey: quote.instrumentKey || quote.ticker,
     price: quote.price,
     openPrice: quote.openPrice,
     closePrice: quote.closePrice,
-    asOf: new Date().toISOString(),
+    asOf: timestamp,
     source: quote.source
   };
+  return payload;
 }
 
 function publishTick(quote) {
@@ -222,10 +264,15 @@ function publishTick(quote) {
     return;
   }
   const topic = `pricing.${quote.ticker}`;
+  const timestamp = now().toISOString();
+  const payload = toPayload(quote, timestamp);
+  if (payload.matured) {
+    return;
+  }
   const envelope = {
     topic,
-    payload: toPayload(quote),
-    date: new Date().toISOString(),
+    payload,
+    date: timestamp,
     from: 'price-publisher',
     type: 'PriceTick'
   };
@@ -242,10 +289,11 @@ function schedulePublishLoop() {
   const loop = () => {
     const tickers = Array.from(state.prices.keys());
     if (tickers.length > 0) {
+      const sharedRoll = Math.random() * 2 - 1;
       const batchSize = Math.max(1, Math.ceil(tickers.length * publishCfg.ratio));
       const selected = pickRandomSubset(tickers, batchSize);
       for (const ticker of selected) {
-        const quote = updateTick(ticker);
+        const quote = updateTick(ticker, sharedRoll);
         publishTick(quote);
       }
     }
@@ -261,9 +309,12 @@ function ensureTicker(ticker) {
     return null;
   }
   if (!state.prices.has(normalized)) {
-    const quote = createFallbackQuote(normalized);
-    state.prices.set(normalized, quote);
-    ensureVolatilityBand(normalized, quote);
+    if (normalized.startsWith(TREASURY_PREFIX)) {
+      return null;
+    }
+    const fallback = createFallbackQuote(normalized);
+    state.prices.set(normalized, fallback);
+    ensureVolatilityBand(normalized, fallback);
   }
   return state.prices.get(normalized);
 }
@@ -306,7 +357,11 @@ async function main() {
   });
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+module.exports = { ensureTicker, state };

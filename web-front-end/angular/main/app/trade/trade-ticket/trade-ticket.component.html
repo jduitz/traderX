@@ -6,6 +6,17 @@
         </div>
     </div>
     <div class="mb-3 row">
+        <label class="col-sm-2 col-form-label me-3">Asset Class</label>
+        <div class="col-sm-8">
+            <select id="tradeAssetClassFilter" class="form-select" [(ngModel)]="assetClassFilter" (change)="onAssetClassFilterChange()">
+                <option value="All">All</option>
+                <option value="Stock">Stocks</option>
+                <option value="ETF">ETFs</option>
+                <option value="US_TREASURY">U.S. Treasuries</option>
+            </select>
+        </div>
+    </div>
+    <div class="mb-3 row">
         <label class="col-sm-2 col-form-label me-3">Security</label>
         <div class="col-sm-8">
             <input
@@ -14,6 +25,7 @@
                 [(ngModel)]="selectedCompany"
                 [typeahead]="filteredStocks"
                 typeaheadOptionField="matchLabel"
+                typeaheadGroupField="selectorGroup"
                 (typeaheadOnSelect)="onSelect($event)"
                 (blur)="onBlur()"
                 placeholder="Search security"
@@ -24,6 +36,24 @@
                 class="form-control"
             />
         </div>
+    </div>
+    <div *ngIf="selectedInstrument" class="mb-3 row">
+        <label class="col-sm-2 col-form-label me-3">{{ isTreasury ? 'Clean Price' : 'Live Price' }}</label>
+        <div class="col-sm-8">
+            <span class="fw-semibold">{{ formatLivePrice() }}</span>
+            <small *ngIf="selectedPriceAsOf" class="text-muted ms-2">as of {{ formatAsOf() }}</small>
+        </div>
+    </div>
+    <div *ngIf="isTreasury" class="alert alert-info py-2">
+        <div><strong>{{ selectedInstrument?.displayName }}</strong></div>
+        <div class="small text-muted">Internal key: {{ selectedInstrument?.instrumentKey }}</div>
+        <div>Coupon: {{ selectedInstrument?.debtEconomics?.fixedInterest?.couponRatePercent | number:'1.3-3' }}%</div>
+        <div>Original term: {{ selectedInstrument?.debtEconomics?.originalTermYears }} years</div>
+        <div>Maturity: {{ selectedInstrument?.debtEconomics?.maturityDate }} ({{ remainingMaturity }})</div>
+        <div>Approximate YTM: {{ selectedQuote?.approximateYtmPercent | number:'1.3-3' }}%</div>
+        <div>Estimated clean value: {{ estimatedCleanValue | currency:'USD' }}</div>
+        <div class="small">Simulated clean price. Accrued interest and dirty settlement value are excluded.</div>
+        <div *ngIf="isMatured" class="text-danger fw-bold">Matured — new trades are disabled.</div>
     </div>
 
     <div class="mb-3 row">
@@ -58,13 +88,16 @@
         </div>
     </div>
     <div class="mb-3 row">
-        <label class="col-sm-2 col-form-label me-3">Quantity</label>
+        <label class="col-sm-2 col-form-label me-3">{{ isTreasury ? 'Face Amount' : 'Quantity' }}</label>
         <div class="col-sm-8">
-            <input class="form-control d-inline-block" id="quantityField" type="number" [(ngModel)]="ticket.quantity" />
+            <input class="form-control d-inline-block" id="quantityField" type="number" [min]="isTreasury ? 100 : null" [step]="isTreasury ? 100 : 1" [(ngModel)]="ticket.quantity" />
+            <div *ngIf="validationError || serverError" id="treasuryQuantityError" class="alert alert-danger py-2 mt-2 mb-0" role="alert">
+                {{ validationError || serverError }}
+            </div>
         </div>
     </div>
     <div class="mb-3 row">
-        <button class="btn btn-sm btn-primary col-sm-3 me-2" id="createButton" (click)="onCreate()">Create</button>
+        <button class="btn btn-sm btn-primary col-sm-3 me-2" id="createButton" [disabled]="isMatured" (click)="onCreate()">Create</button>
         <button class="btn btn-sm btn-secondary col-sm-3" id="cancelButton" (click)="onCancel()">Close</button>
     </div>
 </div>

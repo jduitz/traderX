@@ -22,6 +22,8 @@ public class TradeRepository {
     trade.setPrice(price);
     trade.setUpdated(rs.getTimestamp("Updated"));
     trade.setCreated(rs.getTimestamp("Created"));
+    trade.setRejectionReason(rs.getString("RejectionReason"));
+    trade.setSourceOrderId(rs.getString("SourceOrderId"));
     return trade;
   };
 
@@ -33,14 +35,14 @@ public class TradeRepository {
 
   public List<Trade> findAll() {
     return jdbcTemplate.query(
-        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created from Trades order by Updated desc",
+        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created, RejectionReason, SourceOrderId from Trades order by Updated desc",
         TRADE_ROW_MAPPER
     );
   }
 
   public List<Trade> findByAccountId(int accountId) {
     return jdbcTemplate.query(
-        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created from Trades where AccountID = ? order by Updated desc",
+        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created, RejectionReason, SourceOrderId from Trades where AccountID = ? order by Updated desc",
         TRADE_ROW_MAPPER,
         accountId
     );

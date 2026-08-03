@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-This snapshot was generated from TraderX state `016-cdm-generic-instruments`.
+This snapshot was generated from TraderX state `017-us-treasury-trading`.
 
 - Architecture source-of-truth remains in the upstream feature pack and SpecKit docs.
 - This branch contains runnable generated artifacts for the selected state.

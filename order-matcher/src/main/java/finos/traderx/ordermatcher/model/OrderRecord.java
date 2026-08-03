@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -54,24 +52,17 @@ public class OrderRecord {
     @Column(name = "LastFillQuantity")
     private Integer lastFillQuantity;
 
-    @PrePersist
-    public void prePersist() {
-        Instant now = Instant.now();
-        if (createdAt == null) {
-            createdAt = now;
-        }
-        if (updatedAt == null) {
-            updatedAt = createdAt;
-        }
-        if (status == null) {
-            status = OrderStatus.NEW;
-        }
-    }
+    @Column(name = "PendingTradeId", length = 50)
+    private String pendingTradeId;
 
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = Instant.now();
-    }
+    @Column(name = "PendingQuantity")
+    private Integer pendingQuantity;
+
+    @Column(name = "PendingPrice", precision = 18, scale = 3)
+    private BigDecimal pendingPrice;
+
+    @Column(name = "PendingSubmittedAt")
+    private Instant pendingSubmittedAt;
 
     public String getOrderId() {
         return orderId;
@@ -168,5 +159,36 @@ public class OrderRecord {
     public void setLastFillQuantity(Integer lastFillQuantity) {
         this.lastFillQuantity = lastFillQuantity;
     }
-}
 
+    public String getPendingTradeId() {
+        return pendingTradeId;
+    }
+
+    public void setPendingTradeId(String pendingTradeId) {
+        this.pendingTradeId = pendingTradeId;
+    }
+
+    public Integer getPendingQuantity() {
+        return pendingQuantity;
+    }
+
+    public void setPendingQuantity(Integer pendingQuantity) {
+        this.pendingQuantity = pendingQuantity;
+    }
+
+    public BigDecimal getPendingPrice() {
+        return pendingPrice;
+    }
+
+    public void setPendingPrice(BigDecimal pendingPrice) {
+        this.pendingPrice = pendingPrice;
+    }
+
+    public Instant getPendingSubmittedAt() {
+        return pendingSubmittedAt;
+    }
+
+    public void setPendingSubmittedAt(Instant pendingSubmittedAt) {
+        this.pendingSubmittedAt = pendingSubmittedAt;
+    }
+}

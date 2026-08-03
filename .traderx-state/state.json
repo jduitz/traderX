@@ -1,9 +1,9 @@
 {
-  "stateId": "016-cdm-generic-instruments",
-  "stateTitle": "CDM Generic Instruments",
+  "stateId": "017-us-treasury-trading",
+  "stateTitle": "U.S. Treasury Trading",
   "stateStatus": "implemented",
-  "featurePack": "specs/016-cdm-generic-instruments",
-  "previousStates": ["009-order-management-matcher"],
+  "featurePack": "specs/017-us-treasury-trading",
+  "previousStates": ["016-cdm-generic-instruments"],
   "nextStates": [],
   "isConvergenceState": false,
   "convergenceLevel": "none",
@@ -12,8 +12,8 @@
   "previousConvergenceState": "012-platform-convergence-c3",
   "nextConvergenceState": "",
   "sourceBranch": "main",
-  "sourceCommit": "25ea8b839e2fdd1dfe9b77f8917e3d5e4a8260bd",
-  "generatedAtUtc": "2026-07-21T19:00:32Z",
-  "generationEntryPoint": "bash pipeline/generate-state.sh 016-cdm-generic-instruments",
-  "publishTagHint": "generated/016-cdm-generic-instruments/v1"
+  "sourceCommit": "808b683ec73267dd9cb52d1d1887d573856357f2",
+  "generatedAtUtc": "2026-08-03T19:17:02Z",
+  "generationEntryPoint": "bash pipeline/generate-state.sh 017-us-treasury-trading",
+  "publishTagHint": "generated/017-us-treasury-trading/v1"
 }

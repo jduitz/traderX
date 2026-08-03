@@ -21,6 +21,10 @@ public class OrderResponse {
     private BigDecimal lastExecutionPrice;
     private Integer lastFillQuantity;
     private BigDecimal marketPrice;
+    private String pendingTradeId;
+    private Integer pendingQuantity;
+    private BigDecimal pendingPrice;
+    private Instant pendingSubmittedAt;
 
     public static OrderResponse from(OrderRecord order, BigDecimal marketPrice) {
         OrderResponse response = new OrderResponse();
@@ -37,6 +41,10 @@ public class OrderResponse {
         response.lastExecutionPrice = order.getLastExecutionPrice();
         response.lastFillQuantity = order.getLastFillQuantity();
         response.marketPrice = marketPrice;
+        response.pendingTradeId = order.getPendingTradeId();
+        response.pendingQuantity = order.getPendingQuantity();
+        response.pendingPrice = order.getPendingPrice();
+        response.pendingSubmittedAt = order.getPendingSubmittedAt();
         return response;
     }
 
@@ -91,5 +99,20 @@ public class OrderResponse {
     public BigDecimal getMarketPrice() {
         return marketPrice;
     }
-}
 
+    public String getPendingTradeId() {
+        return pendingTradeId;
+    }
+
+    public Integer getPendingQuantity() {
+        return pendingQuantity;
+    }
+
+    public BigDecimal getPendingPrice() {
+        return pendingPrice;
+    }
+
+    public Instant getPendingSubmittedAt() {
+        return pendingSubmittedAt;
+    }
+}

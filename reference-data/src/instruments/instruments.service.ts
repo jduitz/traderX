@@ -18,8 +18,9 @@ export class InstrumentsService {
     return this.instruments;
   }
 
-  async findByTicker(ticker: string): Promise<Instrument | undefined> {
-    return (await this.instruments).find((instrument) => instrument.ticker === ticker);
+  async findByInstrumentKey(instrumentKey: string): Promise<Instrument | undefined> {
+    const normalized = String(instrumentKey ?? '').trim().toUpperCase();
+    return (await this.instruments).find((instrument) => instrument.instrumentKey === normalized);
   }
 
   private parseSupportedTickers(input?: string): Set<string> | undefined {

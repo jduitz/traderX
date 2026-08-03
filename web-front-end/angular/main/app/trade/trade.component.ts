@@ -26,9 +26,12 @@ export class TradeComponent implements OnInit {
     accountNameById: { [accountId: number]: string } = {};
     accountModel?: Account = undefined;
     stocks: Stock[] = [];
+    blotterAssetClassFilter: 'All' | 'Stock' | 'ETF' | 'US_TREASURY' = 'All';
     modalRef?: BsModalRef;
     createTicketResponse: any;
     createOrderResponse: any;
+    tradeTicketError = '';
+    orderTicketError = '';
     selectedOrderSecurity = '';
     private account = new Subject<Account>();
 
@@ -46,7 +49,10 @@ export class TradeComponent implements OnInit {
             }, {} as { [accountId: number]: string });
             this.accountIds = this.realAccounts.map((account) => account.id);
             this.accounts = [this.allAccountsOption, ...this.realAccounts];
-            this.setAccount(this.realAccounts[5] ?? this.realAccounts[0] ?? this.allAccountsOption);
+            this.setAccount(
+                this.realAccounts.find((account) => account.id === 17017)
+                ?? this.realAccounts[0]
+                ?? this.allAccountsOption);
             console.log(this.accounts);
         });
         this.symbolService.getStocks().subscribe((stocks) => this.stocks = stocks);
@@ -65,6 +71,7 @@ export class TradeComponent implements OnInit {
         if (this.isAllAccountsSelected) {
             return;
         }
+        this.tradeTicketError = '';
         this.modalRef = this.modalService.show(template);
     }
 
@@ -72,6 +79,7 @@ export class TradeComponent implements OnInit {
         if (this.isAllAccountsSelected) {
             return;
         }
+        this.orderTicketError = '';
         this.modalRef = this.modalService.show(template);
     }
 
@@ -81,11 +89,19 @@ export class TradeComponent implements OnInit {
             return;
         }
         console.log('createTradeTicket', ticket);
-        this.symbolService.createTicket(ticket).subscribe((response) => {
-            console.log(response);
-            this.createTicketResponse = response;
+        this.tradeTicketError = '';
+        this.symbolService.createTicket(ticket).subscribe({
+            next: (response) => {
+                console.log(response);
+                this.createTicketResponse = response;
+                this.closeTicket();
+            },
+            error: (error) => {
+                this.tradeTicketError = this.apiErrorMessage(
+                    error,
+                    'The Treasury trade could not be created.');
+            }
         });
-        this.closeTicket();
     }
 
     createOrderTicket(order: OrderCreateRequest) {
@@ -93,10 +109,18 @@ export class TradeComponent implements OnInit {
             this.createOrderResponse = { success: false, message: 'Select a specific account to create an order.' };
             return;
         }
-        this.orderAdminService.createOrder(order).subscribe((response) => {
-            this.createOrderResponse = response;
+        this.orderTicketError = '';
+        this.orderAdminService.createOrder(order).subscribe({
+            next: (response) => {
+                this.createOrderResponse = response;
+                this.closeTicket();
+            },
+            error: (error) => {
+                this.orderTicketError = this.apiErrorMessage(
+                    error,
+                    'The Treasury order could not be created.');
+            }
         });
-        this.closeTicket();
     }
 
     onOrderSecuritySelected(security: string) {
@@ -122,5 +146,13 @@ export class TradeComponent implements OnInit {
 
     get isAllAccountsSelected(): boolean {
         return (this.accountModel?.id ?? -1) === this.allAccountsOption.id;
+    }
+
+    private apiErrorMessage(error: any, fallback: string): string {
+        const responseBody = error?.error;
+        if (typeof responseBody === 'string' && responseBody.trim()) {
+            return responseBody.trim();
+        }
+        return responseBody?.detail || responseBody?.message || error?.message || fallback;
     }
 }

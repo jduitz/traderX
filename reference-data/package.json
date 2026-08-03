@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "nest build",
+    "test": "npm run build && node --test dist/data-loader/load-csv-data.test.js",
     "start": "nest start",
     "start:prod": "node dist/main.js"
   },

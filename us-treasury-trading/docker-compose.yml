@@ -1,4 +1,4 @@
-name: traderx-state-016
+name: traderx-state-017
 
 services:
   database:
@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 20
     volumes:
-      - postgres_state_009_data:/var/lib/postgresql/data
+      - postgres_state_017_data:/var/lib/postgresql/data
       - ../postgres-database-replacement/postgres-init/initialSchema.sql:/docker-entrypoint-initdb.d/001-initialSchema.sql:ro
 
   reference-data:
@@ -28,7 +28,8 @@ services:
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus,info"
       MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
-      REFERENCE_DATA_SUPPORTED_TICKERS: "${SUPPORTED_TICKERS:-AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C,JPM,GS,MS,UBS,DB,COF,DFS,FNMA,FIS,FNF,SPY,QQQ,IWM,VTI,GLD}"
+      REFERENCE_DATA_SUPPORTED_TICKERS: "${SUPPORTED_TICKERS:-AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C,JPM,GS,MS,UBS,DB,COF,DFS,FNMA,FIS,FNF,SPY,QQQ,IWM,VTI,GLD,UST-20280630,UST-20310630,UST-20360515,UST-20460515,UST-20560515}"
+      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
     ports:
       - "18085:18085"
     depends_on:
@@ -52,7 +53,8 @@ services:
       PRICE_PUBLISHER_PORT: "18100"
       NATS_BROKER_HOST: "nats-broker"
       PRICE_BOOTSTRAP_MODE: "${PRICE_BOOTSTRAP_MODE:-snapshot}"
-      PRICE_TICKERS: "${SUPPORTED_TICKERS:-AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C,JPM,GS,MS,UBS,DB,COF,DFS,FNMA,FIS,FNF,SPY,QQQ,IWM,VTI,GLD}"
+      PRICE_TICKERS: "${SUPPORTED_TICKERS:-AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C,JPM,GS,MS,UBS,DB,COF,DFS,FNMA,FIS,FNF,SPY,QQQ,IWM,VTI,GLD,UST-20280630,UST-20310630,UST-20360515,UST-20460515,UST-20560515}"
+      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
     ports:
       - "18100:18100"
     depends_on:
@@ -128,6 +130,10 @@ services:
       DATABASE_DBUSER: "traderx"
       DATABASE_DBPASS: "traderx"
       NATS_BROKER_HOST: "nats-broker"
+      REFERENCE_DATA_HOST: "reference-data"
+      REFERENCE_DATA_CONNECT_TIMEOUT_MS: "${REFERENCE_DATA_CONNECT_TIMEOUT_MS:-2000}"
+      REFERENCE_DATA_READ_TIMEOUT_MS: "${REFERENCE_DATA_READ_TIMEOUT_MS:-5000}"
+      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
       CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-*}"
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus,info"
       MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
@@ -138,6 +144,8 @@ services:
       database:
         condition: service_healthy
       nats-broker:
+        condition: service_started
+      reference-data:
         condition: service_started
 
   trade-service:
@@ -151,6 +159,8 @@ services:
       PEOPLE_SERVICE_HOST: "people-service"
       NATS_BROKER_HOST: "nats-broker"
       PRICE_SERVICE_HOST: "price-publisher"
+      POSITION_SERVICE_HOST: "position-service"
+      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
       CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-*}"
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus,info"
       MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: "true"
@@ -164,6 +174,7 @@ services:
       - nats-broker
       - price-publisher
       - trade-processor
+      - position-service
 
   web-front-end-angular:
     build:
@@ -198,6 +209,10 @@ services:
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
       PRICE_SERVICE_URL: "http://price-publisher:18100"
       TRADE_SERVICE_URL: "http://trade-service:18092/trade/"
+      TRADE_PROCESSOR_URL: "http://trade-processor:18091"
+      REFERENCE_DATA_SERVICE_URL: "http://reference-data:18085"
+      POSITION_SERVICE_URL: "http://position-service:18090"
+      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
       NATS_BROKER_HOST: "nats-broker"
       ORDER_MATCHER_TICK_MS: "${ORDER_MATCHER_TICK_MS:-1000}"
       ORDER_FILL_FULL_THRESHOLD: "${ORDER_FILL_FULL_THRESHOLD:-1000}"
@@ -209,6 +224,12 @@ services:
       price-publisher:
         condition: service_started
       trade-service:
+        condition: service_started
+      trade-processor:
+        condition: service_started
+      reference-data:
+        condition: service_started
+      position-service:
         condition: service_started
       nats-broker:
         condition: service_started
@@ -306,7 +327,7 @@ services:
     image: grafana/grafana:11.1.0
     environment:
       GF_SECURITY_ADMIN_USER: "${TRADERX_GRAFANA_ADMIN_USER:-traderx-admin}"
-      GF_SECURITY_ADMIN_PASSWORD: "${TRADERX_GRAFANA_ADMIN_PASSWORD:-traderx-state-016}"
+      GF_SECURITY_ADMIN_PASSWORD: "${TRADERX_GRAFANA_ADMIN_PASSWORD:-traderx-state-017}"
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "${TRADERX_GRAFANA_ANONYMOUS_ENABLED:-true}"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "${TRADERX_GRAFANA_ANONYMOUS_ORG_ROLE:-Viewer}"
@@ -323,4 +344,4 @@ services:
       - tempo
 
 volumes:
-  postgres_state_009_data:
+  postgres_state_017_data:

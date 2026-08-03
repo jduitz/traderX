@@ -11,11 +11,11 @@ export class InstrumentsController {
     return this.instrumentsService.findAll();
   }
 
-  @Get(':ticker')
-  async findByTicker(@Param('ticker') ticker: string): Promise<Instrument> {
-    const instrument = await this.instrumentsService.findByTicker(ticker);
+  @Get(':instrumentKey')
+  async findByInstrumentKey(@Param('instrumentKey') instrumentKey: string): Promise<Instrument> {
+    const instrument = await this.instrumentsService.findByInstrumentKey(instrumentKey);
     if (!instrument) {
-      throw new NotFoundException(`Instrument ticker "${ticker}" not found.`);
+      throw new NotFoundException(`Instrument key "${instrumentKey}" not found.`);
     }
     return instrument;
   }

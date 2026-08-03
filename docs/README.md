@@ -1,6 +1,6 @@
 # Generated Docs
 
-This folder provides generated learning-oriented documentation for state `016-cdm-generic-instruments`.
+This folder provides generated learning-oriented documentation for state `017-us-treasury-trading`.
 
 - [Learning Index](./learning/README.md)
 - [Component List](./learning/component-list.md)

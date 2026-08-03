@@ -28,8 +28,13 @@ export function createAccount(): Account {
 
 export function createStock(): Stock {
   return {
-    companyName: faker.company.name(),
-    ticker: faker.string.alpha(4)
+    displayName: faker.company.name(),
+    instrumentKey: faker.string.alpha(4).toUpperCase(),
+    assetClass: 'Stock',
+    currency: 'USD',
+    securityType: 'Equity',
+    matured: false,
+    observedAt: new Date().toISOString()
   };
 }
 

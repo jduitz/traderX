@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { AlertModule } from 'ngx-bootstrap/alert';
 import { MockAccountService } from 'main/app/test-utils/mocks.service';
 import { createAccount } from 'main/app/test-utils/utils';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('Account add/update tests', () => {
   let comp: EditAccountComponent;
@@ -20,6 +22,8 @@ describe('Account add/update tests', () => {
             FormsModule
         ],
         providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
           {
             provide: AccountService,
             useClass: MockAccountService

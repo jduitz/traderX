@@ -13,6 +13,8 @@ public class Trade {
   private BigDecimal price;
   private Date updated;
   private Date created;
+  private String rejectionReason;
+  private String sourceOrderId;
 
   public String getId() {
     return id;
@@ -84,5 +86,21 @@ public class Trade {
 
   public void setCreated(Date created) {
     this.created = created;
+  }
+
+  public String getRejectionReason() {
+    return rejectionReason;
+  }
+
+  public void setRejectionReason(String rejectionReason) {
+    this.rejectionReason = rejectionReason;
+  }
+
+  public String getSourceOrderId() {
+    return sourceOrderId;
+  }
+
+  public void setSourceOrderId(String sourceOrderId) {
+    this.sourceOrderId = sourceOrderId;
   }
 }

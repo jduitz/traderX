@@ -224,7 +224,7 @@
       },
       "targets": [
         {
-          "expr": "{compose_project=\"traderx-state-016\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
+          "expr": "{compose_project=\"traderx-state-017\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
           "refId": "A"
         }
       ],

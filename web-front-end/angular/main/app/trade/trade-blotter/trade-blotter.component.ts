@@ -5,6 +5,7 @@ import { PositionService } from 'main/app/service/position.service';
 import { Observable } from 'rxjs';
 import { Trade } from '../../model/trade.model';
 import { TradeFeedService } from 'main/app/service/trade-feed.service';
+import { Stock } from 'main/app/model/symbol.model';
 
 @Component({
     standalone: false,
@@ -17,6 +18,8 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
     @Input() allAccountsMode = false;
     @Input() accountIds: number[] = [];
     @Input() accountNameById: { [accountId: number]: string } = {};
+    @Input() instruments: Stock[] = [];
+    @Input() assetClassFilter: 'All' | 'Stock' | 'ETF' | 'US_TREASURY' = 'All';
     trades: Trade[] = [];
     gridApi: GridApi;
     pendingTrades: Trade[] = [];
@@ -26,14 +29,15 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
     private readonly baseColumns: ColDef[] = [
         {
             headerName: 'SECURITY',
-            field: 'security'
+            field: 'security',
+            valueFormatter: ({ value }) => this.formatSecurity(value)
         },
         {
             headerName: 'PRICE',
             field: 'price',
             headerClass: 'ag-right-aligned-header',
             cellClass: 'ag-right-aligned-cell',
-            valueFormatter: ({ value }) => this.formatCurrency(value)
+            valueFormatter: ({ value, data }) => this.formatPrice(value, data?.security)
         },
         {
             headerName: 'QUANTITY',
@@ -52,6 +56,10 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
             enableCellChangeFlash: true
         },
         {
+            headerName: 'REJECTION',
+            field: 'rejectionReason'
+        },
+        {
             headerName: 'EXECUTED',
             field: 'created',
             valueFormatter: ({ value }) => this.toRelativeTime(value)
@@ -65,7 +73,9 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
             !!change.account ||
             !!change.allAccountsMode ||
             !!change.accountIds ||
-            !!change.accountNameById;
+            !!change.accountNameById ||
+            !!change.instruments ||
+            !!change.assetClassFilter;
         if (scopeChanged) {
             this.configureColumns();
             this.loadScope();
@@ -97,6 +107,9 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
     }
 
     private update(data: Trade) {
+        if (!this.isVisibleSecurity(data?.security)) {
+            return;
+        }
         if (!this.gridApi) {
             this.pendingTrades.push(data);
             return;
@@ -149,7 +162,9 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
 
         if (this.allAccountsMode) {
             this.tradeService.getAllTrades().subscribe((trades: Trade[]) => {
-                this.trades = (trades ?? []).map((trade) => this.withAccountDisplay(trade));
+                this.trades = (trades ?? [])
+                    .filter((trade) => this.isVisibleSecurity(trade.security))
+                    .map((trade) => this.withAccountDisplay(trade));
                 this.processPendingTrades();
             }, () => {
                 this.isPending = false;
@@ -173,7 +188,9 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
         }
 
         this.tradeService.getTrades(accountId).subscribe((trades: Trade[]) => {
-            this.trades = (trades ?? []).map((trade) => this.withAccountDisplay(trade));
+            this.trades = (trades ?? [])
+                .filter((trade) => this.isVisibleSecurity(trade.security))
+                .map((trade) => this.withAccountDisplay(trade));
             this.processPendingTrades();
         }, () => {
             this.isPending = false;
@@ -258,6 +275,30 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
             minimumFractionDigits: 3,
             maximumFractionDigits: 3
         }).format(numeric);
+    }
+
+    private formatPrice(value: any, security: string): string {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+            return '-';
+        }
+        if (this.instrumentFor(security)?.assetClass === 'US_TREASURY') {
+            return `${numeric.toFixed(3)}%`;
+        }
+        return this.formatCurrency(numeric);
+    }
+
+    private instrumentFor(security: string): Stock | undefined {
+        return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+    }
+
+    private formatSecurity(security: string): string {
+        return this.instrumentFor(security)?.shortDisplayName || security || '-';
+    }
+
+    private isVisibleSecurity(security: string): boolean {
+        return this.assetClassFilter === 'All'
+            || this.instrumentFor(security)?.assetClass === this.assetClassFilter;
     }
 
     private formatInteger(value: any): string {

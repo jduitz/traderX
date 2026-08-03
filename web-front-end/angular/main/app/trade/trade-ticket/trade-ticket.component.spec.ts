@@ -5,8 +5,12 @@ import { By } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { stocks as dummyStocks, accounts as dummyAccounts } from 'main/app/test-utils/mocks.service';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
+import { of } from 'rxjs';
+import { TradeFeedService } from 'main/app/service/trade-feed.service';
+import { PriceSnapshotService } from 'main/app/service/price-snapshot.service';
+import { Stock } from 'main/app/model/symbol.model';
 
-xdescribe('TradeTicketComponent', () => {
+describe('TradeTicketComponent', () => {
   let component: TradeTicketComponent;
   let fixture: ComponentFixture<TradeTicketComponent>;
 
@@ -15,7 +19,32 @@ xdescribe('TradeTicketComponent', () => {
       declarations: [TradeTicketComponent],
       imports: [
         FormsModule,
-        TypeaheadModule
+        TypeaheadModule.forRoot()
+      ],
+      providers: [
+        {
+          provide: TradeFeedService,
+          useValue: { subscribe: () => () => {} }
+        },
+        {
+          provide: PriceSnapshotService,
+          useValue: {
+            getPrice: () => of({
+              ticker: 'UST-20360515',
+              instrumentKey: 'UST-20360515',
+              assetClass: 'US_TREASURY',
+              price: 99.257,
+              openPrice: 99.257,
+              closePrice: 99.257,
+              asOf: '2026-07-30T12:00:00Z',
+              quoteTimestamp: '2026-07-30T12:00:00Z',
+              approximateYtmPercent: 4.47,
+              matured: false,
+              source: 'simulated',
+              simulated: true
+            })
+          }
+        }
       ]
     })
       .compileComponents();
@@ -39,7 +68,7 @@ xdescribe('TradeTicketComponent', () => {
     const buyButton = fixture.debugElement.query(By.css('#buyButton'));
     expect(buyButton.nativeElement.checked).toBeTrue();
     const accountLabel = fixture.debugElement.query(By.css('#accountLabel'));
-    expect(accountLabel.nativeElement.innerText).toEqual(component.account?.displayName);
+    expect(accountLabel.nativeElement.value).toEqual(component.account?.displayName);
   });
 
   it('should update ticket object with given values on create click and emit create event', async () => {
@@ -48,7 +77,7 @@ xdescribe('TradeTicketComponent', () => {
     quantityField.nativeElement.dispatchEvent(new Event('input'));
     const sellButton = fixture.debugElement.query(By.css('#sellButton'));
     sellButton.nativeElement.click();
-    component.ticket.security = dummyStocks[0].ticker;
+    component.ticket.security = dummyStocks[0].instrumentKey;
 
     spyOn(component.create, 'emit');
     const createButton = fixture.debugElement.query(By.css('#createButton'));
@@ -61,12 +90,12 @@ xdescribe('TradeTicketComponent', () => {
       });
   });
 
-  // it('getStockTicker should return ticker value from stock', () => {
-  //   expect(component.getStockTicker(dummyStocks[0])).toEqual(dummyStocks[0].ticker);
+  // it('getStockTicker should return instrument key value from stock', () => {
+  //   expect(component.getStockTicker(dummyStocks[0])).toEqual(dummyStocks[0].instrumentKey);
   // });
 
-  // it('getStockLabel should return comapny name from stock', () => {
-  //   expect(component.getStockLabel(dummyStocks[0])).toEqual(dummyStocks[0].companyName);
+  // it('getStockLabel should return display name from stock', () => {
+  //   expect(component.getStockLabel(dummyStocks[0])).toEqual(dummyStocks[0].displayName);
   // });
 
   it('should emit cancel on cancel click', async () => {
@@ -80,10 +109,113 @@ xdescribe('TradeTicketComponent', () => {
   it('onQueryChange should return results based on given query', () => {
     component.stocks = dummyStocks;
     expect(component.filteredStocks.length).toEqual(0);
+    component.ngOnChanges({ stocks: { currentValue: dummyStocks } } as any);
     const stockInput = fixture.debugElement.query(By.css('#stock-input'));
     stockInput.nativeElement.value = '';
     stockInput.nativeElement.dispatchEvent(new Event('input'));
     expect(component.filteredStocks.length).toEqual(5);
+  });
+
+  it('shows Treasury face amount and clean percent-of-par valuation without a dollar price', () => {
+    const treasury: Stock = {
+      instrumentKey: 'UST-20360515',
+      displayName: 'U.S. Treasury Note 4.375% due May 15, 2036',
+      shortDisplayName: 'UST 10Y',
+      assetClass: 'US_TREASURY',
+      currency: 'USD',
+      securityType: 'Debt',
+      matured: false,
+      observedAt: '2026-07-30T12:00:00Z',
+      debtEconomics: {
+        debtType: 'US_TREASURY_NOTE',
+        issuer: 'United States Department of the Treasury',
+        fixedInterest: {
+          rateType: 'Fixed',
+          couponRatePercent: 4.375,
+          couponFrequency: 'Semiannual'
+        },
+        principalRepayment: { style: 'Bullet', parAmount: 100 },
+        issueDate: '2026-05-15',
+        maturityDate: '2036-05-15',
+        originalTermYears: 10,
+        priceProvenance: {
+          sourceType: 'US_TREASURY_AUCTION_RESULT',
+          sourceUrl: 'https://example.test/auction.pdf',
+          officialCleanPrice: 99.256552,
+          runtimeSeedCleanPrice: 99.257,
+          simulated: true
+        }
+      }
+    };
+    component.stocks = [treasury];
+    component.ngOnChanges({ stocks: { currentValue: [treasury] } } as any);
+    component.onSelect({ item: treasury, value: treasury.instrumentKey } as any);
+    component.ticket.quantity = 100_000;
+    fixture.detectChanges();
+
+    expect(component.isTreasury).toBeTrue();
+    expect(component.formatLivePrice()).toBe('99.257% of par');
+    expect(component.formatLivePrice()).not.toContain('$');
+    expect(component.estimatedCleanValue).toBeCloseTo(99_257, 3);
+    expect(component.remainingMaturity).toContain('days');
+    expect(component.filteredStocks[0].selectorGroup).toBe('U.S. Treasuries');
+    expect(component.filteredStocks[0].matchLabel).toBe('UST 10Y — 4.375% May-36');
+    expect(component.selectedCompany).toBe('UST 10Y');
+    expect(fixture.nativeElement.textContent).toContain('Face Amount');
+    expect(fixture.nativeElement.textContent).toContain('Internal key: UST-20360515');
+    expect(fixture.nativeElement.textContent).toContain('Accrued interest and dirty settlement value are excluded');
+  });
+
+  it('shows distinct minimum and increment errors before emitting a Treasury trade', () => {
+    component.selectedInstrument = {
+      instrumentKey: 'UST-20280630',
+      displayName: 'Treasury',
+      assetClass: 'US_TREASURY',
+      currency: 'USD',
+      securityType: 'Debt',
+      matured: false,
+      observedAt: '2026-07-30T12:00:00Z'
+    };
+    component.ticket.security = 'UST-20280630';
+    component.ticket.quantity = 50;
+    spyOn(component.create, 'emit');
+    component.onCreate();
+    fixture.detectChanges();
+    expect(component.validationError).toBe('Treasury quantity must be at least 100.');
+    expect(fixture.nativeElement.querySelector('#treasuryQuantityError').textContent)
+      .toContain('Treasury quantity must be at least 100.');
+    expect(component.create.emit).not.toHaveBeenCalled();
+
+    component.ticket.quantity = 150;
+    component.onCreate();
+    fixture.detectChanges();
+    expect(component.validationError).toBe('Treasury quantity must be a multiple of 100.');
+    expect(fixture.nativeElement.querySelector('#treasuryQuantityError').textContent)
+      .toContain('Treasury quantity must be a multiple of 100.');
+    expect(component.create.emit).not.toHaveBeenCalled();
+
+    component.ticket.quantity = 100;
+    component.onCreate();
+    expect(component.validationError).toBe('');
+    expect(component.create.emit).toHaveBeenCalledWith(component.ticket);
+  });
+
+  it('does not emit a matured Treasury trade', () => {
+    component.selectedInstrument = {
+      instrumentKey: 'UST-20280630',
+      displayName: 'Treasury',
+      assetClass: 'US_TREASURY',
+      currency: 'USD',
+      securityType: 'Debt',
+      matured: false,
+      observedAt: '2026-07-30T12:00:00Z'
+    };
+    component.ticket.security = 'UST-20280630';
+    component.ticket.quantity = 100;
+    component.selectedQuote = { ticker: 'UST-20280630', price: 99, matured: true } as any;
+    spyOn(component.create, 'emit');
+    component.onCreate();
+    expect(component.create.emit).not.toHaveBeenCalled();
   });
 
 });

@@ -5,6 +5,8 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HeaderComponent } from './header.component';
 import { StateMetadataService } from '../service/state-metadata.service';
 import { MessageBusConnectionState, TradeFeedService } from '../service/trade-feed.service';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -17,6 +19,8 @@ describe('HeaderComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ HeaderComponent ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: TradeFeedService,
           useValue: {

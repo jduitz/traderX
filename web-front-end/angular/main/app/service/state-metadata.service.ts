@@ -8,7 +8,7 @@ const DEFAULT_STATUS_CHECKS: StatusCheckDefinition[] = [
     {
         id: 'account-service',
         name: 'Account Service',
-        url: `${window.location.protocol}//${window.location.hostname}:18088/account/22214`,
+        url: `${window.location.protocol}//${window.location.hostname}:18088/account/17017`,
         expectedStatuses: [200]
     },
     {
@@ -27,6 +27,18 @@ const DEFAULT_STATUS_CHECKS: StatusCheckDefinition[] = [
         id: 'trade-service',
         name: 'Trade Service',
         url: `${window.location.protocol}//${window.location.hostname}:18092/v3/api-docs`,
+        expectedStatuses: [200]
+    },
+    {
+        id: 'treasury-pricing',
+        name: 'Treasury Pricing',
+        url: `${window.location.protocol}//${window.location.hostname}:18100/prices/UST-20280630`,
+        expectedStatuses: [200]
+    },
+    {
+        id: 'order-matcher',
+        name: 'Order Matcher',
+        url: `${window.location.protocol}//${window.location.hostname}:18110/health`,
         expectedStatuses: [200]
     },
     {

@@ -39,7 +39,7 @@ if [[ "${TRADERX_LOCAL_RUNTIME_SCRIPT:-0}" != "1" ]]; then
 fi
 
 TARGET_ROOT="${GENERATED_ROOT}/code/target-generated"
-COMPOSE_FILE="${TARGET_ROOT}/cdm-generic-instruments/docker-compose.yml"
+COMPOSE_FILE="${TRADERX_COMPOSE_FILE:-${TARGET_ROOT}/cdm-generic-instruments/docker-compose.yml}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[error] docker command not found"
@@ -74,15 +74,18 @@ echo "[info] instruments served=${instruments_count}"
 # Asserted against what compose actually serves (the supported ticker set), not
 # the full seed file: the unmapped-ticker policy permits BBGTICKER-only rows
 # there, and those rows are filtered out before they reach this endpoint.
-echo "[check] every served instrument carries both ${BBGTICKER_TYPE} and ${FIGI_TYPE}"
+echo "[check] every inherited stock/ETF carries both ${BBGTICKER_TYPE} and ${FIGI_TYPE}"
 missing_identifiers="$(
   echo "${instruments_payload}" | jq -r --arg bbg "${BBGTICKER_TYPE}" --arg figi "${FIGI_TYPE}" '
     [ .[]
       | select(
-          ([.identifiers[]? | select(.identifierType == $bbg)] | length) == 0
-          or ([.identifiers[]? | select(.identifierType == $figi)] | length) == 0
+          .securityType != "Debt"
+          and (
+            ([.identifiers[]? | select(.identifierType == $bbg)] | length) == 0
+            or ([.identifiers[]? | select(.identifierType == $figi)] | length) == 0
+          )
         )
-      | .ticker
+      | (.instrumentKey // .ticker)
     ] | join(",")
   '
 )"
@@ -90,14 +93,18 @@ if [[ -n "${missing_identifiers}" ]]; then
   echo "[error] served instruments missing ${BBGTICKER_TYPE}/${FIGI_TYPE} identifiers: ${missing_identifiers}"
   exit 1
 fi
-echo "[info] all ${instruments_count} served instruments carry both identifiers"
+echo "[info] all inherited stocks/ETFs carry both identifiers"
 
-echo "[check] ticker equals the ${BBGTICKER_TYPE} identifier value"
+echo "[check] inherited instrument key equals the ${BBGTICKER_TYPE} identifier value"
 ticker_mismatch="$(
   echo "${instruments_payload}" | jq -r --arg bbg "${BBGTICKER_TYPE}" '
     [ .[]
-      | select(([.identifiers[]? | select(.identifierType == $bbg) | .identifier][0] // "") != .ticker)
-      | .ticker
+      | select(
+          .securityType != "Debt"
+          and ([.identifiers[]? | select(.identifierType == $bbg) | .identifier][0] // "")
+            != (.instrumentKey // .ticker)
+        )
+      | (.instrumentKey // .ticker)
     ] | join(",")
   '
 )"
@@ -113,9 +120,10 @@ subtype_violations="$(
       | select(
           (.securityType == "Equity" and ((.equityType | not) or (.fundType != null)))
           or (.securityType == "Fund" and ((.fundType | not) or (.equityType != null)))
-          or (.securityType != "Equity" and .securityType != "Fund")
+          or (.securityType == "Debt" and ((.debtEconomics | not) or (.equityType != null) or (.fundType != null)))
+          or (.securityType != "Equity" and .securityType != "Fund" and .securityType != "Debt")
         )
-      | .ticker
+      | (.instrumentKey // .ticker)
     ] | join(",")
   '
 )"
@@ -126,7 +134,7 @@ fi
 
 echo "[check] every served instrument is USD-denominated"
 currency_violations="$(
-  echo "${instruments_payload}" | jq -r '[.[] | select(.currency != "USD") | .ticker] | join(",")'
+  echo "${instruments_payload}" | jq -r '[.[] | select(.currency != "USD") | (.instrumentKey // .ticker)] | join(",")'
 )"
 if [[ -n "${currency_violations}" ]]; then
   echo "[error] instruments without currency=USD: ${currency_violations}"
@@ -179,7 +187,7 @@ echo "${ibm}" | jq -e '.fundType == null' >/dev/null || {
 # OpenFIGI's, which renders IBM as "INTL BUSINESS MACHINES CORP" and Apple as
 # "APPLE INC".
 echo "[check] instruments expose the seed display name, not the OpenFIGI name"
-ibm_name="$(echo "${ibm}" | jq -r '.companyName // ""')"
+ibm_name="$(echo "${ibm}" | jq -r '.displayName // .companyName // ""')"
 if [[ -z "${ibm_name}" ]]; then
   echo "[error] IBM instrument is missing companyName"
   echo "${ibm}"
@@ -189,7 +197,7 @@ if [[ "${ibm_name}" == "INTL BUSINESS MACHINES CORP" ]]; then
   echo "[error] IBM companyName is the OpenFIGI name; expected the seed display name"
   exit 1
 fi
-aapl_name="$(curl -fsS "${REFERENCE_DATA_URL}/instruments/AAPL" | jq -r '.companyName // ""')"
+aapl_name="$(curl -fsS "${REFERENCE_DATA_URL}/instruments/AAPL" | jq -r '.displayName // .companyName // ""')"
 if [[ "${aapl_name}" != "Apple" ]]; then
   echo "[error] expected AAPL companyName='Apple' from seed data, got '${aapl_name}'"
   exit 1

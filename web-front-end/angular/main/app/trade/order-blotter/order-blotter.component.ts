@@ -6,6 +6,7 @@ import { PriceTick } from 'main/app/model/trade.model';
 import { OrderAdminService } from 'main/app/service/order-admin.service';
 import { TradeFeedService } from 'main/app/service/trade-feed.service';
 import { PriceSnapshotService } from 'main/app/service/price-snapshot.service';
+import { Stock } from 'main/app/model/symbol.model';
 
 type OrderRow = OrderRecord & {
   marketPrice?: number;
@@ -23,6 +24,8 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
   @Input() allAccountsMode = false;
   @Input() accountNameById: { [accountId: number]: string } = {};
   @Input() securityFilter = '';
+  @Input() instruments: Stock[] = [];
+  @Input() assetClassFilter: 'All' | 'Stock' | 'ETF' | 'US_TREASURY' = 'All';
   @Output() securitySelected = new EventEmitter<string>();
 
   rows: OrderRow[] = [];
@@ -34,7 +37,11 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
 
   private readonly baseColumns: ColDef<OrderRow>[] = [
     { headerName: 'ORDER ID', field: 'orderId' },
-    { headerName: 'SECURITY', field: 'security' },
+    {
+      headerName: 'SECURITY',
+      field: 'security',
+      valueFormatter: ({ value }) => this.formatSecurity(value)
+    },
     { headerName: 'SIDE', field: 'side' },
     {
       headerName: 'QTY',
@@ -55,14 +62,14 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
       field: 'limitPrice',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
-      valueFormatter: ({ value }) => this.formatCurrency(value)
+      valueFormatter: ({ value, data }) => this.formatPrice(value, data?.security)
     },
     {
       headerName: 'MARKET',
       field: 'marketPrice',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
-      valueFormatter: ({ value }) => this.formatCurrency(value),
+      valueFormatter: ({ value, data }) => this.formatPrice(value, data?.security),
       cellStyle: ({ data }) => this.marketStyle(data)
     },
     {
@@ -92,10 +99,12 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.securityFilter && !changes.account && !changes.allAccountsMode && !changes.accountNameById) {
+    if (changes.securityFilter && !changes.account && !changes.allAccountsMode && !changes.accountNameById
+        && !changes.instruments && !changes.assetClassFilter) {
       this.applySecurityFilter();
     }
-    if (changes.account || changes.allAccountsMode || changes.accountNameById) {
+    if (changes.account || changes.allAccountsMode || changes.accountNameById
+        || changes.instruments || changes.assetClassFilter) {
       this.configureColumns();
       this.startScope();
     }
@@ -164,7 +173,9 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
       return;
     }
     this.orderAdminService.getOpenOrders(accountId).subscribe((orders: OrderRecord[]) => {
-      this.rows = (orders ?? []).map((order) => this.withLivePricing(order));
+      this.rows = (orders ?? [])
+        .filter((order) => this.isVisibleSecurity(order.security))
+        .map((order) => this.withLivePricing(order));
       this.setGridRowData(this.rows);
       this.bootstrapSnapshotPrices(this.rows.map((row) => row.security));
     });
@@ -172,6 +183,9 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
 
   private applyOrderUpdate(order: OrderRecord): void {
     if (!order?.orderId) {
+      return;
+    }
+    if (!this.isVisibleSecurity(order.security)) {
       return;
     }
     const selectedAccountId = this.account?.id;
@@ -385,6 +399,30 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
       minimumFractionDigits: 3,
       maximumFractionDigits: 3
     }).format(numeric);
+  }
+
+  private formatPrice(value: any, security?: string): string {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return '-';
+    }
+    if (this.instrumentFor(security)?.assetClass === 'US_TREASURY') {
+      return `${numeric.toFixed(3)}%`;
+    }
+    return this.formatCurrency(numeric);
+  }
+
+  private instrumentFor(security?: string): Stock | undefined {
+    return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+  }
+
+  private formatSecurity(security?: string): string {
+    return this.instrumentFor(security)?.shortDisplayName || security || '-';
+  }
+
+  private isVisibleSecurity(security?: string): boolean {
+    return this.assetClassFilter === 'All'
+      || this.instrumentFor(security)?.assetClass === this.assetClassFilter;
   }
 
   private formatSignedCurrency(value: any): string {

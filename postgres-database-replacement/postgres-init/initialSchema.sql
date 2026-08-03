@@ -36,7 +36,9 @@ CREATE TABLE trades (
   side VARCHAR(10) CHECK (side in ('Buy', 'Sell')),
   quantity INTEGER CHECK (quantity > 0),
   price DECIMAL(18,3),
-  state VARCHAR(20) CHECK (state in ('New', 'Processing', 'Settled', 'Cancelled'))
+  state VARCHAR(20) CHECK (state in ('New', 'Processing', 'Settled', 'Cancelled', 'Rejected')),
+  rejectionreason VARCHAR(255),
+  sourceorderid VARCHAR(32)
 );
 
 CREATE TABLE orderbook (
@@ -51,7 +53,11 @@ CREATE TABLE orderbook (
   createdat TIMESTAMP NOT NULL,
   updatedat TIMESTAMP NOT NULL,
   lastexecutionprice DECIMAL(18,3),
-  lastfillquantity INTEGER
+  lastfillquantity INTEGER,
+  pendingtradeid VARCHAR(50),
+  pendingquantity INTEGER,
+  pendingprice DECIMAL(18,3),
+  pendingsubmittedat TIMESTAMP
 );
 CREATE INDEX idx_orderbook_status ON orderbook(status);
 CREATE INDEX idx_orderbook_updatedat ON orderbook(updatedat);
@@ -65,6 +71,7 @@ INSERT INTO accounts (id, displayname) VALUES (52355, 'Big Corporate Fund');
 INSERT INTO accounts (id, displayname) VALUES (62654, 'Hedge Fund TXY1');
 INSERT INTO accounts (id, displayname) VALUES (10031, 'Internal Trading Book');
 INSERT INTO accounts (id, displayname) VALUES (44044, 'Trading Account 1');
+INSERT INTO accounts (id, displayname) VALUES (17017, 'U.S. Treasury Trading Account');
 
 INSERT INTO accountusers (accountid, username) VALUES (22214, 'user01');
 INSERT INTO accountusers (accountid, username) VALUES (22214, 'user03');
@@ -84,6 +91,9 @@ INSERT INTO accountusers (accountid, username) VALUES (44044, 'user07');
 INSERT INTO accountusers (accountid, username) VALUES (44044, 'user04');
 INSERT INTO accountusers (accountid, username) VALUES (44044, 'user01');
 INSERT INTO accountusers (accountid, username) VALUES (44044, 'user06');
+INSERT INTO accountusers (accountid, username) VALUES (17017, 'user02');
+INSERT INTO accountusers (accountid, username) VALUES (17017, 'user08');
+INSERT INTO accountusers (accountid, username) VALUES (17017, 'user10');
 
 INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-22214-AABBCC', NOW(), NOW(), 'IBM', 'Sell', 100, 136.250, 'Settled', 22214);
 INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-22214-DDEEFF', NOW(), NOW(), 'MS', 'Buy', 1000, 95.125, 'Settled', 22214);
@@ -95,3 +105,15 @@ INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis)
 
 INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-52355-AABBCC', NOW(), NOW(), 'BAC', 'Sell', 2400, 41.125, 'Settled', 52355);
 INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (52355, 'BAC', NOW(), -2400, 41.125);
+
+INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('SEED-17017-20280630', NOW(), NOW(), 'UST-20280630', 'Buy', 100000, 99.878, 'Settled', 17017);
+INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('SEED-17017-20310630', NOW(), NOW(), 'UST-20310630', 'Buy', 100000, 99.665, 'Settled', 17017);
+INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('SEED-17017-20360515', NOW(), NOW(), 'UST-20360515', 'Buy', 100000, 99.257, 'Settled', 17017);
+INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('SEED-17017-20460515', NOW(), NOW(), 'UST-20460515', 'Buy', 100000, 98.481, 'Settled', 17017);
+INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('SEED-17017-20560515', NOW(), NOW(), 'UST-20560515', 'Buy', 100000, 99.293, 'Settled', 17017);
+
+INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (17017, 'UST-20280630', NOW(), 100000, 99.878);
+INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (17017, 'UST-20310630', NOW(), 100000, 99.665);
+INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (17017, 'UST-20360515', NOW(), 100000, 99.257);
+INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (17017, 'UST-20460515', NOW(), 100000, 98.481);
+INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (17017, 'UST-20560515', NOW(), 100000, 99.293);

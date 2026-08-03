@@ -20,7 +20,7 @@ public class Trade implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @Column(length = 100, name = "ID")
+  @Column(length = 50, name = "ID")
   private String id;
 
   @Column(name = "ACCOUNTID")
@@ -48,6 +48,12 @@ public class Trade implements Serializable {
 
   @Column(name = "CREATED")
   private Date created;
+
+  @Column(name = "REJECTIONREASON", length = 255)
+  private String rejectionReason;
+
+  @Column(name = "SOURCEORDERID", length = 32)
+  private String sourceOrderId;
 
   public String getId() {
     return id;
@@ -119,5 +125,21 @@ public class Trade implements Serializable {
 
   public void setCreated(Date created) {
     this.created = created;
+  }
+
+  public String getRejectionReason() {
+    return rejectionReason;
+  }
+
+  public void setRejectionReason(String rejectionReason) {
+    this.rejectionReason = rejectionReason;
+  }
+
+  public String getSourceOrderId() {
+    return sourceOrderId;
+  }
+
+  public void setSourceOrderId(String sourceOrderId) {
+    this.sourceOrderId = sourceOrderId;
   }
 }

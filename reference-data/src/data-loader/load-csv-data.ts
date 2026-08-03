@@ -2,6 +2,7 @@ import * as fs from 'fs';
 const CsvReadableStream = require('csv-reader');
 import {
   AssetIdentifier,
+  DebtEconomics,
   EquityType,
   FundProductTypeEnum,
   Instrument,
@@ -19,6 +20,17 @@ const SECURITY_TYPE_COLUMN = 10;
 
 /** Every instrument in this state is USD-denominated. */
 const CURRENCY = 'USD';
+function currentInstant(): Date {
+  const FIXED_UTC_INSTANT = String(process.env.TRADERX_FIXED_UTC_INSTANT ?? '').trim();
+  if (FIXED_UTC_INSTANT) {
+    const fixed = new Date(FIXED_UTC_INSTANT);
+    if (Number.isNaN(fixed.getTime())) {
+      throw new Error(`TRADERX_FIXED_UTC_INSTANT is not a valid UTC instant: ${FIXED_UTC_INSTANT}`);
+    }
+    return fixed;
+  }
+  return new Date();
+}
 
 type CdmClassification = {
   securityType: SecurityTypeEnum;
@@ -61,6 +73,94 @@ type SupplementalSeed = {
   figi: string;
   openFigiSecurityType: string;
 };
+
+type TreasurySeed = {
+  instrumentKey: string;
+  displayName: string;
+  shortDisplayName: string;
+  figi: string;
+  couponRatePercent: number;
+  issueDate: string;
+  maturityDate: string;
+  originalTermYears: 2 | 5 | 10 | 20 | 30;
+  officialCleanPrice: number;
+  runtimeSeedCleanPrice: number;
+  sourceUrl: string;
+  debtType: 'US_TREASURY_NOTE' | 'US_TREASURY_BOND';
+};
+
+export const TREASURY_SEEDS: TreasurySeed[] = [
+  {
+    instrumentKey: 'UST-20280630',
+    displayName: 'U.S. Treasury Note 4.125% due June 30, 2028',
+    shortDisplayName: 'UST 2Y',
+    figi: 'BBG022ZR1Z79',
+    couponRatePercent: 4.125,
+    issueDate: '2026-06-30',
+    maturityDate: '2028-06-30',
+    originalTermYears: 2,
+    officialCleanPrice: 99.878432,
+    runtimeSeedCleanPrice: 99.878,
+    sourceUrl: 'https://www.treasurydirect.gov/instit/annceresult/press/preanre/2026/R_20260623_2.pdf',
+    debtType: 'US_TREASURY_NOTE'
+  },
+  {
+    instrumentKey: 'UST-20310630',
+    displayName: 'U.S. Treasury Note 4.125% due June 30, 2031',
+    shortDisplayName: 'UST 5Y',
+    figi: 'BBG022ZR1Z51',
+    couponRatePercent: 4.125,
+    issueDate: '2026-06-30',
+    maturityDate: '2031-06-30',
+    originalTermYears: 5,
+    officialCleanPrice: 99.664909,
+    runtimeSeedCleanPrice: 99.665,
+    sourceUrl: 'https://www.treasurydirect.gov/instit/annceresult/press/preanre/2026/R_20260624_3.pdf',
+    debtType: 'US_TREASURY_NOTE'
+  },
+  {
+    instrumentKey: 'UST-20360515',
+    displayName: 'U.S. Treasury Note 4.375% due May 15, 2036',
+    shortDisplayName: 'UST 10Y',
+    figi: 'BBG0221YLR31',
+    couponRatePercent: 4.375,
+    issueDate: '2026-05-15',
+    maturityDate: '2036-05-15',
+    originalTermYears: 10,
+    officialCleanPrice: 99.256552,
+    runtimeSeedCleanPrice: 99.257,
+    sourceUrl: 'https://www.treasurydirect.gov/instit/annceresult/press/preanre/2026/R_20260512_3.pdf',
+    debtType: 'US_TREASURY_NOTE'
+  },
+  {
+    instrumentKey: 'UST-20460515',
+    displayName: 'U.S. Treasury Bond 5.000% due May 15, 2046',
+    shortDisplayName: 'UST 20Y',
+    figi: 'BBG0226BZH97',
+    couponRatePercent: 5.000,
+    issueDate: '2026-06-01',
+    maturityDate: '2046-05-15',
+    originalTermYears: 20,
+    officialCleanPrice: 98.481099,
+    runtimeSeedCleanPrice: 98.481,
+    sourceUrl: 'https://www.treasurydirect.gov/instit/annceresult/press/preanre/2026/R_20260520_2.pdf',
+    debtType: 'US_TREASURY_BOND'
+  },
+  {
+    instrumentKey: 'UST-20560515',
+    displayName: 'U.S. Treasury Bond 5.000% due May 15, 2056',
+    shortDisplayName: 'UST 30Y',
+    figi: 'BBG0221YLR40',
+    couponRatePercent: 5.000,
+    issueDate: '2026-05-15',
+    maturityDate: '2056-05-15',
+    originalTermYears: 30,
+    officialCleanPrice: 99.292811,
+    runtimeSeedCleanPrice: 99.293,
+    sourceUrl: 'https://www.treasurydirect.gov/instit/annceresult/press/preanre/2026/R_20260513_2.pdf',
+    debtType: 'US_TREASURY_BOND'
+  }
+];
 
 /**
  * UBS, DB, FNMA and FNF are not S&P 500 constituents, so a FIGI column on the
@@ -137,45 +237,57 @@ function buildIdentifiers(ticker: string, figi: string): AssetIdentifier[] {
  * fails loudly rather than serving an instrument that misrepresents itself.
  */
 function assertCdmConditions(instrument: Instrument): void {
-  const { ticker, securityType, equityType, fundType } = instrument;
+  const { instrumentKey, securityType, equityType, fundType, debtEconomics } = instrument;
   if (securityType !== 'Equity' && equityType) {
     throw new Error(
-      `[instruments] ${ticker}: CDM EquitySubType violated - securityType=${securityType} with equityType present`
+      `[instruments] ${instrumentKey}: CDM EquitySubType violated - securityType=${securityType} with equityType present`
     );
   }
   if (securityType !== 'Fund' && fundType) {
     throw new Error(
-      `[instruments] ${ticker}: CDM FundSubType violated - securityType=${securityType} with fundType present`
+      `[instruments] ${instrumentKey}: CDM FundSubType violated - securityType=${securityType} with fundType present`
     );
   }
   if (securityType === 'Equity' && !equityType) {
-    throw new Error(`[instruments] ${ticker}: securityType=Equity with no equityType`);
+    throw new Error(`[instruments] ${instrumentKey}: securityType=Equity with no equityType`);
   }
   if (securityType === 'Fund' && !fundType) {
-    throw new Error(`[instruments] ${ticker}: securityType=Fund with no fundType`);
+    throw new Error(`[instruments] ${instrumentKey}: securityType=Fund with no fundType`);
+  }
+  if (securityType === 'Debt' && !debtEconomics) {
+    throw new Error(`[instruments] ${instrumentKey}: securityType=Debt with no debtEconomics`);
+  }
+  if (securityType !== 'Debt' && debtEconomics) {
+    throw new Error(`[instruments] ${instrumentKey}: non-Debt instrument carries debtEconomics`);
   }
 
   const bbgTicker = instrument.identifiers.find((id) => id.identifierType === 'BBGTICKER');
-  if (!bbgTicker || bbgTicker.identifier !== ticker) {
+  if (securityType !== 'Debt' && (!bbgTicker || bbgTicker.identifier !== instrumentKey)) {
     throw new Error(
-      `[instruments] ${ticker}: BBGTICKER identifier must equal the ticker, got ` +
+      `[instruments] ${instrumentKey}: BBGTICKER identifier must equal the instrument key, got ` +
         `"${bbgTicker?.identifier ?? '<absent>'}"`
     );
+  }
+  if (securityType === 'Debt' && bbgTicker) {
+    throw new Error(`[instruments] ${instrumentKey}: TraderX Treasury code must not be claimed as BBGTICKER`);
   }
 }
 
 function buildInstrument(
   ticker: string,
-  companyName: string,
+  displayName: string,
   figi: string,
   openFigiSecurityType: string
 ): Instrument {
   const classification = classify(ticker, openFigiSecurityType);
   const instrument: Instrument = {
-    ticker,
-    companyName,
+    instrumentKey: ticker,
+    displayName,
+    assetClass: classification.securityType === 'Fund' ? 'ETF' : 'Stock',
     currency: CURRENCY,
     securityType: classification.securityType,
+    matured: false,
+    observedAt: currentInstant().toISOString(),
     identifiers: buildIdentifiers(ticker, figi)
   };
   if (classification.equityType) {
@@ -184,6 +296,48 @@ function buildInstrument(
   if (classification.fundType) {
     instrument.fundType = classification.fundType;
   }
+  assertCdmConditions(instrument);
+  return instrument;
+}
+
+function buildTreasuryInstrument(seed: TreasurySeed): Instrument {
+  const now = currentInstant();
+  const maturity = new Date(`${seed.maturityDate}T00:00:00.000Z`);
+  const debtEconomics: DebtEconomics = {
+    debtType: seed.debtType,
+    issuer: 'United States Department of the Treasury',
+    fixedInterest: {
+      rateType: 'Fixed',
+      couponRatePercent: seed.couponRatePercent,
+      couponFrequency: 'Semiannual'
+    },
+    principalRepayment: { style: 'Bullet', parAmount: 100 },
+    issueDate: seed.issueDate,
+    maturityDate: seed.maturityDate,
+    originalTermYears: seed.originalTermYears,
+    priceProvenance: {
+      sourceType: 'US_TREASURY_AUCTION_RESULT',
+      sourceUrl: seed.sourceUrl,
+      officialCleanPrice: seed.officialCleanPrice,
+      runtimeSeedCleanPrice: seed.runtimeSeedCleanPrice,
+      simulated: true
+    }
+  };
+  const instrument: Instrument = {
+    instrumentKey: seed.instrumentKey,
+    displayName: seed.displayName,
+    shortDisplayName: seed.shortDisplayName,
+    assetClass: 'US_TREASURY',
+    currency: CURRENCY,
+    securityType: 'Debt',
+    debtEconomics,
+    matured: now.getTime() >= maturity.getTime(),
+    observedAt: now.toISOString(),
+    identifiers: [
+      { identifier: seed.instrumentKey, identifierType: 'Other' },
+      { identifier: seed.figi, identifierType: 'FIGI' }
+    ]
+  };
   assertCdmConditions(instrument);
   return instrument;
 }
@@ -236,6 +390,12 @@ export async function loadCsvData(options: InstrumentLoadOptions = {}): Promise<
             buildInstrument(seed.ticker, seed.companyName, seed.figi, seed.openFigiSecurityType)
           );
           seenTickers.add(seed.ticker);
+        }
+        for (const treasury of TREASURY_SEEDS) {
+          if (supportedTickers && !supportedTickers.has(treasury.instrumentKey)) {
+            continue;
+          }
+          instruments.push(buildTreasuryInstrument(treasury));
         }
         if (maxTickers > 0) {
           resolve(instruments.slice(0, maxTickers));

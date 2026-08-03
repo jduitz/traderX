@@ -72,8 +72,8 @@ require_pattern "${POSITION_BLOTTER_TS}" "getAllPositions\\(" "expected position
 require_pattern "${POSITION_BLOTTER_TS}" "mergePositionsBySecurity\\(" "expected cross-account position merge"
 
 echo "[check] security typeahead contract"
-require_pattern "${TRADE_TICKET_TS}" "matchLabel" "expected synthesized ticker-company match label"
-require_pattern "${TRADE_TICKET_TS}" 'return `\$\{stock\.ticker\} - \$\{stock\.companyName\}`;' "expected ticker-company combined match label"
+require_pattern "${TRADE_TICKET_TS}" "matchLabel" "expected synthesized instrument display match label"
+require_pattern "${TRADE_TICKET_TS}" 'return `\$\{stock\.(ticker|instrumentKey)\} - \$\{stock\.(companyName|displayName)\}`;' "expected instrument key-display name combined match label"
 require_pattern "${TRADE_TICKET_HTML}" "typeaheadOptionField=\"matchLabel\"" "expected typeahead to use match label"
 require_pattern "${TRADE_TICKET_HTML}" "autocomplete=\"off\"" "expected browser autocomplete disabled on security input"
 

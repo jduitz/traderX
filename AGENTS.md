@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This generated codebase is a reproducible runtime snapshot for state `016-cdm-generic-instruments`.
+This generated codebase is a reproducible runtime snapshot for state `017-us-treasury-trading`.
 
 - Treat this snapshot as generated output; expect regeneration to replace it.
 - Use this branch for local experimentation and runtime validation.

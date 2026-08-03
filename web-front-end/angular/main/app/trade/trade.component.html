@@ -24,11 +24,11 @@
                 Ticket creation is disabled in <strong>All Accounts</strong> mode.
             </div>
             <ng-template #tradeTicketTemplate>
-                <app-trade-ticket [stocks]="stocks" [account]="accountModel" (create)="createTradeTicket($event)" (cancel)="closeTicket()">
+                <app-trade-ticket [stocks]="stocks" [account]="accountModel" [serverError]="tradeTicketError" (create)="createTradeTicket($event)" (cancel)="closeTicket()">
                 </app-trade-ticket>
             </ng-template>
             <ng-template #orderTicketTemplate>
-                <app-order-ticket [stocks]="stocks" [account]="accountModel" [presetSecurity]="selectedOrderSecurity" (create)="createOrderTicket($event)" (cancel)="closeTicket()">
+                <app-order-ticket [stocks]="stocks" [account]="accountModel" [presetSecurity]="selectedOrderSecurity" [serverError]="orderTicketError" (create)="createOrderTicket($event)" (cancel)="closeTicket()">
                 </app-order-ticket>
             </ng-template>
             <alert
@@ -51,6 +51,15 @@
             >
         </div>
     </div>
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <label for="blotterAssetClassFilter" class="form-label mb-0">Blotter asset class</label>
+        <select id="blotterAssetClassFilter" class="form-select form-select-sm w-auto" [(ngModel)]="blotterAssetClassFilter">
+            <option value="All">All</option>
+            <option value="Stock">Stocks</option>
+            <option value="ETF">ETFs</option>
+            <option value="US_TREASURY">U.S. Treasuries</option>
+        </select>
+    </div>
 
     <div class="trade-blotter">
         <app-trade-blotter
@@ -58,12 +67,16 @@
             [allAccountsMode]="isAllAccountsSelected"
             [accountIds]="accountIds"
             [accountNameById]="accountNameById"
+            [instruments]="stocks"
+            [assetClassFilter]="blotterAssetClassFilter"
             class="trade-blotter-items">
         </app-trade-blotter>
         <app-position-blotter
             [account]="accountModel"
             [allAccountsMode]="isAllAccountsSelected"
             [accountIds]="accountIds"
+            [instruments]="stocks"
+            [assetClassFilter]="blotterAssetClassFilter"
             class="position-blotter-items">
         </app-position-blotter>
     </div>
@@ -73,6 +86,8 @@
             [account]="accountModel"
             [allAccountsMode]="isAllAccountsSelected"
             [accountNameById]="accountNameById"
+            [instruments]="stocks"
+            [assetClassFilter]="blotterAssetClassFilter"
             (securitySelected)="onOrderSecuritySelected($event)">
         </app-order-blotter>
     </div>

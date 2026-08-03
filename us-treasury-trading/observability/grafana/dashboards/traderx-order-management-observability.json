@@ -156,7 +156,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "{compose_project=\"traderx-state-016\",service=\"order-matcher\"}"
+          "expr": "{compose_project=\"traderx-state-017\",service=\"order-matcher\"}"
         }
       ],
       "options": {

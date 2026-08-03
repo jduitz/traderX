@@ -1,10 +1,10 @@
 # TraderX Generated State Snapshot
 
-- State ID: `016-cdm-generic-instruments`
-- Title: `CDM Generic Instruments`
+- State ID: `017-us-treasury-trading`
+- Title: `U.S. Treasury Trading`
 - Status: `implemented`
-- Feature Pack: `specs/016-cdm-generic-instruments`
-- Previous States: `["009-order-management-matcher"]`
+- Feature Pack: `specs/017-us-treasury-trading`
+- Previous States: `["016-cdm-generic-instruments"]`
 - Next States: `[]`
 - Convergence State: `false`
 - Convergence Level: `none`
@@ -13,8 +13,8 @@
 - Previous Convergence State: `012-platform-convergence-c3`
 - Next Convergence State: `none`
 - Source Branch: `main`
-- Source Commit: `25ea8b839e2fdd1dfe9b77f8917e3d5e4a8260bd`
-- Generated At (UTC): `2026-07-21T19:00:32Z`
-- Suggested Tag: `generated/016-cdm-generic-instruments/v1`
+- Source Commit: `808b683ec73267dd9cb52d1d1887d573856357f2`
+- Generated At (UTC): `2026-08-03T19:17:02Z`
+- Suggested Tag: `generated/017-us-treasury-trading/v1`
 
 Machine-readable metadata: `.traderx-state/state.json`

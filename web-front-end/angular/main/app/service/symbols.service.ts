@@ -14,9 +14,8 @@ export class SymbolService {
     private createTicketUrl = `${environment.tradesUrl}`;
     constructor(private http: HttpClient) { }
 
-    // The method and the Stock model keep their names: renaming them reaches
-    // into the trade page, both tickets, the mocks and their specs, which this
-    // state leaves alone. The endpoint is what moved.
+    // The historical method name remains for compatibility; the response is
+    // the State 017 asset-neutral instrument model.
     getStocks(): Observable<Stock[]> {
         return this.http.get<Stock[]>(this.instrumentsUrl).pipe(
             retry(2),

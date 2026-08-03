@@ -9,6 +9,8 @@ export interface Trade {
     side: Side;
     state: State;
     updated: Date;
+    rejectionReason?: string;
+    sourceOrderId?: string;
 }
 
 export enum Side {
@@ -20,7 +22,8 @@ export enum State {
     New = 'New',
     Processing = 'Processing',
     Pending = 'Pending',
-    Settled = 'Settled'
+    Settled = 'Settled',
+    Rejected = 'Rejected'
 }
 
 export interface Position {
@@ -34,6 +37,10 @@ export interface Position {
     marketValue?: number;
     costBasisValue?: number;
     pnl?: number;
+    assetClass?: string;
+    approximateYtmPercent?: number;
+    couponRatePercent?: number;
+    maturityDate?: string;
     updated: Date;
 }
 
@@ -51,6 +58,15 @@ export interface PriceTick {
     closePrice: number;
     asOf: string;
     source: string;
+    instrumentKey?: string;
+    assetClass?: string;
+    cleanPrice?: number;
+    priceSemantics?: string;
+    approximateYtmPercent?: number | null;
+    quoteTimestamp?: string;
+    maturityDate?: string;
+    matured?: boolean;
+    simulated?: boolean;
 }
 
 export interface PortfolioSummary {
