@@ -52,6 +52,8 @@ the system prevents negative Treasury positions.
    reserved by other open sell orders.
 5. The trade processor locks the position, persists authoritative rejection
    reasons, and never mutates or publishes a position for a rejected trade.
+6. Concurrent sell-order creation is serialized only for the same account and
+   Treasury key so open-order reservations cannot be overcommitted.
 
 ### US4 — Reconcile uncertain Treasury executions
 
@@ -65,6 +67,11 @@ the matcher loses a response.
 4. A duplicate stable trade ID returns the existing booking without another
    position mutation or duplicate publication.
 5. Cancellation returns HTTP 409 while reconciliation is pending.
+6. Processor HTTP runs without holding an order mutation lock; the matcher
+   applies a response only if the persisted pending ID, quantity, and price
+   still equal the pre-request snapshot.
+7. One in-process reconciliation may run per order at a time, while unrelated
+   order creation, fill, and cancellation remain available.
 
 ### US5 — Use one multi-asset trading UI
 
@@ -113,11 +120,26 @@ Treasuries, with optional asset-class filters.
 - **FR-01714**: Persist pending trade ID, quantity, price, and timestamp before
   submission and reconcile unchanged pending requests before normal matching.
 - **FR-01715**: Fill Treasury remainder fully at or below $100,000; otherwise
-  fill `floorTo100(remaining ÷ 2)`.
+  fill `floorTo100(remaining ÷ 2)`. Stock and ETF force-fill completes the
+  entire remainder, while their normal automatic fill retains the inherited
+  threshold behavior.
 - **FR-01716**: Seed account 17017, users `user02`, `user08`, `user10`, and five
   settled $100,000 positions/trades.
 - **FR-01717**: Present all asset classes through unified selectors and
   blotters with Treasury-specific labels and valuation.
+- **FR-01718**: Treat exact `UST-` keys as State 017's canonical Treasury
+  routing discriminator. The processor must still confirm returned reference
+  metadata is both `US_TREASURY` and `Debt`; the prefix alone never authorizes
+  Treasury booking.
+- **FR-01719**: Use fixed 256-stripe matcher locks: account/security stripes
+  for creation and reservation, and order-ID stripes for fill, cancellation,
+  and reconciliation. No current path holds both; any future nesting acquires
+  account/security before order ID.
+- **FR-01720**: Use 256 fixed processor booking stripes keyed by trade ID,
+  acquired before the database position lock, and check trade idempotency both
+  before reference-data resolution and inside the transaction.
+- **FR-01721**: Unknown non-Treasury symbols retain inherited lazy fallback
+  prices, while unknown `UST-` keys return HTTP 404 without Yahoo fallback.
 
 ## Non-Functional Requirements
 
@@ -134,6 +156,17 @@ Treasuries, with optional asset-class filters.
   dependency is committed.
 - **NFR-01707**: Clean regeneration and the full parent smoke chain are required
   before publication.
+- **NFR-01708**: Trade-processor reference-data timeouts are configurable with
+  `REFERENCE_DATA_CONNECT_TIMEOUT_MS` (default 2000) and
+  `REFERENCE_DATA_READ_TIMEOUT_MS` (default 5000). Treasury reference-data
+  failure persists a fail-closed rejection.
+- **NFR-01709**: Treasury metadata lookup occurs before the processor database
+  transaction. Non-`UST-` stock and ETF bookings perform no metadata lookup.
+- **NFR-01710**: The inherited matcher histogram exposes finite buckets at
+  0.01, 0.05, 0.1, 0.25, 0.5, and 1 second plus `+Inf`, sum, and count. This
+  remediation retains placeholder values; measured latency is deferred.
+- **NFR-01711**: The complete 009 → 016 → 017 smoke chain must pass twice on
+  the same PostgreSQL volume without a reset between runs.
 
 ## Success Criteria
 
@@ -142,7 +175,9 @@ Treasuries, with optional asset-class filters.
   pricing, maturity, routing, reservation, idempotency, concurrent oversell,
   pending retry, and UI valuation.
 - **SC-01703**: The State 017 smoke test passes after chaining State 016 and
-  State 009, including the clean-database lingering-order prerequisite.
+  State 009 twice consecutively on one volume, including reuse of the
+  lingering-order prerequisite and timeout reconciliation after a controlled
+  trade-processor pause.
 - **SC-01704**: Repository front-matter, SpecKit, readiness, spec-coverage, and
   prepublication gates pass.
 - **SC-01705**: Generated Docker Compose starts, serves five Treasury records,
@@ -153,4 +188,7 @@ Treasuries, with optional asset-class filters.
 Auctions, live Treasury feeds, accrued interest, dirty prices, coupon and
 maturity cash flows, yield curves, bills, TIPS, floating-rate notes, other bond
 markets, short Treasuries, full CDM trade lifecycle, and FIGI transactional
-identity are excluded.
+identity are excluded. Registry-based classification of debt keys outside the
+canonical `UST-` convention and insert-safe concurrent first buys for an
+unseeded position are also excluded; all five supported Treasury positions are
+seeded before runtime trading.

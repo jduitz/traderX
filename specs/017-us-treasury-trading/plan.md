@@ -20,6 +20,10 @@ changing inherited stock/ETF transaction identity or routing.
    render/generation/lifecycle harness.
 7. Regenerate from scratch, run unit/integration/frontend/gate checks, then
    start, smoke, and stop the Compose runtime.
+8. Remediate reliability with fixed matcher/processor lock stripes, snapshot
+   reconciliation around unlocked HTTP, bounded processor metadata lookup,
+   restored inherited non-Treasury pricing and histogram compatibility, and a
+   repeat-safe pause/unpause smoke scenario.
 
 ## Technical Constraints
 
@@ -27,13 +31,23 @@ changing inherited stock/ETF transaction identity or routing.
 - No CUSIP/ISIN persistence or Yahoo Treasury calls.
 - No shared template edits.
 - Sequential generation only.
+- Never hand-edit the generated overlay patch. Test edits in an isolated child
+  generated root, recapture from exact State 016 parent and tested State 017
+  snapshots (excluding the frontend override-owned Angular tree), regenerate
+  from the captured patch, and compare with the tested candidate.
 - Do not publish the future snapshot branch/tag during implementation.
+- Matcher paths do not nest account/security and order-ID stripes; future
+  nesting must acquire account/security first. Processor booking stripes are
+  acquired before database position locks and never in reverse.
+- The bounded position-service call remains inside the Treasury sell
+  reservation stripe by design; Treasury metadata resolution remains outside.
 
 ## Exit Criteria
 
 - Clean regeneration has no manual generated-output dependency.
 - Touched Node, Java, and Angular suites pass.
-- State 017 → State 016 → State 009 smoke chain passes.
+- State 017 → State 016 → State 009 smoke chain passes twice consecutively on
+  the same database volume.
 - Static repository and prepublication gates pass.
 - Docker runtime starts, passes end-to-end checks, and stops.
 - The feature branch is committed and clean; manual acceptance remains pending.

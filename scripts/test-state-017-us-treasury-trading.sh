@@ -68,7 +68,7 @@ assert_http_detail() {
   local actual_status
   local actual_detail
   actual_status="$(echo "${response}" | tail -n1)"
-  actual_detail="$(echo "${response}" | sed '$d' | jq -r '.detail // .message // empty')"
+  actual_detail="$(echo "${response}" | sed '$d' | jq -r '.detail // .message // .error // empty')"
   [[ "${actual_status}" == "${expected_status}" ]] || {
     echo "[error] ${context}: expected HTTP ${expected_status}, got ${actual_status}"
     exit 1
@@ -79,16 +79,39 @@ assert_http_detail() {
   }
 }
 
-echo "[check] clean-database prerequisite for inherited State 009 smoke"
-lingering_response="$(
-  http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
-    '{"accountId":22214,"security":"IBM","side":"Buy","quantity":100,"limitPrice":1.000}'
+PROCESSOR_PAUSED=0
+unpause_processor_on_exit() {
+  if (( PROCESSOR_PAUSED == 1 )); then
+    docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" \
+      unpause trade-processor >/dev/null 2>&1 || true
+  fi
+}
+trap unpause_processor_on_exit EXIT
+
+echo "[check] repeat-safe prerequisite for inherited State 009 smoke"
+existing_lingering_id="$(
+  curl -fsS "${INGRESS_URL}/order-matcher/orders?status=open&accountId=22214" \
+  | jq -r '[.[] | select(
+      .security == "IBM"
+      and .side == "Buy"
+      and .quantity == 100
+      and .remainingQuantity == 100
+      and .limitPrice == 1
+    )][0].orderId // empty'
 )"
-lingering_http="$(echo "${lingering_response}" | tail -n1)"
-if [[ "${lingering_http}" != "201" ]]; then
-  echo "[error] failed to create the inherited IBM lingering order: HTTP ${lingering_http}"
-  echo "${lingering_response}" | sed '$d'
-  exit 1
+if [[ -z "${existing_lingering_id}" ]]; then
+  lingering_response="$(
+    http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
+      '{"accountId":22214,"security":"IBM","side":"Buy","quantity":100,"limitPrice":1.000}'
+  )"
+  lingering_http="$(echo "${lingering_response}" | tail -n1)"
+  if [[ "${lingering_http}" != "201" ]]; then
+    echo "[error] failed to create the inherited IBM lingering order: HTTP ${lingering_http}"
+    echo "${lingering_response}" | sed '$d'
+    exit 1
+  fi
+else
+  echo "[info] reusing inherited IBM prerequisite order ${existing_lingering_id}"
 fi
 
 echo "[check] inherited State 016 and State 009 behavior (chained smoke)"
@@ -175,14 +198,14 @@ for variable in REFERENCE_DATA_SUPPORTED_TICKERS PRICE_TICKERS; do
   }
 done
 
-echo "[check] State 017 account, users, seed trades, and positions"
+echo "[check] State 017 account, users, fixed seed trades, and structural positions"
 seed_counts="$(
   docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" exec -T database \
     psql -U traderx -d traderx -Atc \
-    "select (select count(*) from accounts where id=17017 and displayname='U.S. Treasury Trading Account'),(select count(*) from accountusers where accountid=17017 and username in ('user02','user08','user10')),(select count(*) from trades where accountid=17017 and security like 'UST-%' and state='Settled'),(select count(*) from positions where accountid=17017 and security like 'UST-%' and quantity=100000);"
+    "select (select count(*) from accounts where id=17017 and displayname='U.S. Treasury Trading Account'),(select count(*) from accountusers where accountid=17017 and username in ('user02','user08','user10')),(select count(*) from trades where accountid=17017 and state='Settled' and quantity=100000 and ((id='SEED-17017-20280630' and security='UST-20280630') or (id='SEED-17017-20310630' and security='UST-20310630') or (id='SEED-17017-20360515' and security='UST-20360515') or (id='SEED-17017-20460515' and security='UST-20460515') or (id='SEED-17017-20560515' and security='UST-20560515'))),(select count(*) from positions where accountid=17017 and security in ('UST-20280630','UST-20310630','UST-20360515','UST-20460515','UST-20560515') and quantity >= 0 and mod(quantity,100)=0 and averagecostbasis is not null);"
 )"
 [[ "${seed_counts}" == "1|3|5|5" ]] || {
-  echo "[error] unexpected State 017 seed counts: ${seed_counts}"
+  echo "[error] unexpected State 017 fixed-seed or position structure: ${seed_counts}"
   exit 1
 }
 
@@ -208,8 +231,13 @@ assert_http_detail \
   "${increment_trade}" 400 "Treasury quantity must be a multiple of 100." \
   "Treasury trade invalid increment"
 
+owned_2036="$(curl -fsS "${INGRESS_URL}/position-service/positions/17017" \
+  | jq -r '[.[] | select(.security == "UST-20360515")][0].quantity // 0')"
+oversold_quantity="$(( owned_2036 + 100 ))"
+oversold_payload="$(jq -cn --argjson quantity "${oversold_quantity}" \
+  '{accountId:17017,security:"UST-20360515",side:"Sell",quantity:$quantity}')"
 oversold_trade="$(http_with_body POST "${INGRESS_URL}/trade-service/trade/" \
-  '{"accountId":17017,"security":"UST-20360515","side":"Sell","quantity":100100}')"
+  "${oversold_payload}")"
 assert_http_detail \
   "${oversold_trade}" 409 \
   "You cannot sell more Treasury face amount than you own and have available." \
@@ -233,7 +261,7 @@ over_reserved="$(
   echo "[error] expected HTTP 409 when Treasury sells exceed unreserved face amount"
   exit 1
 }
-[[ "$(echo "${over_reserved}" | sed '$d' | jq -r '.detail // .message // empty')" == \
+[[ "$(echo "${over_reserved}" | sed '$d' | jq -r '.detail // .message // .error // empty')" == \
   "You cannot sell more Treasury face amount than you own and have available." ]] || {
   echo "[error] expected a user-facing Treasury oversell message"
   exit 1
@@ -242,6 +270,8 @@ curl -fsS -H 'Content-Type: application/json' -X POST -d '{}' \
   "${INGRESS_URL}/order-matcher/orders/${reserved_id}/cancel" >/dev/null
 
 echo "[check] Treasury matcher execution books synchronously with stable IDs"
+booking_position_before="$(curl -fsS "${INGRESS_URL}/position-service/positions/17017" \
+  | jq -r '[.[] | select(.security == "UST-20310630")][0].quantity // 0')"
 booking_order="$(
   curl -fsS -H 'Content-Type: application/json' -X POST \
     -d '{"accountId":17017,"security":"UST-20310630","side":"Buy","quantity":200000,"limitPrice":1.000}' \
@@ -277,6 +307,82 @@ echo "${booked_trades}" | jq -e --arg order "${booking_id}" '
     and ([.[] | select(.id == ($order + "-exec-100000"))] | length) == 1
 ' >/dev/null || {
   echo "[error] stable synchronous Treasury execution IDs were not persisted exactly once"
+  exit 1
+}
+booking_position_after="$(curl -fsS "${INGRESS_URL}/position-service/positions/17017" \
+  | jq -r '[.[] | select(.security == "UST-20310630")][0].quantity // 0')"
+[[ "${booking_position_after}" -eq $(( booking_position_before + 200000 )) ]] || {
+  echo "[error] expected the two stable executions to change the position exactly once each"
+  exit 1
+}
+
+echo "[check] timed-out Treasury execution persists and reconciles exactly once"
+timeout_security="UST-20560515"
+timeout_position_before="$(curl -fsS "${INGRESS_URL}/position-service/positions/17017" \
+  | jq -r --arg security "${timeout_security}" \
+    '[.[] | select(.security == $security)][0].quantity // 0')"
+timeout_order="$(
+  curl -fsS -H 'Content-Type: application/json' -X POST \
+    -d "{\"accountId\":17017,\"security\":\"${timeout_security}\",\"side\":\"Buy\",\"quantity\":100,\"limitPrice\":1.000}" \
+    "${INGRESS_URL}/order-matcher/orders"
+)"
+timeout_order_id="$(echo "${timeout_order}" | jq -r '.orderId')"
+timeout_execution_id="${timeout_order_id}-exec-0"
+docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" \
+  pause trade-processor >/dev/null
+PROCESSOR_PAUSED=1
+timeout_fill="$(http_with_body POST \
+  "${INGRESS_URL}/order-matcher/orders/${timeout_order_id}/force-fill" '{}')"
+assert_http_detail \
+  "${timeout_fill}" 502 "Treasury execution requires reconciliation" \
+  "Treasury force-fill while trade processor is paused"
+pending_order="$(curl -fsS "${INGRESS_URL}/order-matcher/orders/${timeout_order_id}")"
+echo "${pending_order}" | jq -e \
+  --arg execution "${timeout_execution_id}" \
+  '.pendingTradeId == $execution
+    and .pendingQuantity == 100
+    and .pendingPrice != null
+    and .remainingQuantity == 100' >/dev/null || {
+      echo "[error] timed-out execution did not retain its stable pending request"
+      echo "${pending_order}"
+      exit 1
+    }
+
+docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" \
+  unpause trade-processor >/dev/null
+PROCESSOR_PAUSED=0
+docker compose -f "${COMPOSE_FILE}" --project-name "${COMPOSE_PROJECT_NAME}" \
+  ps --status running --services | rg -qx 'trade-processor' || {
+    echo "[error] trade-processor did not return to the running state"
+    exit 1
+  }
+
+reconciled=0
+for _ in $(seq 1 30); do
+  reconciled_order="$(curl -fsS "${INGRESS_URL}/order-matcher/orders/${timeout_order_id}")"
+  if echo "${reconciled_order}" | jq -e \
+      '.status == "FILLED" and .remainingQuantity == 0 and .pendingTradeId == null' \
+      >/dev/null; then
+    reconciled=1
+    break
+  fi
+  sleep 1
+done
+[[ "${reconciled}" == "1" ]] || {
+  echo "[error] pending Treasury execution did not reconcile after unpause"
+  exit 1
+}
+timeout_trades="$(curl -fsS "${INGRESS_URL}/position-service/trades/17017")"
+echo "${timeout_trades}" | jq -e --arg execution "${timeout_execution_id}" \
+  '([.[] | select(.id == $execution)] | length) == 1' >/dev/null || {
+    echo "[error] timed-out stable execution was not persisted exactly once"
+    exit 1
+  }
+timeout_position_after="$(curl -fsS "${INGRESS_URL}/position-service/positions/17017" \
+  | jq -r --arg security "${timeout_security}" \
+    '[.[] | select(.security == $security)][0].quantity // 0')"
+[[ "${timeout_position_after}" -eq $(( timeout_position_before + 100 )) ]] || {
+  echo "[error] timed-out execution changed the position more or less than once"
   exit 1
 }
 

@@ -12,7 +12,7 @@ index 4abff09..73e9da1 100644
 +  SourceOrderId VARCHAR(32)
  );
  Alter Table Trades Add Foreign Key (AccountID) references Accounts(ID);
-
+ 
 @@ -44,7 +46,11 @@ CREATE TABLE OrderBook (
    CreatedAt TIMESTAMP NOT NULL,
    UpdatedAt TIMESTAMP NOT NULL,
@@ -31,7 +31,7 @@ index 4abff09..73e9da1 100644
  INSERT into Accounts (ID, DisplayName) VALUES (10031, 'Internal Trading Book');
  INSERT into Accounts (ID, DisplayName) VALUES (44044, 'Trading Account 1');
 +INSERT into Accounts (ID, DisplayName) VALUES (17017, 'U.S. Treasury Trading Account');
-
+ 
  INSERT into AccountUsers (AccountID, Username) VALUES (22214, 'user01');
  INSERT into AccountUsers (AccountID, Username) VALUES (22214, 'user03');
 @@ -77,6 +84,9 @@ INSERT into AccountUsers (AccountID, Username) VALUES (44044, 'user07');
@@ -41,11 +41,11 @@ index 4abff09..73e9da1 100644
 +INSERT into AccountUsers (AccountID, Username) VALUES (17017, 'user02');
 +INSERT into AccountUsers (AccountID, Username) VALUES (17017, 'user08');
 +INSERT into AccountUsers (AccountID, Username) VALUES (17017, 'user10');
-
+ 
  INSERT into Trades(ID, Created, Updated, Security, Side, Quantity, Price, State, AccountID) VALUES('TRADE-22214-AABBCC', NOW(), NOW(), 'IBM', 'Sell', 100, 136.250, 'Settled', 22214);
  INSERT into Trades(ID, Created, Updated, Security, Side, Quantity, Price, State, AccountID) VALUES('TRADE-22214-DDEEFF', NOW(), NOW(), 'MS', 'Buy', 1000, 95.125, 'Settled', 22214);
 @@ -88,3 +98,15 @@ INSERT into Positions (AccountID, Security, Updated, Quantity, AverageCostBasis)
-
+ 
  INSERT into Trades(ID, Created, Updated, Security, Side, Quantity, Price, State, AccountID) VALUES('TRADE-52355-AABBCC', NOW(), NOW(), 'BAC', 'Sell', 2400, 41.125, 'Settled', 52355);
  INSERT into Positions (AccountID, Security, Updated, Quantity, AverageCostBasis) VALUES(52355, 'BAC',NOW(), -2400, 41.125);
 +
@@ -111,7 +111,7 @@ index 7bee55f..e5af9f5 100644
 +    private Integer pendingQuantity;
 +    private BigDecimal pendingPrice;
 +    private Instant pendingSubmittedAt;
-
+ 
      public static OrderResponse from(OrderRecord order, BigDecimal marketPrice) {
          OrderResponse response = new OrderResponse();
 @@ -37,6 +41,10 @@ public class OrderResponse {
@@ -124,13 +124,13 @@ index 7bee55f..e5af9f5 100644
 +        response.pendingSubmittedAt = order.getPendingSubmittedAt();
          return response;
      }
-
+ 
 @@ -91,5 +99,20 @@ public class OrderResponse {
      public BigDecimal getMarketPrice() {
          return marketPrice;
      }
 -}
-
+ 
 +    public String getPendingTradeId() {
 +        return pendingTradeId;
 +    }
@@ -207,14 +207,14 @@ index 866daff..764e6eb 100644
 +++ b/order-matcher/src/main/java/finos/traderx/ordermatcher/config/HttpClientConfig.java
 @@ -6,6 +6,11 @@ import org.springframework.context.annotation.Configuration;
  import org.springframework.web.client.RestTemplate;
-
+ 
  import java.time.Duration;
 +import java.time.Clock;
 +import java.time.Instant;
 +import java.time.ZoneOffset;
 +import org.springframework.beans.factory.annotation.Value;
 +import org.springframework.util.StringUtils;
-
+ 
  @Configuration
  public class HttpClientConfig {
 @@ -13,8 +18,14 @@ public class HttpClientConfig {
@@ -226,7 +226,7 @@ index 866daff..764e6eb 100644
              .build();
      }
 -}
-
+ 
 +    @Bean
 +    Clock traderXClock(@Value("${traderx.fixed-utc-instant:}") String fixedUtcInstant) {
 +        return StringUtils.hasText(fixedUtcInstant)
@@ -245,12 +245,12 @@ index be5c500..aa73986 100644
 -import jakarta.persistence.PrePersist;
 -import jakarta.persistence.PreUpdate;
  import jakarta.persistence.Table;
-
+ 
  import java.math.BigDecimal;
 @@ -54,24 +52,17 @@ public class OrderRecord {
      @Column(name = "LastFillQuantity")
      private Integer lastFillQuantity;
-
+ 
 -    @PrePersist
 -    public void prePersist() {
 -        Instant now = Instant.now();
@@ -266,7 +266,7 @@ index be5c500..aa73986 100644
 -    }
 +    @Column(name = "PendingTradeId", length = 50)
 +    private String pendingTradeId;
-
+ 
 -    @PreUpdate
 -    public void preUpdate() {
 -        updatedAt = Instant.now();
@@ -279,7 +279,7 @@ index be5c500..aa73986 100644
 +
 +    @Column(name = "PendingSubmittedAt")
 +    private Instant pendingSubmittedAt;
-
+ 
      public String getOrderId() {
          return orderId;
 @@ -168,5 +159,36 @@ public class OrderRecord {
@@ -287,7 +287,7 @@ index be5c500..aa73986 100644
          this.lastFillQuantity = lastFillQuantity;
      }
 -}
-
+ 
 +    public String getPendingTradeId() {
 +        return pendingTradeId;
 +    }
@@ -329,15 +329,15 @@ index 5ed181f..3ec5c90 100644
  import org.springframework.data.jpa.repository.JpaRepository;
  import org.springframework.data.jpa.repository.Query;
 +import org.springframework.data.repository.query.Param;
-
+ 
  import java.util.Collection;
  import java.util.List;
 @@ -22,5 +23,19 @@ public interface OrderRepository extends JpaRepository<OrderRecord, String> {
-
+ 
      @Query("select o.orderId from OrderRecord o")
      List<String> findAllOrderIds();
 -}
-
+ 
 +    List<OrderRecord> findAllByPendingTradeIdIsNotNullOrderByUpdatedAtAsc();
 +
 +    @Query("""
@@ -354,11 +354,11 @@ index 5ed181f..3ec5c90 100644
 +        @Param("security") String security);
 +}
 diff --git a/order-matcher/src/main/java/finos/traderx/ordermatcher/service/OrderMatcherService.java b/order-matcher/src/main/java/finos/traderx/ordermatcher/service/OrderMatcherService.java
-index c09543c..3be2280 100644
+index c09543c..190ebab 100644
 --- a/order-matcher/src/main/java/finos/traderx/ordermatcher/service/OrderMatcherService.java
 +++ b/order-matcher/src/main/java/finos/traderx/ordermatcher/service/OrderMatcherService.java
 @@ -2,27 +2,24 @@ package finos.traderx.ordermatcher.service;
-
+ 
  import finos.traderx.messaging.PubSubException;
  import finos.traderx.messaging.Publisher;
 +import finos.traderx.ordermatcher.api.InstrumentMetadata;
@@ -408,22 +408,23 @@ index c09543c..3be2280 100644
 +import org.springframework.web.client.ResourceAccessException;
 +import org.springframework.web.client.RestTemplate;
 +import org.springframework.web.server.ResponseStatusException;
-
+ 
  import static org.springframework.http.HttpStatus.BAD_GATEWAY;
  import static org.springframework.http.HttpStatus.BAD_REQUEST;
 +import static org.springframework.http.HttpStatus.CONFLICT;
  import static org.springframework.http.HttpStatus.NOT_FOUND;
-
+ 
  @Service
-@@ -47,23 +57,32 @@ public class OrderMatcherService {
+@@ -47,57 +57,88 @@ public class OrderMatcherService {
      private static final String APP_NAME = "traderx-order-matcher";
      private static final Pattern ORDER_ID_PATTERN = Pattern.compile("^ord-013-(\\d{4,})$");
      private static final String ALL_ORDERS_TOPIC = "/orders";
 -    private static final Set<OrderStatus> OPEN_STATUSES = Set.of(OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED);
 +    private static final String TREASURY_PREFIX = "UST-";
++    private static final int LOCK_STRIPE_COUNT = 256;
 +    private static final Set<OrderStatus> OPEN_STATUSES =
 +        Set.of(OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED);
-
+ 
      private final OrderRepository orderRepository;
      private final Publisher<OrderResponse> orderPublisher;
      private final RestTemplate restTemplate;
@@ -436,7 +437,7 @@ index c09543c..3be2280 100644
 +    private final String positionServiceUrl;
      private final int fillFullThreshold;
      private final long matcherTickMs;
-
+ 
 -    private final Instant startedAt = Instant.now();
 +    private final Instant startedAt;
      private final AtomicInteger nextOrderSequence = new AtomicInteger(1);
@@ -453,8 +454,20 @@ index c09543c..3be2280 100644
 +    private final AtomicLong reconciliationRejections = new AtomicLong();
      private final Map<String, AtomicLong> eventCounters = new ConcurrentHashMap<>();
      private final Map<String, BigDecimal> lastPrices = new ConcurrentHashMap<>();
-     private final ReentrantLock orderMutationLock = new ReentrantLock();
-@@ -73,31 +92,43 @@ public class OrderMatcherService {
+-    private final ReentrantLock orderMutationLock = new ReentrantLock();
++    /*
++     * Locking invariant:
++     * - creation and Treasury sell reservation use only an account/security stripe;
++     * - fill, cancellation, and reconciliation use only an order-ID stripe;
++     * - no current path holds both lock types. If nesting is ever required, the
++     *   account/security stripe must always be acquired before the order-ID stripe.
++     */
++    private final ReentrantLock[] orderLocks = createLockStripes();
++    private final ReentrantLock[] reservationLocks = createLockStripes();
++    private final Set<String> reconciliationsInFlight = ConcurrentHashMap.newKeySet();
+     private volatile Instant lastTickAt;
+ 
+     public OrderMatcherService(
          OrderRepository orderRepository,
          Publisher<OrderResponse> orderPublisher,
          RestTemplate restTemplate,
@@ -484,7 +497,7 @@ index c09543c..3be2280 100644
          initializeCounters();
          initializeData();
      }
-
+ 
      @Scheduled(fixedDelayString = "${order.matcher.tick-ms:1000}")
      public void runMatcherTick() {
 +        for (OrderRecord pending : orderRepository.findAllByPendingTradeIdIsNotNullOrderByUpdatedAtAsc()) {
@@ -499,14 +512,14 @@ index c09543c..3be2280 100644
          for (OrderRecord order : openOrders) {
              BigDecimal marketPrice = lastPrices.get(order.getSecurity());
              if (marketPrice != null) {
-@@ -105,44 +136,35 @@ public class OrderMatcherService {
+@@ -105,44 +146,35 @@ public class OrderMatcherService {
              }
          }
          matcherTicks.incrementAndGet();
 -        lastTickAt = Instant.now();
 +        lastTickAt = clock.instant();
      }
-
+ 
      public void onPriceTick(String ticker, BigDecimal marketPrice) {
          if (!StringUtils.hasText(ticker) || marketPrice == null) {
              return;
@@ -538,7 +551,7 @@ index c09543c..3be2280 100644
 +            tryAutoFill(orderId, price);
          }
      }
-
+ 
      public List<OrderResponse> listOrders(String statusFilter, Integer accountIdFilter) {
 -        String normalizedStatus = StringUtils.hasText(statusFilter) ? statusFilter.trim().toLowerCase(Locale.ROOT) : "open";
 -        List<OrderRecord> rows = new ArrayList<>(orderRepository.findAllByOrderByUpdatedAtDesc());
@@ -558,38 +571,51 @@ index c09543c..3be2280 100644
              .map(order -> OrderResponse.from(order, lastPrices.get(order.getSecurity())))
              .toList();
      }
-@@ -154,19 +176,26 @@ public class OrderMatcherService {
-
+@@ -154,75 +186,73 @@ public class OrderMatcherService {
+ 
      public OrderResponse createOrder(OrderCreateRequest request) {
          validateCreateRequest(request);
+-        orderMutationLock.lock();
 +        String security = request.getSecurity().trim().toUpperCase(Locale.ROOT);
++        // Reference data is network I/O and does not participate in reservation serialization.
 +        InstrumentMetadata instrument = resolveTreasuryMetadata(security);
-+        if (instrument != null) {
++        if (instrument != null && request.getSide() != OrderSide.Sell) {
 +            validateTreasuryCreate(request, instrument, security);
 +        }
 +
-         orderMutationLock.lock();
++        ReentrantLock reservationLock = reservationLock(request.getAccountId(), security);
++        reservationLock.lock();
          try {
-+            Instant now = clock.instant();
-             OrderRecord order = new OrderRecord();
-             order.setOrderId(nextOrderId());
-             order.setAccountId(request.getAccountId());
+-            OrderRecord order = new OrderRecord();
+-            order.setOrderId(nextOrderId());
+-            order.setAccountId(request.getAccountId());
 -            order.setSecurity(request.getSecurity().trim().toUpperCase(Locale.ROOT));
-+            order.setSecurity(security);
-             order.setSide(request.getSide());
-             order.setQuantity(request.getQuantity());
-             order.setRemainingQuantity(request.getQuantity());
-             order.setLimitPrice(roundPrice(request.getLimitPrice()));
-             order.setStatus(OrderStatus.NEW);
+-            order.setSide(request.getSide());
+-            order.setQuantity(request.getQuantity());
+-            order.setRemainingQuantity(request.getQuantity());
+-            order.setLimitPrice(roundPrice(request.getLimitPrice()));
+-            order.setStatus(OrderStatus.NEW);
 -            order.setCreatedAt(Instant.now());
 -            order.setUpdatedAt(order.getCreatedAt());
-+            order.setCreatedAt(now);
-+            order.setUpdatedAt(now);
-             OrderRecord saved = orderRepository.save(order);
-             incrementEvent("create");
-             return OrderResponse.from(saved, lastPrices.get(saved.getSecurity()));
-@@ -179,10 +208,15 @@ public class OrderMatcherService {
-         orderMutationLock.lock();
+-            OrderRecord saved = orderRepository.save(order);
+-            incrementEvent("create");
+-            return OrderResponse.from(saved, lastPrices.get(saved.getSecurity()));
++            if (instrument != null && request.getSide() == OrderSide.Sell) {
++                // This bounded position-service call intentionally stays inside the
++                // same-account/same-security stripe so two sells cannot over-reserve.
++                validateTreasuryCreate(request, instrument, security);
++            }
++            return persistNewOrder(request, security);
+         } finally {
+-            orderMutationLock.unlock();
++            reservationLock.unlock();
+         }
+     }
+ 
+     public OrderResponse cancelOrder(String orderId) {
+-        orderMutationLock.lock();
++        ReentrantLock orderLock = orderLock(orderId);
++        orderLock.lock();
          try {
              OrderRecord order = findOrder(orderId);
 +            if (order.getPendingTradeId() != null) {
@@ -605,9 +631,13 @@ index c09543c..3be2280 100644
                  orderRepository.save(order);
                  incrementEvent("cancel");
              }
-@@ -193,36 +227,28 @@ public class OrderMatcherService {
+             return OrderResponse.from(order, lastPrices.get(order.getSecurity()));
+         } finally {
+-            orderMutationLock.unlock();
++            orderLock.unlock();
+         }
      }
-
+ 
      public OrderResponse forceFillOrder(String orderId) {
 -        orderMutationLock.lock();
 -        try {
@@ -640,7 +670,7 @@ index c09543c..3be2280 100644
 +        }
 +        return OrderResponse.from(refreshed, lastPrices.get(refreshed.getSecurity()));
      }
-
+ 
      public OpenCountResponse openCounts() {
 -        long openOrders = orderRepository.countByStatusIn(OPEN_STATUSES);
 -        long unfilledOrders = orderRepository.countByStatusInAndRemainingQuantityGreaterThan(OPEN_STATUSES, 0);
@@ -649,14 +679,14 @@ index c09543c..3be2280 100644
 +            orderRepository.countByStatusIn(OPEN_STATUSES),
 +            orderRepository.countByStatusInAndRemainingQuantityGreaterThan(OPEN_STATUSES, 0));
      }
-
+ 
      public Map<String, Object> health() {
 -        OpenCountResponse openCount = openCounts();
 +        OpenCountResponse counts = openCounts();
          Map<String, Object> matcher = new LinkedHashMap<>();
          matcher.put("tickMs", matcherTickMs);
          matcher.put("ticks", matcherTicks.get());
-@@ -230,166 +256,333 @@ public class OrderMatcherService {
+@@ -230,166 +260,437 @@ public class OrderMatcherService {
          matcher.put("autoFillAttempts", autoFillAttempts.get());
          matcher.put("autoFillSuccess", autoFillSuccess.get());
          matcher.put("tradeSubmitFailures", tradeSubmitFailures.get());
@@ -679,7 +709,7 @@ index c09543c..3be2280 100644
 +        payload.put("unfilledOrders", counts.getUnfilledOrders());
          return payload;
      }
-
+ 
      public String prometheusMetrics() {
 -        long openOrders = orderRepository.countByStatusIn(OPEN_STATUSES);
 -        long unfilledOrders = orderRepository.countByStatusInAndRemainingQuantityGreaterThan(OPEN_STATUSES, 0);
@@ -748,12 +778,36 @@ index c09543c..3be2280 100644
 -        sb.append("traderx_order_match_latency_seconds_count ").append(matcherTicks.get()).append('\n');
 +        sb.append("# HELP traderx_order_match_latency_seconds Matcher latency histogram.\n")
 +            .append("# TYPE traderx_order_match_latency_seconds histogram\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"0.01\"} 0\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"0.05\"} 0\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"0.1\"} 0\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"0.25\"} 0\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"0.5\"} 0\n")
++            .append("traderx_order_match_latency_seconds_bucket{le=\"1\"} 0\n")
 +            .append("traderx_order_match_latency_seconds_bucket{le=\"+Inf\"} ").append(matcherTicks.get()).append('\n')
 +            .append("traderx_order_match_latency_seconds_sum 0\n")
 +            .append("traderx_order_match_latency_seconds_count ").append(matcherTicks.get()).append('\n');
          return sb.toString();
      }
-
+ 
++    private OrderResponse persistNewOrder(OrderCreateRequest request, String security) {
++        Instant now = clock.instant();
++        OrderRecord order = new OrderRecord();
++        order.setOrderId(nextOrderId());
++        order.setAccountId(request.getAccountId());
++        order.setSecurity(security);
++        order.setSide(request.getSide());
++        order.setQuantity(request.getQuantity());
++        order.setRemainingQuantity(request.getQuantity());
++        order.setLimitPrice(roundPrice(request.getLimitPrice()));
++        order.setStatus(OrderStatus.NEW);
++        order.setCreatedAt(now);
++        order.setUpdatedAt(now);
++        OrderRecord saved = orderRepository.save(order);
++        incrementEvent("create");
++        return OrderResponse.from(saved, lastPrices.get(saved.getSecurity()));
++    }
++
      private void tryAutoFill(String orderId, BigDecimal marketPrice) {
 -        OrderRecord order = orderRepository.findById(orderId).orElse(null);
 -        if (order == null || !isOpen(order) || order.getRemainingQuantity() == null || order.getRemainingQuantity() <= 0) {
@@ -761,14 +815,12 @@ index c09543c..3be2280 100644
 -        }
 -        if (marketPrice == null) {
 -            return;
--        }
--        if (!isInTheMoney(order, marketPrice)) {
--            return;
 +        tryAutoFill(orderId, marketPrice, false);
 +    }
 +
 +    private void tryAutoFill(String orderId, BigDecimal marketPrice, boolean forceFill) {
-+        orderMutationLock.lock();
++        ReentrantLock orderLock = orderLock(orderId);
++        orderLock.lock();
 +        try {
 +            OrderRecord order = orderRepository.findById(orderId).orElse(null);
 +            if (order == null || !isOpen(order) || order.getPendingTradeId() != null
@@ -782,7 +834,9 @@ index c09543c..3be2280 100644
 +            boolean treasury = isTreasuryKey(order.getSecurity());
 +            int fillQty = treasury
 +                ? treasuryFillQuantity(order.getRemainingQuantity())
-+                : inheritedFillQuantity(order.getRemainingQuantity());
++                : forceFill
++                    ? order.getRemainingQuantity()
++                    : inheritedFillQuantity(order.getRemainingQuantity());
 +            if (treasury) {
 +                preparePending(order, fillQty, marketPrice);
 +                orderRepository.saveAndFlush(order);
@@ -801,35 +855,37 @@ index c09543c..3be2280 100644
 +                return;
 +            }
 +        } finally {
-+            orderMutationLock.unlock();
++            orderLock.unlock();
+         }
+-        if (!isInTheMoney(order, marketPrice)) {
++        reconcilePending(orderId, false);
++    }
++
++    private void reconcilePending(String orderId, boolean retry) {
++        if (!reconciliationsInFlight.add(orderId)) {
+             return;
          }
 -        autoFillAttempts.incrementAndGet();
 -        int remaining = order.getRemainingQuantity();
 -        int fillQty = remaining < fillFullThreshold ? remaining : Math.max(1, (remaining + 1) / 2);
-+        reconcilePending(orderId, false);
-+    }
-
-+    private void reconcilePending(String orderId, boolean retry) {
-         orderMutationLock.lock();
+-
+-        orderMutationLock.lock();
          try {
 -            OrderRecord liveOrder = orderRepository.findById(orderId).orElse(null);
 -            if (liveOrder == null || !isOpen(liveOrder) || liveOrder.getRemainingQuantity() == null || liveOrder.getRemainingQuantity() <= 0) {
-+            OrderRecord order = orderRepository.findById(orderId).orElse(null);
-+            if (order == null || order.getPendingTradeId() == null) {
++            PendingExecution pending = snapshotPending(orderId, retry);
++            if (pending == null) {
                  return;
              }
 -            if (!submitTrade(liveOrder, fillQty)) {
-+            if (retry) {
-+                reconciliationRetries.incrementAndGet();
-+            }
 +            Map<String, Object> payload = new LinkedHashMap<>();
-+            payload.put("id", order.getPendingTradeId());
-+            payload.put("security", order.getSecurity());
-+            payload.put("quantity", order.getPendingQuantity());
-+            payload.put("price", order.getPendingPrice());
-+            payload.put("accountId", order.getAccountId());
-+            payload.put("side", order.getSide().name());
-+            payload.put("sourceOrderId", order.getOrderId());
++            payload.put("id", pending.tradeId());
++            payload.put("security", pending.security());
++            payload.put("quantity", pending.quantity());
++            payload.put("price", pending.price());
++            payload.put("accountId", pending.accountId());
++            payload.put("side", pending.side().name());
++            payload.put("sourceOrderId", pending.orderId());
 +            try {
 +                ResponseEntity<TradeBookingResult> response = restTemplate.postForEntity(
 +                    tradeProcessorUrl + "/tradeservice/order",
@@ -840,43 +896,130 @@ index c09543c..3be2280 100644
 +                if (trade == null || trade.getState() == null) {
 +                    return;
 +                }
-+                if ("Settled".equals(trade.getState())) {
-+                    applyFill(
-+                        order,
-+                        order.getPendingQuantity(),
-+                        trade.getPrice() == null ? order.getPendingPrice() : trade.getPrice(),
-+                        false);
-+                    clearPending(order);
-+                    orderRepository.save(order);
-+                    publishOrderUpdate(order);
-+                    autoFillSuccess.incrementAndGet();
-+                    reconciliationSuccesses.incrementAndGet();
-+                } else if ("Rejected".equals(trade.getState())) {
-+                    rejectPending(order);
-+                }
++                applyReconciliationResponse(pending, trade);
 +            } catch (HttpClientErrorException nonRetryable) {
-+                rejectPending(order);
++                rejectPendingIfCurrent(pending);
 +            } catch (HttpServerErrorException | ResourceAccessException retryable) {
                  tradeSubmitFailures.incrementAndGet();
 -                incrementEvent("reject");
 -                liveOrder.setUpdatedAt(Instant.now());
 -                orderRepository.save(liveOrder);
--                return;
-+                order.setUpdatedAt(clock.instant());
-+                orderRepository.save(order);
++                touchPendingIfCurrent(pending);
++            }
++        } finally {
++            reconciliationsInFlight.remove(orderId);
++        }
++    }
++
++    private PendingExecution snapshotPending(String orderId, boolean retry) {
++        ReentrantLock orderLock = orderLock(orderId);
++        orderLock.lock();
++        try {
++            OrderRecord order = orderRepository.findById(orderId).orElse(null);
++            if (order == null || order.getPendingTradeId() == null) {
++                return null;
++            }
++            if (retry) {
++                reconciliationRetries.incrementAndGet();
++            }
++            return new PendingExecution(
++                order.getOrderId(),
++                order.getPendingTradeId(),
++                order.getSecurity(),
++                order.getPendingQuantity(),
++                order.getPendingPrice(),
++                order.getAccountId(),
++                order.getSide());
++        } finally {
++            orderLock.unlock();
++        }
++    }
++
++    private void applyReconciliationResponse(
++        PendingExecution pending,
++        TradeBookingResult.BookedTrade trade) {
++        ReentrantLock orderLock = orderLock(pending.orderId());
++        orderLock.lock();
++        try {
++            OrderRecord current = orderRepository.findById(pending.orderId()).orElse(null);
++            if (!pendingMatches(current, pending)) {
+                 return;
              }
 -            applyFill(liveOrder, fillQty, marketPrice, false);
 -            orderRepository.save(liveOrder);
 -            publishOrderUpdate(liveOrder);
 -            autoFillSuccess.incrementAndGet();
++            if ("Settled".equals(trade.getState())) {
++                applyFill(
++                    current,
++                    pending.quantity(),
++                    trade.getPrice() == null ? pending.price() : trade.getPrice(),
++                    false);
++                clearPending(current);
++                orderRepository.save(current);
++                publishOrderUpdate(current);
++                autoFillSuccess.incrementAndGet();
++                reconciliationSuccesses.incrementAndGet();
++            } else if ("Rejected".equals(trade.getState())) {
++                rejectPending(current);
++            }
          } finally {
-             orderMutationLock.unlock();
+-            orderMutationLock.unlock();
++            orderLock.unlock();
          }
      }
-
+ 
 -    public void publishOrderUpdate(OrderResponse order) {
 -        if (order == null || order.getAccountId() == null) {
 -            return;
++    private void rejectPendingIfCurrent(PendingExecution pending) {
++        ReentrantLock orderLock = orderLock(pending.orderId());
++        orderLock.lock();
++        try {
++            OrderRecord current = orderRepository.findById(pending.orderId()).orElse(null);
++            if (pendingMatches(current, pending)) {
++                rejectPending(current);
++            }
++        } finally {
++            orderLock.unlock();
+         }
+-        String accountTopic = "/accounts/" + order.getAccountId() + "/orders";
++    }
++
++    private void touchPendingIfCurrent(PendingExecution pending) {
++        ReentrantLock orderLock = orderLock(pending.orderId());
++        orderLock.lock();
+         try {
+-            orderPublisher.publish(accountTopic, order);
+-            orderPublisher.publish(ALL_ORDERS_TOPIC, order);
+-        } catch (PubSubException ex) {
+-            log.warn("Unable to publish order update for {} on {}/{}", order.getOrderId(), accountTopic, ALL_ORDERS_TOPIC, ex);
++            OrderRecord current = orderRepository.findById(pending.orderId()).orElse(null);
++            if (pendingMatches(current, pending)) {
++                current.setUpdatedAt(clock.instant());
++                orderRepository.save(current);
++            }
++        } finally {
++            orderLock.unlock();
+         }
+     }
+ 
+-    private void publishOrderUpdate(OrderRecord order) {
+-        publishOrderUpdate(OrderResponse.from(order, lastPrices.get(order.getSecurity())));
++    private boolean pendingMatches(OrderRecord order, PendingExecution pending) {
++        return order != null
++            && pending.tradeId().equals(order.getPendingTradeId())
++            && pending.quantity().equals(order.getPendingQuantity())
++            && pending.price().compareTo(order.getPendingPrice()) == 0;
+     }
+ 
+-    private void applyFill(OrderRecord order, int fillQty, BigDecimal executionPrice, boolean forceFill) {
+-        int remainingBefore = order.getRemainingQuantity() == null ? 0 : order.getRemainingQuantity();
+-        int remainingAfter = Math.max(0, remainingBefore - fillQty);
+-        order.setRemainingQuantity(remainingAfter);
+-        order.setLastExecutionPrice(roundPrice(executionPrice));
+-        order.setLastFillQuantity(fillQty);
+-        order.setUpdatedAt(Instant.now());
 +    private void rejectPending(OrderRecord order) {
 +        clearPending(order);
 +        order.setStatus(OrderStatus.REJECTED);
@@ -896,18 +1039,20 @@ index c09543c..3be2280 100644
 +        order.setPendingSubmittedAt(clock.instant());
 +        order.setUpdatedAt(clock.instant());
 +    }
-+
+ 
+-        if (remainingAfter == 0) {
+-            order.setStatus(OrderStatus.FILLED);
+-            incrementEvent("fill");
+-        } else {
+-            order.setStatus(OrderStatus.PARTIALLY_FILLED);
+-            incrementEvent("partial_fill");
 +    public static String deriveTradeId(String orderId, int filledBefore) {
 +        String id = orderId + "-exec-" + filledBefore;
 +        if (id.length() > 50) {
 +            throw new IllegalArgumentException("Derived trade ID exceeds Trades.ID VARCHAR(50)");
          }
--        String accountTopic = "/accounts/" + order.getAccountId() + "/orders";
--        try {
--            orderPublisher.publish(accountTopic, order);
--            orderPublisher.publish(ALL_ORDERS_TOPIC, order);
--        } catch (PubSubException ex) {
--            log.warn("Unable to publish order update for {} on {}/{}", order.getOrderId(), accountTopic, ALL_ORDERS_TOPIC, ex);
+-        if (forceFill) {
+-            incrementEvent("force_fill");
 +        return id;
 +    }
 +
@@ -916,53 +1061,48 @@ index c09543c..3be2280 100644
 +            return remaining;
          }
 +        return Math.max(100, (remaining / 2 / 100) * 100);
-     }
-
--    private void publishOrderUpdate(OrderRecord order) {
--        publishOrderUpdate(OrderResponse.from(order, lastPrices.get(order.getSecurity())));
-+    private int inheritedFillQuantity(int remaining) {
-+        return remaining < fillFullThreshold ? remaining : Math.max(1, (remaining + 1) / 2);
 +    }
 +
++    private int inheritedFillQuantity(int remaining) {
++        return remaining < fillFullThreshold ? remaining : Math.max(1, (remaining + 1) / 2);
+     }
+ 
+-    private boolean submitTrade(OrderRecord order, int quantity) {
 +    private boolean submitAsynchronousTrade(OrderRecord order, int quantity) {
-+        try {
-+            Map<String, Object> payload = Map.of(
-+                "security", order.getSecurity(),
-+                "quantity", quantity,
-+                "accountId", order.getAccountId(),
+         try {
+             Map<String, Object> payload = Map.of(
+                 "security", order.getSecurity(),
+                 "quantity", quantity,
+                 "accountId", order.getAccountId(),
+-                "side", order.getSide().name()
+-            );
+-            ResponseEntity<Map> response = restTemplate.postForEntity(tradeServiceUrl, payload, Map.class);
+-            return response.getStatusCode().is2xxSuccessful();
+-        } catch (Exception e) {
 +                "side", order.getSide().name());
 +            return restTemplate.postForEntity(tradeServiceUrl, payload, Map.class)
 +                .getStatusCode().is2xxSuccessful();
 +        } catch (RuntimeException ex) {
-+            return false;
-+        }
+             return false;
+         }
      }
-
-     private void applyFill(OrderRecord order, int fillQty, BigDecimal executionPrice, boolean forceFill) {
--        int remainingBefore = order.getRemainingQuantity() == null ? 0 : order.getRemainingQuantity();
--        int remainingAfter = Math.max(0, remainingBefore - fillQty);
+ 
+-    private boolean filterByStatus(OrderRecord order, String statusFilter) {
+-        if ("open".equals(statusFilter)) {
+-            return isOpen(order);
++    private void applyFill(OrderRecord order, int fillQty, BigDecimal executionPrice, boolean forceFill) {
 +        int remainingAfter = Math.max(0, order.getRemainingQuantity() - fillQty);
-         order.setRemainingQuantity(remainingAfter);
-         order.setLastExecutionPrice(roundPrice(executionPrice));
-         order.setLastFillQuantity(fillQty);
--        order.setUpdatedAt(Instant.now());
--
--        if (remainingAfter == 0) {
--            order.setStatus(OrderStatus.FILLED);
--            incrementEvent("fill");
--        } else {
--            order.setStatus(OrderStatus.PARTIALLY_FILLED);
--            incrementEvent("partial_fill");
--        }
++        order.setRemainingQuantity(remainingAfter);
++        order.setLastExecutionPrice(roundPrice(executionPrice));
++        order.setLastFillQuantity(fillQty);
 +        order.setUpdatedAt(clock.instant());
 +        order.setStatus(remainingAfter == 0 ? OrderStatus.FILLED : OrderStatus.PARTIALLY_FILLED);
 +        incrementEvent(remainingAfter == 0 ? "fill" : "partial_fill");
-         if (forceFill) {
-             incrementEvent("force_fill");
-         }
-     }
-
--    private boolean submitTrade(OrderRecord order, int quantity) {
++        if (forceFill) {
++            incrementEvent("force_fill");
++        }
++    }
++
 +    private void clearPending(OrderRecord order) {
 +        order.setPendingTradeId(null);
 +        order.setPendingQuantity(null);
@@ -974,17 +1114,7 @@ index c09543c..3be2280 100644
 +        if (!isTreasuryKey(security)) {
 +            return null;
 +        }
-         try {
--            Map<String, Object> payload = Map.of(
--                "security", order.getSecurity(),
--                "quantity", quantity,
--                "accountId", order.getAccountId(),
--                "side", order.getSide().name()
--            );
--            ResponseEntity<Map> response = restTemplate.postForEntity(tradeServiceUrl, payload, Map.class);
--            return response.getStatusCode().is2xxSuccessful();
--        } catch (Exception e) {
--            return false;
++        try {
 +            InstrumentMetadata instrument = restTemplate.getForObject(
 +                referenceDataUrl + "/instruments/" + security,
 +                InstrumentMetadata.class);
@@ -996,12 +1126,9 @@ index c09543c..3be2280 100644
 +            throw ex;
 +        } catch (RuntimeException ex) {
 +            throw new ResponseStatusException(BAD_GATEWAY, "Treasury reference metadata is unavailable", ex);
-         }
-     }
-
--    private boolean filterByStatus(OrderRecord order, String statusFilter) {
--        if ("open".equals(statusFilter)) {
--            return isOpen(order);
++        }
++    }
++
 +    private void validateTreasuryCreate(
 +        OrderCreateRequest request,
 +        InstrumentMetadata instrument,
@@ -1076,7 +1203,10 @@ index c09543c..3be2280 100644
 +            return;
 +        }
 +        String accountTopic = "/accounts/" + order.getAccountId() + "/orders";
-+        try {
+         try {
+-            OrderStatus status = OrderStatus.valueOf(statusFilter.toUpperCase(Locale.ROOT));
+-            return order.getStatus() == status;
+-        } catch (IllegalArgumentException e) {
 +            orderPublisher.publish(accountTopic, order);
 +            orderPublisher.publish(ALL_ORDERS_TOPIC, order);
 +        } catch (PubSubException ex) {
@@ -1091,16 +1221,13 @@ index c09543c..3be2280 100644
 +    private boolean filterByStatus(OrderRecord order, String statusFilter) {
 +        if ("open".equals(statusFilter)) return isOpen(order);
 +        if ("all".equals(statusFilter)) return true;
-         try {
--            OrderStatus status = OrderStatus.valueOf(statusFilter.toUpperCase(Locale.ROOT));
--            return order.getStatus() == status;
--        } catch (IllegalArgumentException e) {
++        try {
 +            return order.getStatus() == OrderStatus.valueOf(statusFilter.toUpperCase(Locale.ROOT));
 +        } catch (IllegalArgumentException ex) {
              return false;
          }
      }
-@@ -402,10 +595,9 @@ public class OrderMatcherService {
+@@ -402,10 +703,9 @@ public class OrderMatcherService {
          if (order.getLimitPrice() == null || marketPrice == null || order.getSide() == null) {
              return false;
          }
@@ -1112,9 +1239,9 @@ index c09543c..3be2280 100644
 +            ? marketPrice.compareTo(order.getLimitPrice()) <= 0
 +            : marketPrice.compareTo(order.getLimitPrice()) >= 0;
      }
-
+ 
      private void validateCreateRequest(OrderCreateRequest request) {
-@@ -414,7 +606,8 @@ public class OrderMatcherService {
+@@ -414,7 +714,8 @@ public class OrderMatcherService {
              || !StringUtils.hasText(request.getSecurity())
              || request.getSide() == null
              || request.getQuantity() == null || request.getQuantity() <= 0
@@ -1124,9 +1251,35 @@ index c09543c..3be2280 100644
              throw new ResponseStatusException(BAD_REQUEST, "invalid order payload");
          }
      }
-@@ -429,23 +622,19 @@ public class OrderMatcherService {
+@@ -423,29 +724,45 @@ public class OrderMatcherService {
+         return String.format("ord-013-%04d", nextOrderSequence.getAndIncrement());
      }
-
+ 
++    private ReentrantLock orderLock(String orderId) {
++        return orderLocks[stripeIndex(orderId)];
++    }
++
++    private ReentrantLock reservationLock(Integer accountId, String security) {
++        return reservationLocks[stripeIndex(accountId + "|" + security)];
++    }
++
++    private int stripeIndex(String key) {
++        return Math.floorMod(key.hashCode(), LOCK_STRIPE_COUNT);
++    }
++
++    private static ReentrantLock[] createLockStripes() {
++        ReentrantLock[] stripes = new ReentrantLock[LOCK_STRIPE_COUNT];
++        for (int index = 0; index < stripes.length; index++) {
++            stripes[index] = new ReentrantLock();
++        }
++        return stripes;
++    }
++
+     private OrderRecord findOrder(String orderId) {
+         return orderRepository.findById(orderId)
+             .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "order not found"));
+     }
+ 
      private BigDecimal roundPrice(BigDecimal input) {
 -        if (input == null) {
 -            return null;
@@ -1134,7 +1287,7 @@ index c09543c..3be2280 100644
 -        return input.setScale(3, RoundingMode.HALF_UP);
 +        return input == null ? null : input.setScale(3, RoundingMode.HALF_UP);
      }
-
+ 
      private void initializeData() {
          if (seedEnabled && orderRepository.count() == 0) {
              List<OrderRecord> seed = List.of(
@@ -1156,9 +1309,9 @@ index c09543c..3be2280 100644
              orderRepository.saveAll(seed);
          }
          initializeSequence();
-@@ -453,39 +642,28 @@ public class OrderMatcherService {
+@@ -453,39 +770,28 @@ public class OrderMatcherService {
      }
-
+ 
      private OrderRecord seedOrder(
 -        String orderId,
 -        int accountId,
@@ -1188,7 +1341,7 @@ index c09543c..3be2280 100644
          order.setUpdatedAt(now);
          return order;
      }
-
+ 
 -    private BigDecimal bd(String value) {
 -        return new BigDecimal(value);
 -    }
@@ -1202,18 +1355,18 @@ index c09543c..3be2280 100644
              .max(Integer::compareTo)
              .orElse(0);
          nextOrderSequence.set(maxId + 1);
-@@ -493,7 +671,7 @@ public class OrderMatcherService {
-
+@@ -493,7 +799,7 @@ public class OrderMatcherService {
+ 
      private void initializeCounters() {
          for (String event : List.of("create", "partial_fill", "fill", "cancel", "reject", "force_fill")) {
 -            eventCounters.put(event, new AtomicLong(0));
 +            eventCounters.put(event, new AtomicLong());
          }
      }
-
-@@ -519,9 +697,19 @@ public class OrderMatcherService {
+ 
+@@ -519,9 +825,28 @@ public class OrderMatcherService {
      }
-
+ 
      private String trimTrailingSlash(String url) {
 -        if (!StringUtils.hasText(url)) {
 -            return "";
@@ -1233,13 +1386,22 @@ index c09543c..3be2280 100644
 +            .append("# TYPE ").append(name).append(" gauge\n")
 +            .append(name).append(' ').append(value).append('\n');
 +    }
++
++    private record PendingExecution(
++        String orderId,
++        String tradeId,
++        String security,
++        Integer quantity,
++        BigDecimal price,
++        Integer accountId,
++        OrderSide side) {}
  }
 diff --git a/order-matcher/src/main/resources/application.properties b/order-matcher/src/main/resources/application.properties
 index a4dc884..360b2d4 100644
 --- a/order-matcher/src/main/resources/application.properties
 +++ b/order-matcher/src/main/resources/application.properties
 @@ -12,9 +12,13 @@ spring.threads.virtual.enabled=true
-
+ 
  order.matcher.price-service-url=${PRICE_SERVICE_URL:http://${PRICE_SERVICE_HOST:localhost}:18100}
  order.matcher.trade-service-url=${TRADE_SERVICE_URL:http://${TRADE_SERVICE_HOST:localhost}:18092/trade/}
 +order.matcher.trade-processor-url=${TRADE_PROCESSOR_URL:http://${TRADE_PROCESSOR_HOST:localhost}:18091}
@@ -1250,14 +1412,14 @@ index a4dc884..360b2d4 100644
  order.matcher.seed-enabled=${ORDER_MATCHER_SEED_ENABLED:true}
 +traderx.fixed-utc-instant=${TRADERX_FIXED_UTC_INSTANT:}
  nats.address=${NATS_ADDRESS:nats://${NATS_BROKER_HOST:localhost}:4222}
-
+ 
  # To avoid "Request header is too large" when application is backed by oidc proxy.
 diff --git a/order-matcher/src/test/java/finos/traderx/ordermatcher/service/TreasuryOrderMatcherServiceTests.java b/order-matcher/src/test/java/finos/traderx/ordermatcher/service/TreasuryOrderMatcherServiceTests.java
 new file mode 100644
-index 0000000..e8dd9fc
+index 0000000..49ac22c
 --- /dev/null
 +++ b/order-matcher/src/test/java/finos/traderx/ordermatcher/service/TreasuryOrderMatcherServiceTests.java
-@@ -0,0 +1,260 @@
+@@ -0,0 +1,494 @@
 +package finos.traderx.ordermatcher.service;
 +
 +import static org.assertj.core.api.Assertions.assertThat;
@@ -1267,6 +1429,7 @@ index 0000000..e8dd9fc
 +import static org.mockito.Mockito.atLeastOnce;
 +import static org.mockito.Mockito.mock;
 +import static org.mockito.Mockito.never;
++import static org.mockito.Mockito.times;
 +import static org.mockito.Mockito.verify;
 +import static org.mockito.Mockito.when;
 +
@@ -1288,6 +1451,12 @@ index 0000000..e8dd9fc
 +import java.util.List;
 +import java.util.Map;
 +import java.util.Optional;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.CyclicBarrier;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.TimeoutException;
++import java.util.concurrent.atomic.AtomicLong;
 +import org.junit.jupiter.api.BeforeEach;
 +import org.junit.jupiter.api.Test;
 +import org.junit.jupiter.api.extension.ExtendWith;
@@ -1373,6 +1542,191 @@ index 0000000..e8dd9fc
 +
 +    verify(restTemplate).postForEntity(eq(TRADE_URL), any(), eq(Map.class));
 +    assertThat(stock.getStatus()).isEqualTo(OrderStatus.FILLED);
++  }
++
++  @Test
++  void forceFillCompletesLargeStockAndEtfOrdersWhileNormalFillRemainsPartial() {
++    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
++    when(restTemplate.postForEntity(eq(TRADE_URL), any(), eq(Map.class)))
++        .thenReturn(ResponseEntity.ok(Map.of("accepted", true)));
++
++    OrderRecord stock = openOrder("stock-force", "IBM", 1_800);
++    OrderRecord etf = openOrder("etf-force", "SPY", 1_800);
++    OrderRecord automatic = openOrder("stock-auto", "IBM", 1_800);
++    when(repository.findById(stock.getOrderId())).thenReturn(Optional.of(stock));
++    when(repository.findById(etf.getOrderId())).thenReturn(Optional.of(etf));
++    when(repository.findById(automatic.getOrderId())).thenReturn(Optional.of(automatic));
++
++    service.forceFillOrder(stock.getOrderId());
++    service.forceFillOrder(etf.getOrderId());
++    when(repository.findAllByOrderByUpdatedAtDesc()).thenReturn(List.of(automatic));
++    service.onPriceTick("IBM", new BigDecimal("99.250"));
++
++    assertThat(stock.getStatus()).isEqualTo(OrderStatus.FILLED);
++    assertThat(stock.getRemainingQuantity()).isZero();
++    assertThat(etf.getStatus()).isEqualTo(OrderStatus.FILLED);
++    assertThat(etf.getRemainingQuantity()).isZero();
++    assertThat(automatic.getStatus()).isEqualTo(OrderStatus.PARTIALLY_FILLED);
++    assertThat(automatic.getRemainingQuantity()).isEqualTo(900);
++  }
++
++  @Test
++  void unrelatedCancellationDoesNotWaitForTreasuryReconciliationHttp() throws Exception {
++    OrderRecord pending = openOrder("pending-http", "UST-20360515", 100_000);
++    pending.setPendingTradeId("pending-http-exec-0");
++    pending.setPendingQuantity(100_000);
++    pending.setPendingPrice(new BigDecimal("99.250"));
++    OrderRecord unrelated = openOrder("unrelated", "IBM", 100);
++    CountDownLatch requestStarted = new CountDownLatch(1);
++    CountDownLatch releaseResponse = new CountDownLatch(1);
++    when(repository.findAllByPendingTradeIdIsNotNullOrderByUpdatedAtAsc())
++        .thenReturn(List.of(pending));
++    when(repository.findAllByOrderByUpdatedAtDesc()).thenReturn(List.of());
++    when(repository.findById(pending.getOrderId())).thenReturn(Optional.of(pending));
++    when(repository.findById(unrelated.getOrderId())).thenReturn(Optional.of(unrelated));
++    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
++    when(restTemplate.postForEntity(
++        eq(PROCESSOR_URL + "/tradeservice/order"), any(), eq(TradeBookingResult.class)))
++        .thenAnswer(ignored -> {
++          requestStarted.countDown();
++          releaseResponse.await(5, TimeUnit.SECONDS);
++          return ResponseEntity.ok(settled("99.250"));
++        });
++
++    CompletableFuture<Void> reconciliation = CompletableFuture.runAsync(service::runMatcherTick);
++    assertThat(requestStarted.await(2, TimeUnit.SECONDS)).isTrue();
++    CompletableFuture<OrderResponse> cancellation = CompletableFuture.supplyAsync(
++        () -> service.cancelOrder(unrelated.getOrderId()));
++    assertThat(cancellation.get(1, TimeUnit.SECONDS).getStatus()).isEqualTo(OrderStatus.CANCELED);
++    releaseResponse.countDown();
++    reconciliation.get(5, TimeUnit.SECONDS);
++  }
++
++  @Test
++  void staleAndDuplicateInProcessReconciliationResponsesAreIgnored() throws Exception {
++    OrderRecord pending = openOrder("stale-http", "UST-20360515", 100_000);
++    pending.setPendingTradeId("stale-http-exec-0");
++    pending.setPendingQuantity(100_000);
++    pending.setPendingPrice(new BigDecimal("99.250"));
++    CountDownLatch requestStarted = new CountDownLatch(1);
++    CountDownLatch releaseResponse = new CountDownLatch(1);
++    when(repository.findAllByPendingTradeIdIsNotNullOrderByUpdatedAtAsc())
++        .thenReturn(List.of(pending));
++    when(repository.findAllByOrderByUpdatedAtDesc()).thenReturn(List.of());
++    when(repository.findById(pending.getOrderId())).thenReturn(Optional.of(pending));
++    when(restTemplate.postForEntity(
++        eq(PROCESSOR_URL + "/tradeservice/order"), any(), eq(TradeBookingResult.class)))
++        .thenAnswer(ignored -> {
++          requestStarted.countDown();
++          releaseResponse.await(5, TimeUnit.SECONDS);
++          return ResponseEntity.ok(settled("99.250"));
++        });
++
++    CompletableFuture<Void> first = CompletableFuture.runAsync(service::runMatcherTick);
++    assertThat(requestStarted.await(2, TimeUnit.SECONDS)).isTrue();
++    CompletableFuture<Void> duplicate = CompletableFuture.runAsync(service::runMatcherTick);
++    duplicate.get(1, TimeUnit.SECONDS);
++
++    pending.setPendingTradeId("stale-http-exec-100000");
++    pending.setPendingQuantity(50_000);
++    pending.setPendingPrice(new BigDecimal("99.500"));
++    releaseResponse.countDown();
++    first.get(5, TimeUnit.SECONDS);
++
++    verify(restTemplate, times(1)).postForEntity(
++        eq(PROCESSOR_URL + "/tradeservice/order"), any(), eq(TradeBookingResult.class));
++    assertThat(pending.getPendingTradeId()).isEqualTo("stale-http-exec-100000");
++    assertThat(pending.getRemainingQuantity()).isEqualTo(100_000);
++  }
++
++  @Test
++  void boundedReservationLookupDoesNotBlockUnrelatedCreation() throws Exception {
++    InstrumentMetadata instrument = treasuryMetadata("2026-07-31");
++    PositionSnapshot position = new PositionSnapshot();
++    position.setSecurity("UST-20360515");
++    position.setQuantity(1_000);
++    CountDownLatch positionRequestStarted = new CountDownLatch(1);
++    CountDownLatch releasePosition = new CountDownLatch(1);
++    when(restTemplate.getForObject(
++        REFERENCE_URL + "/instruments/UST-20360515", InstrumentMetadata.class))
++        .thenReturn(instrument);
++    when(restTemplate.getForObject(POSITION_URL + "/positions/17017", PositionSnapshot[].class))
++        .thenAnswer(ignored -> {
++          positionRequestStarted.countDown();
++          releasePosition.await(5, TimeUnit.SECONDS);
++          return new PositionSnapshot[] {position};
++        });
++    when(repository.sumOpenTreasurySellReservations(17017, "UST-20360515"))
++        .thenReturn(0L);
++    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
++
++    CompletableFuture<OrderResponse> blockedSell = CompletableFuture.supplyAsync(
++        () -> service.createOrder(createRequest(OrderSide.Sell, 100)));
++    assertThat(positionRequestStarted.await(2, TimeUnit.SECONDS)).isTrue();
++    OrderCreateRequest stock = new OrderCreateRequest();
++    stock.setAccountId(17017);
++    stock.setSecurity("IBM");
++    stock.setSide(OrderSide.Buy);
++    stock.setQuantity(10);
++    stock.setLimitPrice(new BigDecimal("187.250"));
++    CompletableFuture<OrderResponse> unrelated = CompletableFuture.supplyAsync(
++        () -> service.createOrder(stock));
++
++    assertThat(unrelated.get(1, TimeUnit.SECONDS).getSecurity()).isEqualTo("IBM");
++    releasePosition.countDown();
++    assertThat(blockedSell.get(5, TimeUnit.SECONDS).getSecurity()).isEqualTo("UST-20360515");
++  }
++
++  @Test
++  void concurrentTreasurySellsSerializeReservationValidation() throws Exception {
++    InstrumentMetadata instrument = treasuryMetadata("2026-07-31");
++    PositionSnapshot position = new PositionSnapshot();
++    position.setSecurity("UST-20360515");
++    position.setQuantity(1_000);
++    AtomicLong reserved = new AtomicLong();
++    CyclicBarrier positionBarrier = new CyclicBarrier(2);
++    CyclicBarrier reservationBarrier = new CyclicBarrier(2);
++    when(restTemplate.getForObject(
++        REFERENCE_URL + "/instruments/UST-20360515", InstrumentMetadata.class))
++        .thenReturn(instrument);
++    when(restTemplate.getForObject(POSITION_URL + "/positions/17017", PositionSnapshot[].class))
++        .thenAnswer(ignored -> {
++          awaitOrContinue(positionBarrier);
++          return new PositionSnapshot[] {position};
++        });
++    when(repository.sumOpenTreasurySellReservations(17017, "UST-20360515"))
++        .thenAnswer(ignored -> {
++          long snapshot = reserved.get();
++          awaitOrContinue(reservationBarrier);
++          return snapshot;
++        });
++    when(repository.save(any())).thenAnswer(invocation -> {
++      OrderRecord saved = invocation.getArgument(0);
++      if (saved.getSide() == OrderSide.Sell) {
++        reserved.addAndGet(saved.getRemainingQuantity());
++      }
++      return saved;
++    });
++
++    CountDownLatch start = new CountDownLatch(1);
++    CompletableFuture<Boolean> first = createSellAsync(start, 600);
++    CompletableFuture<Boolean> second = createSellAsync(start, 600);
++    start.countDown();
++
++    assertThat(List.of(first.get(5, TimeUnit.SECONDS), second.get(5, TimeUnit.SECONDS)))
++        .containsExactlyInAnyOrder(true, false);
++    assertThat(reserved.get()).isEqualTo(600);
++  }
++
++  @Test
++  void prometheusMetricsRestoreInheritedFiniteBuckets() {
++    when(repository.findAllByPendingTradeIdIsNotNullOrderByUpdatedAtAsc()).thenReturn(List.of());
++    String metrics = service.prometheusMetrics();
++
++    for (String boundary : List.of("0.01", "0.05", "0.1", "0.25", "0.5", "1", "+Inf")) {
++      assertThat(metrics).contains(
++          "traderx_order_match_latency_seconds_bucket{le=\"" + boundary + "\"}");
++    }
 +  }
 +
 +  @Test
@@ -1534,6 +1888,31 @@ index 0000000..e8dd9fc
 +    request.setLimitPrice(new BigDecimal("99.250"));
 +    return request;
 +  }
++
++  private CompletableFuture<Boolean> createSellAsync(CountDownLatch start, int quantity) {
++    return CompletableFuture.supplyAsync(() -> {
++      try {
++        start.await(2, TimeUnit.SECONDS);
++        service.createOrder(createRequest(OrderSide.Sell, quantity));
++        return true;
++      } catch (ResponseStatusException ex) {
++        return false;
++      } catch (InterruptedException ex) {
++        Thread.currentThread().interrupt();
++        return false;
++      }
++    });
++  }
++
++  private void awaitOrContinue(CyclicBarrier barrier) {
++    try {
++      barrier.await(250, TimeUnit.MILLISECONDS);
++    } catch (TimeoutException ignored) {
++      barrier.reset();
++    } catch (Exception ignored) {
++      // A serialized caller reaches this barrier alone by design.
++    }
++  }
 +}
 diff --git a/position-service/src/main/java/finos/traderx/positionservice/model/Trade.java b/position-service/src/main/java/finos/traderx/positionservice/model/Trade.java
 index 3512bb1..70eaea0 100644
@@ -1545,7 +1924,7 @@ index 3512bb1..70eaea0 100644
    private Date created;
 +  private String rejectionReason;
 +  private String sourceOrderId;
-
+ 
    public String getId() {
      return id;
 @@ -85,4 +87,20 @@ public class Trade {
@@ -1581,9 +1960,9 @@ index 479b3d6..5c36f43 100644
 +    trade.setSourceOrderId(rs.getString("SourceOrderId"));
      return trade;
    };
-
+ 
 @@ -33,14 +35,14 @@ public class TradeRepository {
-
+ 
    public List<Trade> findAll() {
      return jdbcTemplate.query(
 -        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created from Trades order by Updated desc",
@@ -1591,7 +1970,7 @@ index 479b3d6..5c36f43 100644
          TRADE_ROW_MAPPER
      );
    }
-
+ 
    public List<Trade> findByAccountId(int accountId) {
      return jdbcTemplate.query(
 -        "select ID, AccountID, Security, Side, State, Quantity, Price, Updated, Created from Trades where AccountID = ? order by Updated desc",
@@ -1612,7 +1991,7 @@ index 73459d4..b0a8a9f 100644
 +  rejectionreason VARCHAR(255),
 +  sourceorderid VARCHAR(32)
  );
-
+ 
  CREATE TABLE orderbook (
 @@ -51,7 +53,11 @@ CREATE TABLE orderbook (
    createdat TIMESTAMP NOT NULL,
@@ -1632,7 +2011,7 @@ index 73459d4..b0a8a9f 100644
  INSERT INTO accounts (id, displayname) VALUES (10031, 'Internal Trading Book');
  INSERT INTO accounts (id, displayname) VALUES (44044, 'Trading Account 1');
 +INSERT INTO accounts (id, displayname) VALUES (17017, 'U.S. Treasury Trading Account');
-
+ 
  INSERT INTO accountusers (accountid, username) VALUES (22214, 'user01');
  INSERT INTO accountusers (accountid, username) VALUES (22214, 'user03');
 @@ -84,6 +91,9 @@ INSERT INTO accountusers (accountid, username) VALUES (44044, 'user07');
@@ -1642,11 +2021,11 @@ index 73459d4..b0a8a9f 100644
 +INSERT INTO accountusers (accountid, username) VALUES (17017, 'user02');
 +INSERT INTO accountusers (accountid, username) VALUES (17017, 'user08');
 +INSERT INTO accountusers (accountid, username) VALUES (17017, 'user10');
-
+ 
  INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-22214-AABBCC', NOW(), NOW(), 'IBM', 'Sell', 100, 136.250, 'Settled', 22214);
  INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-22214-DDEEFF', NOW(), NOW(), 'MS', 'Buy', 1000, 95.125, 'Settled', 22214);
 @@ -95,3 +105,15 @@ INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis)
-
+ 
  INSERT INTO trades (id, created, updated, security, side, quantity, price, state, accountid) VALUES ('TRADE-52355-AABBCC', NOW(), NOW(), 'BAC', 'Sell', 2400, 41.125, 'Settled', 52355);
  INSERT INTO positions (accountid, security, updated, quantity, averagecostbasis) VALUES (52355, 'BAC', NOW(), -2400, 41.125);
 +
@@ -1713,7 +2092,7 @@ index 5b9dd76..368f61b 100644
 +  }
  }
 diff --git a/price-publisher/package.json b/price-publisher/package.json
-index 2edd5a2..0c3926e 100644
+index aed738b..718fda0 100644
 --- a/price-publisher/package.json
 +++ b/price-publisher/package.json
 @@ -6,7 +6,8 @@
@@ -1727,7 +2106,7 @@ index 2edd5a2..0c3926e 100644
    "dependencies": {
      "express": "5.2.1",
 diff --git a/price-publisher/src/main.js b/price-publisher/src/main.js
-index 4957d15..c6b9b63 100644
+index 4957d15..81d1941 100644
 --- a/price-publisher/src/main.js
 +++ b/price-publisher/src/main.js
 @@ -3,6 +3,13 @@ const path = require('path');
@@ -1741,12 +2120,19 @@ index 4957d15..c6b9b63 100644
 +  toTreasuryPayload,
 +  updateTreasuryCleanPrice
 +} = require('./treasury-pricing');
-
+ 
  const PORT = Number(process.env.PRICE_PUBLISHER_PORT || '18100');
  const NATS_URL = process.env.NATS_ADDRESS || `nats://${process.env.NATS_BROKER_HOST || 'localhost'}:4222`;
-@@ -16,6 +23,18 @@ const TICKERS = (process.env.PRICE_TICKERS || 'AAPL,MSFT,AMZN,GOOGL,META,NVDA,TS
+@@ -10,12 +17,25 @@ const BOOTSTRAP_MODE = (process.env.PRICE_BOOTSTRAP_MODE || 'snapshot').toLowerC
+ const PUBLISH_INTERVAL_MIN_MS = Number(process.env.PRICE_PUBLISH_INTERVAL_MIN_MS || '750');
+ const PUBLISH_INTERVAL_MAX_MS = Number(process.env.PRICE_PUBLISH_INTERVAL_MAX_MS || '1500');
+ const PUBLISH_BATCH_RATIO = Number(process.env.PRICE_PUBLISH_BATCH_RATIO || '0.25');
++const TREASURY_PREFIX = 'UST-';
+ const TICKERS = (process.env.PRICE_TICKERS || 'AAPL,MSFT,AMZN,GOOGL,META,NVDA,TSLA,IBM,BAC,C')
+   .split(',')
+   .map((ticker) => ticker.trim().toUpperCase())
    .filter(Boolean);
-
+ 
  const SNAPSHOT_PATH = path.join(__dirname, '..', 'data', 'snapshot-prices.json');
 +const FIXED_UTC_INSTANT = String(process.env.TRADERX_FIXED_UTC_INSTANT || '').trim();
 +
@@ -1760,12 +2146,12 @@ index 4957d15..c6b9b63 100644
 +  }
 +  return fixed;
 +}
-
+ 
  const app = express();
  const state = {
-@@ -155,6 +174,9 @@ function assignStartupVolatilityBands() {
+@@ -155,6 +175,9 @@ function assignStartupVolatilityBands() {
  }
-
+ 
  async function loadFromYahoo(ticker, snapshotEntry) {
 +  if (snapshotEntry?.assetClass === 'US_TREASURY') {
 +    throw new Error('Treasury prices must never be requested from Yahoo Finance');
@@ -1773,7 +2159,7 @@ index 4957d15..c6b9b63 100644
    const quote = await yahooFinance.quote(ticker);
    const open = Number(quote.regularMarketOpen);
    const close = Number(quote.regularMarketPreviousClose ?? quote.regularMarketPrice);
-@@ -168,6 +190,10 @@ async function bootstrapPrices() {
+@@ -168,6 +191,10 @@ async function bootstrapPrices() {
    const snapshot = loadSnapshot();
    for (const ticker of TICKERS) {
      const snapshotEntry = snapshot[ticker];
@@ -1784,10 +2170,10 @@ index 4957d15..c6b9b63 100644
      if (BOOTSTRAP_MODE === 'yfinance') {
        try {
          const quote = await loadFromYahoo(ticker, snapshotEntry);
-@@ -191,8 +217,18 @@ async function bootstrapPrices() {
+@@ -191,8 +218,18 @@ async function bootstrapPrices() {
    }
  }
-
+ 
 -function updateTick(ticker) {
 +function updateTick(ticker, sharedRoll = Math.random() * 2 - 1) {
    const current = state.prices.get(ticker) || createFallbackQuote(ticker);
@@ -1804,10 +2190,10 @@ index 4957d15..c6b9b63 100644
    const band = ensureVolatilityBand(ticker, current);
    const low = band.low;
    const high = band.high;
-@@ -206,15 +242,20 @@ function updateTick(ticker) {
+@@ -206,15 +243,20 @@ function updateTick(ticker) {
    return next;
  }
-
+ 
 -function toPayload(quote) {
 -  return {
 +function toPayload(quote, timestamp = now().toISOString()) {
@@ -1826,9 +2212,9 @@ index 4957d15..c6b9b63 100644
    };
 +  return payload;
  }
-
+ 
  function publishTick(quote) {
-@@ -222,10 +263,15 @@ function publishTick(quote) {
+@@ -222,10 +264,15 @@ function publishTick(quote) {
      return;
    }
    const topic = `pricing.${quote.ticker}`;
@@ -1846,7 +2232,7 @@ index 4957d15..c6b9b63 100644
      from: 'price-publisher',
      type: 'PriceTick'
    };
-@@ -242,10 +288,11 @@ function schedulePublishLoop() {
+@@ -242,10 +289,11 @@ function schedulePublishLoop() {
    const loop = () => {
      const tickers = Array.from(state.prices.keys());
      if (tickers.length > 0) {
@@ -1859,21 +2245,26 @@ index 4957d15..c6b9b63 100644
          publishTick(quote);
        }
      }
-@@ -261,9 +308,7 @@ function ensureTicker(ticker) {
+@@ -261,9 +309,12 @@ function ensureTicker(ticker) {
      return null;
    }
    if (!state.prices.has(normalized)) {
 -    const quote = createFallbackQuote(normalized);
 -    state.prices.set(normalized, quote);
 -    ensureVolatilityBand(normalized, quote);
-+    return null;
++    if (normalized.startsWith(TREASURY_PREFIX)) {
++      return null;
++    }
++    const fallback = createFallbackQuote(normalized);
++    state.prices.set(normalized, fallback);
++    ensureVolatilityBand(normalized, fallback);
    }
    return state.prices.get(normalized);
  }
-@@ -306,7 +351,9 @@ async function main() {
+@@ -306,7 +357,11 @@ async function main() {
    });
  }
-
+ 
 -main().catch((err) => {
 -  console.error(err);
 -  process.exit(1);
@@ -1884,6 +2275,8 @@ index 4957d15..c6b9b63 100644
 +    process.exit(1);
 +  });
 +}
++
++module.exports = { ensureTicker, state };
 diff --git a/price-publisher/src/treasury-pricing.js b/price-publisher/src/treasury-pricing.js
 new file mode 100644
 index 0000000..25cb91b
@@ -2000,6 +2393,29 @@ index 0000000..25cb91b
 +  updateTreasuryCleanPrice,
 +  yearsRemaining
 +};
+diff --git a/price-publisher/test/symbol-fallback.test.js b/price-publisher/test/symbol-fallback.test.js
+new file mode 100644
+index 0000000..37f7376
+--- /dev/null
++++ b/price-publisher/test/symbol-fallback.test.js
+@@ -0,0 +1,17 @@
++'use strict';
++
++const assert = require('node:assert/strict');
++const test = require('node:test');
++const { ensureTicker, state } = require('../src/main');
++
++test('unknown equities retain lazy fallback while unknown Treasuries fail closed', () => {
++  state.prices.clear();
++  state.volatilityBands.clear();
++
++  const equity = ensureTicker('xyz');
++  assert.equal(equity.ticker, 'XYZ');
++  assert.equal(equity.source, 'fallback');
++  assert.equal(state.prices.get('XYZ'), equity);
++  assert.equal(ensureTicker('UST-20991231'), null);
++  assert.equal(state.prices.has('UST-20991231'), false);
++});
 diff --git a/price-publisher/test/treasury-pricing.test.js b/price-publisher/test/treasury-pricing.test.js
 new file mode 100644
 index 0000000..1636721
@@ -2077,7 +2493,7 @@ index 0000000..1636721
 +  assert.ok(payload.approximateYtmPercent > 4);
 +});
 diff --git a/reference-data/openapi.yaml b/reference-data/openapi.yaml
-index 676d8af..2b7cfef 100644
+index 676d8af..04bf617 100644
 --- a/reference-data/openapi.yaml
 +++ b/reference-data/openapi.yaml
 @@ -1,11 +1,11 @@
@@ -2109,7 +2525,7 @@ index 676d8af..2b7cfef 100644
          in: path
          required: true
          schema:
-@@ -56,25 +56,30 @@ components:
+@@ -56,25 +56,34 @@ components:
          Asset -> Instrument -> Security choice tree is the taxonomy this maps
          onto; the runtime record is flat.
        required:
@@ -2155,7 +2571,7 @@ index 676d8af..2b7cfef 100644
            example: USD
          securityType:
            $ref: "#/components/schemas/SecurityTypeEnum"
-@@ -86,13 +91,22 @@ components:
+@@ -86,13 +95,22 @@ components:
            allOf:
            - $ref: "#/components/schemas/FundProductTypeEnum"
            description: Present if and only if securityType is Fund.
@@ -2181,7 +2597,7 @@ index 676d8af..2b7cfef 100644
            items:
              $ref: "#/components/schemas/AssetIdentifier"
      AssetIdentifier:
-@@ -110,8 +124,8 @@ components:
+@@ -110,8 +128,8 @@ components:
      AssetIdTypeEnum:
        type: string
        description: >-
@@ -2192,7 +2608,7 @@ index 676d8af..2b7cfef 100644
        enum:
        - BBGID
        - BBGTICKER
-@@ -134,7 +148,7 @@ components:
+@@ -134,7 +152,7 @@ components:
        example: BBGTICKER
      SecurityTypeEnum:
        type: string
@@ -2201,7 +2617,7 @@ index 676d8af..2b7cfef 100644
        enum:
        - Debt
        - Equity
-@@ -181,6 +195,73 @@ components:
+@@ -181,6 +199,73 @@ components:
        - MutualFund
        - OtherFund
        example: ExchangeTradedFund
@@ -2276,7 +2692,7 @@ index 676d8af..2b7cfef 100644
        type: object
        required:
 diff --git a/reference-data/package.json b/reference-data/package.json
-index 40f435c..5d81a2d 100644
+index 9ca2fbe..68c216a 100644
 --- a/reference-data/package.json
 +++ b/reference-data/package.json
 @@ -5,6 +5,7 @@
@@ -2289,10 +2705,10 @@ index 40f435c..5d81a2d 100644
    },
 diff --git a/reference-data/src/data-loader/load-csv-data.test.ts b/reference-data/src/data-loader/load-csv-data.test.ts
 new file mode 100644
-index 0000000..6ae4149
+index 0000000..42c1456
 --- /dev/null
 +++ b/reference-data/src/data-loader/load-csv-data.test.ts
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,60 @@
 +import * as assert from 'node:assert/strict';
 +import { after, test } from 'node:test';
 +import { loadCsvData, TREASURY_SEEDS } from './load-csv-data';
@@ -2354,7 +2770,7 @@ index 0000000..6ae4149
 +  assert.equal(atMaturity[0].matured, true);
 +});
 diff --git a/reference-data/src/data-loader/load-csv-data.ts b/reference-data/src/data-loader/load-csv-data.ts
-index 3318da1..4a67173 100644
+index 3318da1..37068c2 100644
 --- a/reference-data/src/data-loader/load-csv-data.ts
 +++ b/reference-data/src/data-loader/load-csv-data.ts
 @@ -2,6 +2,7 @@ import * as fs from 'fs';
@@ -2366,7 +2782,7 @@ index 3318da1..4a67173 100644
    FundProductTypeEnum,
    Instrument,
 @@ -19,6 +20,17 @@ const SECURITY_TYPE_COLUMN = 10;
-
+ 
  /** Every instrument in this state is USD-denominated. */
  const CURRENCY = 'USD';
 +function currentInstant(): Date {
@@ -2380,13 +2796,13 @@ index 3318da1..4a67173 100644
 +  }
 +  return new Date();
 +}
-
+ 
  type CdmClassification = {
    securityType: SecurityTypeEnum;
-@@ -62,6 +74,88 @@ type SupplementalSeed = {
+@@ -62,6 +74,94 @@ type SupplementalSeed = {
    openFigiSecurityType: string;
  };
-
+ 
 +type TreasurySeed = {
 +  instrumentKey: string;
 +  displayName: string;
@@ -2478,7 +2894,7 @@ index 3318da1..4a67173 100644
  /**
   * UBS, DB, FNMA and FNF are not S&P 500 constituents, so a FIGI column on the
   * CSV never reaches them, yet all four are in the default supported set. Their
-@@ -137,45 +231,57 @@ function buildIdentifiers(ticker: string, figi: string): AssetIdentifier[] {
+@@ -137,45 +237,57 @@ function buildIdentifiers(ticker: string, figi: string): AssetIdentifier[] {
   * fails loudly rather than serving an instrument that misrepresents itself.
   */
  function assertCdmConditions(instrument: Instrument): void {
@@ -2510,7 +2926,7 @@ index 3318da1..4a67173 100644
 +  if (securityType !== 'Debt' && debtEconomics) {
 +    throw new Error(`[instruments] ${instrumentKey}: non-Debt instrument carries debtEconomics`);
    }
-
+ 
    const bbgTicker = instrument.identifiers.find((id) => id.identifierType === 'BBGTICKER');
 -  if (!bbgTicker || bbgTicker.identifier !== ticker) {
 +  if (securityType !== 'Debt' && (!bbgTicker || bbgTicker.identifier !== instrumentKey)) {
@@ -2524,7 +2940,7 @@ index 3318da1..4a67173 100644
 +    throw new Error(`[instruments] ${instrumentKey}: TraderX Treasury code must not be claimed as BBGTICKER`);
 +  }
  }
-
+ 
  function buildInstrument(
    ticker: string,
 -  companyName: string,
@@ -2546,10 +2962,10 @@ index 3318da1..4a67173 100644
      identifiers: buildIdentifiers(ticker, figi)
    };
    if (classification.equityType) {
-@@ -188,6 +294,47 @@ function buildInstrument(
+@@ -188,6 +300,48 @@ function buildInstrument(
    return instrument;
  }
-
+ 
 +function buildTreasuryInstrument(seed: TreasurySeed): Instrument {
 +  const now = currentInstant();
 +  const maturity = new Date(`${seed.maturityDate}T00:00:00.000Z`);
@@ -2595,7 +3011,7 @@ index 3318da1..4a67173 100644
  export async function loadCsvData(options: InstrumentLoadOptions = {}): Promise<Instrument[]> {
    const supportedTickers = options.supportedTickers;
    const maxTickers = Number(options.maxTickers ?? 0);
-@@ -237,6 +384,12 @@ export async function loadCsvData(options: InstrumentLoadOptions = {}): Promise<
+@@ -237,6 +391,12 @@ export async function loadCsvData(options: InstrumentLoadOptions = {}): Promise<
            );
            seenTickers.add(seed.ticker);
          }
@@ -2609,22 +3025,22 @@ index 3318da1..4a67173 100644
            resolve(instruments.slice(0, maxTickers));
            return;
 diff --git a/reference-data/src/instruments/instrument.model.ts b/reference-data/src/instruments/instrument.model.ts
-index f2980ad..e873cc7 100644
+index f2980ad..d7dc331 100644
 --- a/reference-data/src/instruments/instrument.model.ts
 +++ b/reference-data/src/instruments/instrument.model.ts
 @@ -32,7 +32,7 @@ export type AssetIdTypeEnum =
    | 'ExchangeCode'
    | 'ClearingCode';
-
+ 
 -/** CDM SecurityTypeEnum. State 016 only emits Equity and Fund. */
 +/** CDM SecurityTypeEnum. State 017 emits Equity, Fund, and Debt. */
  export type SecurityTypeEnum = 'Debt' | 'Equity' | 'Fund' | 'Warrant' | 'Certificate';
-
+ 
  /** CDM EquityTypeEnum. */
 @@ -68,6 +68,38 @@ export interface EquityType {
    depositaryReceipt?: DepositaryReceiptTypeEnum;
  }
-
+ 
 +export type AssetClass = 'Stock' | 'ETF' | 'US_TREASURY';
 +
 +export interface FixedInterestTerms {
@@ -2660,7 +3076,7 @@ index f2980ad..e873cc7 100644
  /**
   * CDM Security, minus the layers this state skips (EconomicTerms, Payout,
   * TradableProduct, product qualification).
-@@ -77,11 +109,15 @@ export interface EquityType {
+@@ -77,11 +109,16 @@ export interface EquityType {
   *  - FundSubType:   if securityType <> Fund   then fundType is absent
   */
  export interface Instrument {
@@ -2686,7 +3102,7 @@ index 1940428..18ee03f 100644
 @@ -11,11 +11,11 @@ export class InstrumentsController {
      return this.instrumentsService.findAll();
    }
-
+ 
 -  @Get(':ticker')
 -  async findByTicker(@Param('ticker') ticker: string): Promise<Instrument> {
 -    const instrument = await this.instrumentsService.findByTicker(ticker);
@@ -2706,14 +3122,14 @@ index cd698b1..6741cbc 100644
 @@ -18,8 +18,9 @@ export class InstrumentsService {
      return this.instruments;
    }
-
+ 
 -  async findByTicker(ticker: string): Promise<Instrument | undefined> {
 -    return (await this.instruments).find((instrument) => instrument.ticker === ticker);
 +  async findByInstrumentKey(instrumentKey: string): Promise<Instrument | undefined> {
 +    const normalized = String(instrumentKey ?? '').trim().toUpperCase();
 +    return (await this.instruments).find((instrument) => instrument.instrumentKey === normalized);
    }
-
+ 
    private parseSupportedTickers(input?: string): Set<string> | undefined {
 diff --git a/trade-processor/build.gradle b/trade-processor/build.gradle
 index e9475ac..48581b1 100644
@@ -2721,18 +3137,18 @@ index e9475ac..48581b1 100644
 +++ b/trade-processor/build.gradle
 @@ -43,6 +43,7 @@ dependencies {
    implementation 'org.apache.commons:commons-lang3:3.20.0'
-
+ 
    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 +  testRuntimeOnly 'com.h2database:h2'
  }
-
+ 
  tasks.withType(Test).configureEach {
 diff --git a/trade-processor/src/main/java/finos/traderx/tradeprocessor/config/RuntimeConfig.java b/trade-processor/src/main/java/finos/traderx/tradeprocessor/config/RuntimeConfig.java
 new file mode 100644
-index 0000000..74d7d31
+index 0000000..fea5506
 --- /dev/null
 +++ b/trade-processor/src/main/java/finos/traderx/tradeprocessor/config/RuntimeConfig.java
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,39 @@
 +package finos.traderx.tradeprocessor.config;
 +
 +import java.time.Clock;
@@ -2757,8 +3173,14 @@ index 0000000..74d7d31
 +  }
 +
 +  @Bean
-+  RestTemplate restTemplate(RestTemplateBuilder builder) {
-+    return builder.build();
++  RestTemplate restTemplate(
++      RestTemplateBuilder builder,
++      @Value("${reference.data.connect-timeout-ms:2000}") long connectTimeoutMs,
++      @Value("${reference.data.read-timeout-ms:5000}") long readTimeoutMs) {
++    return builder
++        .connectTimeout(java.time.Duration.ofMillis(connectTimeoutMs))
++        .readTimeout(java.time.Duration.ofMillis(readTimeoutMs))
++        .build();
 +  }
 +
 +  @Bean
@@ -2852,17 +3274,17 @@ index a6dced0..0bbd67f 100644
 +++ b/trade-processor/src/main/java/finos/traderx/tradeprocessor/model/Trade.java
 @@ -20,7 +20,7 @@ public class Trade implements Serializable {
    private static final long serialVersionUID = 1L;
-
+ 
    @Id
 -  @Column(length = 100, name = "ID")
 +  @Column(length = 50, name = "ID")
    private String id;
-
+ 
    @Column(name = "ACCOUNTID")
 @@ -49,6 +49,12 @@ public class Trade implements Serializable {
    @Column(name = "CREATED")
    private Date created;
-
+ 
 +  @Column(name = "REJECTIONREASON", length = 255)
 +  private String rejectionReason;
 +
@@ -2902,9 +3324,9 @@ index 80630fc..bfc824c 100644
    private Integer accountId;
    private TradeSide side;
 +  private String sourceOrderId;
-
+ 
    public TradeOrder() {}
-
+ 
 @@ -78,4 +79,12 @@ public class TradeOrder {
    public void setSide(TradeSide side) {
      this.side = side;
@@ -2923,9 +3345,9 @@ index 0f789b7..d2167d4 100644
 --- a/trade-processor/src/main/java/finos/traderx/tradeprocessor/model/TradeState.java
 +++ b/trade-processor/src/main/java/finos/traderx/tradeprocessor/model/TradeState.java
 @@ -2,10 +2,11 @@ package finos.traderx.tradeprocessor.model;
-
+ 
  import io.swagger.v3.oas.annotations.media.Schema;
-
+ 
 -@Schema(name = "The state of the trade, ie, New, Processing, Settled, Cancelled")
 +@Schema(name = "The state of the trade, ie, New, Processing, Settled, Cancelled, Rejected")
  public enum TradeState {
@@ -2950,7 +3372,7 @@ index a012847..17d7c9b 100644
 +import org.springframework.data.jpa.repository.Query;
 +import org.springframework.data.repository.query.Param;
  import org.springframework.data.jpa.repository.JpaRepository;
-
+ 
  public interface PositionRepository extends JpaRepository<Position, PositionID> {
    List<Position> findByAccountId(Integer id);
    Position findByAccountIdAndSecurity(Integer id, String security);
@@ -3022,39 +3444,38 @@ index 0000000..2fd6e4e
 +  }
 +}
 diff --git a/trade-processor/src/main/java/finos/traderx/tradeprocessor/service/TradeService.java b/trade-processor/src/main/java/finos/traderx/tradeprocessor/service/TradeService.java
-index d4e5003..217e317 100644
+index d4e5003..abda384 100644
 --- a/trade-processor/src/main/java/finos/traderx/tradeprocessor/service/TradeService.java
 +++ b/trade-processor/src/main/java/finos/traderx/tradeprocessor/service/TradeService.java
 @@ -2,6 +2,7 @@ package finos.traderx.tradeprocessor.service;
-
+ 
  import finos.traderx.messaging.PubSubException;
  import finos.traderx.messaging.Publisher;
 +import finos.traderx.tradeprocessor.model.InstrumentMetadata;
  import finos.traderx.tradeprocessor.model.Position;
  import finos.traderx.tradeprocessor.model.Trade;
  import finos.traderx.tradeprocessor.model.TradeBookingResult;
-@@ -12,95 +13,247 @@ import finos.traderx.tradeprocessor.repository.PositionRepository;
+@@ -12,95 +13,276 @@ import finos.traderx.tradeprocessor.repository.PositionRepository;
  import finos.traderx.tradeprocessor.repository.TradeRepository;
  import java.math.BigDecimal;
  import java.math.RoundingMode;
 +import java.time.Clock;
  import java.util.Date;
-+import java.util.Map;
  import java.util.UUID;
-+import java.util.concurrent.ConcurrentHashMap;
  import org.slf4j.Logger;
  import org.slf4j.LoggerFactory;
 +import org.springframework.dao.DataIntegrityViolationException;
  import org.springframework.stereotype.Service;
 -import org.springframework.transaction.annotation.Transactional;
 +import org.springframework.transaction.support.TransactionTemplate;
-
+ 
  @Service
  public class TradeService {
    private static final Logger log = LoggerFactory.getLogger(TradeService.class);
 +  private static final int MAX_TRADE_ID_LENGTH = 50;
++  private static final int BOOKING_LOCK_STRIPE_COUNT = 256;
 +  private static final String TREASURY_PREFIX = "UST-";
-
+ 
    private final TradeRepository tradeRepository;
    private final PositionRepository positionRepository;
    private final Publisher<Trade> tradePublisher;
@@ -3062,8 +3483,8 @@ index d4e5003..217e317 100644
 +  private final InstrumentMetadataClient instrumentClient;
 +  private final TransactionTemplate transactionTemplate;
 +  private final Clock clock;
-+  private final Map<String, Object> bookingLocks = new ConcurrentHashMap<>();
-
++  private final Object[] bookingLocks = createBookingLockStripes();
+ 
    public TradeService(
        TradeRepository tradeRepository,
        PositionRepository positionRepository,
@@ -3081,7 +3502,7 @@ index d4e5003..217e317 100644
 +    this.transactionTemplate = transactionTemplate;
 +    this.clock = clock;
    }
-
+ 
 -  @Transactional
    public TradeBookingResult processTrade(TradeOrder order) {
 -    log.info("Trade order received: {}", order);
@@ -3092,7 +3513,7 @@ index d4e5003..217e317 100644
 +      throw new IllegalArgumentException("Trade ID exceeds Trades.ID VARCHAR(50)");
 +    }
 +    order.setId(tradeId);
-
+ 
 -    Trade trade = new Trade();
 -    trade.setId(UUID.randomUUID().toString());
 -    trade.setAccountId(order.getAccountId());
@@ -3104,16 +3525,26 @@ index d4e5003..217e317 100644
 -    trade.setCreated(new Date());
 -    trade.setUpdated(new Date());
 -    trade.setState(TradeState.New);
-+    Object bookingLock = bookingLocks.computeIfAbsent(
-+        tradeId + "|" + order.getAccountId() + "|" + order.getSecurity(),
-+        ignored -> new Object());
++    Object bookingLock = bookingLock(tradeId);
 +    synchronized (bookingLock) {
 +      try {
 +        TradeBookingResult existing = existingResult(tradeId);
 +        if (existing != null) {
 +          return existing;
 +        }
-+        BookingOutcome outcome = transactionTemplate.execute(status -> bookInTransaction(order));
++        boolean treasuryKey = isCanonicalTreasuryKey(order.getSecurity());
++        // Canonical UST keys fail closed, but reference-data network I/O never
++        // runs inside the database transaction. Non-Treasury booking keeps the
++        // inherited path and never performs this lookup.
++        InstrumentMetadata instrument = treasuryKey
++            ? instrumentClient.resolve(order.getSecurity())
++            : null;
++        /*
++         * Lock ordering invariant: the fixed booking stripe is acquired before
++         * any database position lock. No path may acquire these in reverse.
++         */
++        BookingOutcome outcome = transactionTemplate.execute(
++            status -> bookInTransaction(order, treasuryKey, instrument));
 +        if (outcome == null) {
 +          throw new IllegalStateException("Trade booking transaction returned no result");
 +        }
@@ -3129,7 +3560,10 @@ index d4e5003..217e317 100644
 +    }
 +  }
 +
-+  private BookingOutcome bookInTransaction(TradeOrder order) {
++  private BookingOutcome bookInTransaction(
++      TradeOrder order,
++      boolean treasuryKey,
++      InstrumentMetadata instrument) {
 +    Trade existing = tradeRepository.findById(order.getId()).orElse(null);
 +    if (existing != null) {
 +      return new BookingOutcome(
@@ -3137,15 +3571,13 @@ index d4e5003..217e317 100644
 +          false,
 +          false);
 +    }
-+
-+    InstrumentMetadata instrument = instrumentClient.resolve(order.getSecurity());
-+    boolean treasuryKey = order.getSecurity() != null && order.getSecurity().startsWith(TREASURY_PREFIX);
+ 
+-    Position position = positionRepository.findByAccountIdAndSecurity(order.getAccountId(), order.getSecurity());
 +    if (treasuryKey && (instrument == null || !instrument.isTreasury())) {
 +      return persistRejected(order, "Treasury reference metadata is unavailable");
 +    }
-
--    Position position = positionRepository.findByAccountIdAndSecurity(order.getAccountId(), order.getSecurity());
-+    boolean treasury = instrument != null && instrument.isTreasury();
++
++    boolean treasury = treasuryKey && instrument != null && instrument.isTreasury();
 +    if (treasury && (order.getQuantity() == null || order.getQuantity() < 100)) {
 +      return persistRejected(order, "Treasury quantity must be at least 100.");
 +    }
@@ -3167,7 +3599,7 @@ index d4e5003..217e317 100644
 -      position.setAverageCostBasis(BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP));
 +      position = newPosition(order);
      }
-
+ 
      int oldQuantity = position.getQuantity() == null ? 0 : position.getQuantity();
 -    BigDecimal oldAverage = position.getAverageCostBasis() == null
 -        ? BigDecimal.ZERO.setScale(3, RoundingMode.HALF_UP)
@@ -3178,7 +3610,7 @@ index d4e5003..217e317 100644
 +
 +    Trade trade = newTrade(order);
 +    tradeRepository.saveAndFlush(trade);
-
+ 
 -    int signedQuantity = ((order.getSide() == TradeSide.Buy) ? 1 : -1) * trade.getQuantity();
 +    int signedQuantity = (order.getSide() == TradeSide.Buy ? 1 : -1) * order.getQuantity();
      int newQuantity = oldQuantity + signedQuantity;
@@ -3201,14 +3633,14 @@ index d4e5003..217e317 100644
 +        : inheritedAverageCost(oldQuantity, oldAverage, signedQuantity, executionPrice, newQuantity));
 +    position.setUpdated(Date.from(clock.instant()));
      positionRepository.save(position);
-
+ 
 -    trade.setUpdated(new Date());
      trade.setState(TradeState.Processing);
 -    trade.setUpdated(new Date());
 +    trade.setUpdated(Date.from(clock.instant()));
      trade.setState(TradeState.Settled);
      tradeRepository.save(trade);
-
+ 
      TradeBookingResult result = new TradeBookingResult(trade, position);
 -    log.info("Trade Processing complete: {}", result);
 +    return new BookingOutcome(result, true, true);
@@ -3237,7 +3669,7 @@ index d4e5003..217e317 100644
 +        true,
 +        false);
 +  }
-+
+ 
 +  private Trade newTrade(TradeOrder order) {
 +    Trade trade = new Trade();
 +    trade.setId(order.getId());
@@ -3262,7 +3694,7 @@ index d4e5003..217e317 100644
 +    position.setAverageCostBasis(scaled(BigDecimal.ZERO));
 +    return position;
 +  }
-
++
 +  private BigDecimal treasuryAverageCost(
 +      TradeSide side,
 +      int oldQuantity,
@@ -3299,6 +3731,22 @@ index d4e5003..217e317 100644
 +    return (value == null ? BigDecimal.ZERO : value).setScale(3, RoundingMode.HALF_UP);
 +  }
 +
++  private boolean isCanonicalTreasuryKey(String security) {
++    return security != null && security.startsWith(TREASURY_PREFIX);
++  }
++
++  private Object bookingLock(String tradeId) {
++    return bookingLocks[Math.floorMod(tradeId.hashCode(), BOOKING_LOCK_STRIPE_COUNT)];
++  }
++
++  private static Object[] createBookingLockStripes() {
++    Object[] stripes = new Object[BOOKING_LOCK_STRIPE_COUNT];
++    for (int index = 0; index < stripes.length; index++) {
++      stripes[index] = new Object();
++    }
++    return stripes;
++  }
++
 +  private void publish(BookingOutcome outcome) {
 +    if (!outcome.publishTrade()) {
 +      return;
@@ -3329,24 +3777,70 @@ index d4e5003..217e317 100644
 +      boolean publishPosition) {}
  }
 diff --git a/trade-processor/src/main/resources/application.properties b/trade-processor/src/main/resources/application.properties
-index 8440514..597f1c4 100644
+index 8440514..c3a7ede 100644
 --- a/trade-processor/src/main/resources/application.properties
 +++ b/trade-processor/src/main/resources/application.properties
-@@ -12,6 +12,8 @@ spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.Ph
+@@ -12,6 +12,10 @@ spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.Ph
  spring.threads.virtual.enabled=true
-
+ 
  nats.address=${NATS_ADDRESS:nats://${NATS_BROKER_HOST:localhost}:4222}
 +reference.data.service.url=${REFERENCE_DATA_SERVICE_URL:http://${REFERENCE_DATA_HOST:localhost}:18085}
++reference.data.connect-timeout-ms=${REFERENCE_DATA_CONNECT_TIMEOUT_MS:2000}
++reference.data.read-timeout-ms=${REFERENCE_DATA_READ_TIMEOUT_MS:5000}
 +traderx.fixed-utc-instant=${TRADERX_FIXED_UTC_INSTANT:}
-
+ 
  # To avoid "Request header is too large" when application is backed by oidc proxy.
  server.max-http-request-header-size=1000000
+diff --git a/trade-processor/src/test/java/finos/traderx/tradeprocessor/config/RuntimeConfigTests.java b/trade-processor/src/test/java/finos/traderx/tradeprocessor/config/RuntimeConfigTests.java
+new file mode 100644
+index 0000000..07d662e
+--- /dev/null
++++ b/trade-processor/src/test/java/finos/traderx/tradeprocessor/config/RuntimeConfigTests.java
+@@ -0,0 +1,38 @@
++package finos.traderx.tradeprocessor.config;
++
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
++
++import com.sun.net.httpserver.HttpServer;
++import java.net.InetSocketAddress;
++import org.junit.jupiter.api.Test;
++import org.springframework.boot.web.client.RestTemplateBuilder;
++import org.springframework.web.client.ResourceAccessException;
++import org.springframework.web.client.RestTemplate;
++
++class RuntimeConfigTests {
++  @Test
++  void configuredReferenceDataReadTimeoutIsApplied() throws Exception {
++    HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
++    server.createContext("/slow", exchange -> {
++      try {
++        Thread.sleep(250);
++        exchange.sendResponseHeaders(200, 0);
++      } catch (InterruptedException ex) {
++        Thread.currentThread().interrupt();
++      } finally {
++        exchange.close();
++      }
++    });
++    server.start();
++    try {
++      RestTemplate restTemplate = new RuntimeConfig().restTemplate(
++          new RestTemplateBuilder(), 100, 50);
++      String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/slow";
++
++      assertThatThrownBy(() -> restTemplate.getForObject(url, String.class))
++          .isInstanceOf(ResourceAccessException.class);
++    } finally {
++      server.stop(0);
++    }
++  }
++}
 diff --git a/trade-processor/src/test/java/finos/traderx/tradeprocessor/service/TreasuryTradeServiceIntegrationTests.java b/trade-processor/src/test/java/finos/traderx/tradeprocessor/service/TreasuryTradeServiceIntegrationTests.java
 new file mode 100644
-index 0000000..861e004
+index 0000000..1d225c8
 --- /dev/null
 +++ b/trade-processor/src/test/java/finos/traderx/tradeprocessor/service/TreasuryTradeServiceIntegrationTests.java
-@@ -0,0 +1,183 @@
+@@ -0,0 +1,288 @@
 +package finos.traderx.tradeprocessor.service;
 +
 +import static org.assertj.core.api.Assertions.assertThat;
@@ -3354,6 +3848,7 @@ index 0000000..861e004
 +import static org.mockito.ArgumentMatchers.any;
 +import static org.mockito.Mockito.never;
 +import static org.mockito.Mockito.reset;
++import static org.mockito.Mockito.times;
 +import static org.mockito.Mockito.verify;
 +import static org.mockito.Mockito.when;
 +
@@ -3371,12 +3866,14 @@ index 0000000..861e004
 +import java.math.BigDecimal;
 +import java.util.List;
 +import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.CountDownLatch;
 +import java.util.concurrent.TimeUnit;
 +import org.junit.jupiter.api.BeforeEach;
 +import org.junit.jupiter.api.Test;
 +import org.springframework.beans.factory.annotation.Autowired;
 +import org.springframework.boot.test.context.SpringBootTest;
 +import org.springframework.test.context.bean.override.mockito.MockitoBean;
++import org.springframework.transaction.support.TransactionSynchronizationManager;
 +
 +@SpringBootTest(properties = {
 +    "spring.datasource.url=jdbc:h2:mem:treasury-trades;DB_CLOSE_DELAY=-1",
@@ -3443,6 +3940,78 @@ index 0000000..861e004
 +    assertThat(tradeRepository.count()).isOne();
 +    verify(tradePublisher).publish(any(), any());
 +    verify(positionPublisher).publish(any(), any());
++  }
++
++  @Test
++  void stockBookingDoesNotDependOnTreasuryReferenceData() {
++    TradeOrder stock = orderFor("stock-id", "IBM", TradeSide.Buy, 10, "187.250");
++
++    TradeBookingResult result = tradeService.processTrade(stock);
++
++    assertThat(result.getTrade().getState()).isEqualTo(TradeState.Settled);
++    verify(instrumentClient, never()).resolve(any());
++  }
++
++  @Test
++  void treasuryMetadataIsResolvedBeforeTheBookingTransactionStarts() {
++    InstrumentMetadata instrument = new InstrumentMetadata();
++    instrument.setInstrumentKey(TREASURY);
++    instrument.setDisplayName("Treasury");
++    instrument.setAssetClass("US_TREASURY");
++    instrument.setSecurityType("Debt");
++    when(instrumentClient.resolve(TREASURY)).thenAnswer(ignored -> {
++      assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
++      return instrument;
++    });
++    when(instrumentClient.isMatured(instrument)).thenReturn(false);
++    savePosition(100, "99.257");
++
++    TradeBookingResult result = tradeService.processTrade(
++        order("outside-transaction", TradeSide.Buy, 100, "99.300"));
++
++    assertThat(result.getTrade().getState()).isEqualTo(TradeState.Settled);
++  }
++
++  @Test
++  void canonicalTreasuryKeyStillRequiresAuthoritativeDebtMetadata() {
++    InstrumentMetadata equityMetadata = new InstrumentMetadata();
++    equityMetadata.setInstrumentKey(TREASURY);
++    equityMetadata.setDisplayName("Not debt");
++    equityMetadata.setAssetClass("EQUITY");
++    equityMetadata.setSecurityType("CommonStock");
++    when(instrumentClient.resolve(TREASURY)).thenReturn(equityMetadata);
++
++    TradeBookingResult result = tradeService.processTrade(
++        order("metadata-fail-closed", TradeSide.Buy, 100, "99.300"));
++
++    assertThat(result.getTrade().getState()).isEqualTo(TradeState.Rejected);
++    assertThat(result.getTrade().getRejectionReason())
++        .isEqualTo("Treasury reference metadata is unavailable");
++  }
++
++  @Test
++  void concurrentSameTradeIdUsesOneFixedStripeAndBooksOnce() throws Exception {
++    savePosition(100_000, "99.257");
++    TradeOrder order = order("same-id-concurrent", TradeSide.Buy, 100, "99.300");
++    CountDownLatch start = new CountDownLatch(1);
++    CompletableFuture<TradeBookingResult> first = CompletableFuture.supplyAsync(() -> {
++      await(start);
++      return tradeService.processTrade(order);
++    });
++    CompletableFuture<TradeBookingResult> second = CompletableFuture.supplyAsync(() -> {
++      await(start);
++      return tradeService.processTrade(order);
++    });
++    start.countDown();
++
++    assertThat(first.get(5, TimeUnit.SECONDS).getTrade().getId())
++        .isEqualTo("same-id-concurrent");
++    assertThat(second.get(5, TimeUnit.SECONDS).getTrade().getId())
++        .isEqualTo("same-id-concurrent");
++    assertThat(tradeRepository.count()).isOne();
++    assertThat(positionRepository.findByAccountIdAndSecurity(ACCOUNT_ID, TREASURY).getQuantity())
++        .isEqualTo(100_100);
++    verify(instrumentClient, times(1)).resolve(TREASURY);
 +  }
 +
 +  @Test
@@ -3538,6 +4107,27 @@ index 0000000..861e004
 +    order.setSourceOrderId("order-017");
 +    return order;
 +  }
++
++  private TradeOrder orderFor(
++      String id,
++      String security,
++      TradeSide side,
++      int quantity,
++      String price) {
++    TradeOrder order = new TradeOrder(id, ACCOUNT_ID, security, side, quantity);
++    order.setPrice(new BigDecimal(price));
++    order.setSourceOrderId("order-017");
++    return order;
++  }
++
++  private void await(CountDownLatch latch) {
++    try {
++      latch.await(2, TimeUnit.SECONDS);
++    } catch (InterruptedException ex) {
++      Thread.currentThread().interrupt();
++      throw new IllegalStateException(ex);
++    }
++  }
 +}
 diff --git a/trade-service/src/main/java/finos/traderx/tradeservice/config/TimeConfig.java b/trade-service/src/main/java/finos/traderx/tradeservice/config/TimeConfig.java
 new file mode 100644
@@ -3574,7 +4164,7 @@ index 0000000..9e51915
 +}
 diff --git a/trade-service/src/main/java/finos/traderx/tradeservice/controller/ApiExceptionHandler.java b/trade-service/src/main/java/finos/traderx/tradeservice/controller/ApiExceptionHandler.java
 new file mode 100644
-index 0000000..a7bc8e1
+index 0000000..e5c7f7e
 --- /dev/null
 +++ b/trade-service/src/main/java/finos/traderx/tradeservice/controller/ApiExceptionHandler.java
 @@ -0,0 +1,20 @@
@@ -3599,7 +4189,7 @@ index 0000000..a7bc8e1
 +  }
 +}
 diff --git a/trade-service/src/main/java/finos/traderx/tradeservice/controller/TradeOrderController.java b/trade-service/src/main/java/finos/traderx/tradeservice/controller/TradeOrderController.java
-index 7ede8ff..755f32c 100644
+index 7ede8ff..6590cce 100644
 --- a/trade-service/src/main/java/finos/traderx/tradeservice/controller/TradeOrderController.java
 +++ b/trade-service/src/main/java/finos/traderx/tradeservice/controller/TradeOrderController.java
 @@ -5,6 +5,7 @@ import finos.traderx.messaging.Publisher;
@@ -3626,23 +4216,23 @@ index 7ede8ff..755f32c 100644
 +
 +import static org.springframework.http.HttpStatus.BAD_REQUEST;
 +import static org.springframework.http.HttpStatus.CONFLICT;
-
+ 
  @RestController
  @RequestMapping(value = "/trade", produces = "application/json")
 @@ -29,7 +40,8 @@ public class TradeOrderController {
    private static final Logger log = LoggerFactory.getLogger(TradeOrderController.class);
-
+ 
    private final Publisher<TradeOrder> tradePublisher;
 -  private final RestTemplate restTemplate = new RestTemplate();
 +  private final RestTemplate restTemplate;
 +  private final Clock clock;
-
+ 
    @Value("${reference.data.service.url}")
    private String referenceDataServiceAddress;
 @@ -40,8 +52,16 @@ public class TradeOrderController {
    @Value("${price.service.url}")
    private String priceServiceAddress;
-
+ 
 -  public TradeOrderController(Publisher<TradeOrder> tradePublisher) {
 +  @Value("${position.service.url}")
 +  private String positionServiceAddress;
@@ -3655,12 +4245,12 @@ index 7ede8ff..755f32c 100644
 +    this.restTemplate = restTemplate;
 +    this.clock = clock;
    }
-
+ 
    @Operation(description = "Submit a new trade order")
 @@ -50,12 +70,17 @@ public class TradeOrderController {
        @Parameter(description = "the intended trade order") @RequestBody TradeOrder tradeOrder) {
      log.info("Called createTradeOrder");
-
+ 
 -    if (!validateTicker(tradeOrder.getSecurity())) {
 +    Security instrument = fetchInstrument(tradeOrder.getSecurity());
 +    if (instrument == null) {
@@ -3676,10 +4266,10 @@ index 7ede8ff..755f32c 100644
          BigDecimal executionPrice = fetchExecutionPrice(tradeOrder.getSecurity());
          tradeOrder.setPrice(executionPrice);
          log.info("Trade is valid. Submitting {}", tradeOrder);
-@@ -67,19 +92,73 @@ public class TradeOrderController {
+@@ -67,19 +92,78 @@ public class TradeOrderController {
      }
    }
-
+ 
 -  private boolean validateTicker(String ticker) {
 -    String url = this.referenceDataServiceAddress + "/instruments/" + ticker;
 +  private Security fetchInstrument(String instrumentKey) {
@@ -3760,7 +4350,7 @@ index 7ede8ff..755f32c 100644
 +      throw new ResponseStatusException(CONFLICT, "Settled Treasury position is unavailable", ex);
      }
    }
-
+ 
 diff --git a/trade-service/src/main/java/finos/traderx/tradeservice/model/PositionSnapshot.java b/trade-service/src/main/java/finos/traderx/tradeservice/model/PositionSnapshot.java
 new file mode 100644
 index 0000000..75edeb3
@@ -3809,7 +4399,7 @@ index 4fc5f69..208f46e 100644
 +++ b/trade-service/src/main/java/finos/traderx/tradeservice/model/Security.java
 @@ -1,29 +1,115 @@
  package finos.traderx.tradeservice.model;
-
+ 
 +import java.math.BigDecimal;
 +
  public class Security {
@@ -3866,31 +4456,31 @@ index 4fc5f69..208f46e 100644
 +  public String getObservedAt() {
 +    return observedAt;
 +  }
-
+ 
 -  public Security() {}
 +  public void setObservedAt(String observedAt) {
 +    this.observedAt = observedAt;
 +  }
-
+ 
 -  public Security(String ticker, String companyName) {
 -    this.ticker = ticker;
 -    this.companyName = companyName;
 +  public DebtEconomics getDebtEconomics() {
 +    return debtEconomics;
    }
-
+ 
 -  public String getTicker() {
 -    return ticker;
 +  public void setDebtEconomics(DebtEconomics debtEconomics) {
 +    this.debtEconomics = debtEconomics;
    }
-
+ 
 -  public void setTicker(String ticker) {
 -    this.ticker = ticker;
 +  public boolean isTreasury() {
 +    return "US_TREASURY".equals(assetClass) && "Debt".equals(securityType);
    }
-
+ 
 -  public String getCompanyName() {
 -    return companyName;
 +  public static class DebtEconomics {
@@ -3922,7 +4512,7 @@ index 4fc5f69..208f46e 100644
 +      this.fixedInterest = fixedInterest;
 +    }
    }
-
+ 
 -  public void setCompanyName(String companyName) {
 -    this.companyName = companyName;
 +  public static class FixedInterest {
@@ -3947,15 +4537,15 @@ index 76aa785..5483ff4 100644
  price.service.url=${PRICE_SERVICE_URL:http://${PRICE_SERVICE_HOST:localhost}:18100}
 +position.service.url=${POSITION_SERVICE_URL:http://${POSITION_SERVICE_HOST:localhost}:18090}
 +traderx.fixed-utc-instant=${TRADERX_FIXED_UTC_INSTANT:}
-
+ 
  nats.address=${NATS_ADDRESS:nats://${NATS_BROKER_HOST:localhost}:4222}
-
+ 
 diff --git a/trade-service/src/test/java/finos/traderx/tradeservice/controller/ApiExceptionHandlerTests.java b/trade-service/src/test/java/finos/traderx/tradeservice/controller/ApiExceptionHandlerTests.java
 new file mode 100644
-index 0000000..47b6ed2
+index 0000000..127ed11
 --- /dev/null
 +++ b/trade-service/src/test/java/finos/traderx/tradeservice/controller/ApiExceptionHandlerTests.java
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,40 @@
 +package finos.traderx.tradeservice.controller;
 +
 +import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -4035,49 +4625,38 @@ index 0000000..bc3e7db
 +}
 diff --git a/us-treasury-trading/README.md b/us-treasury-trading/README.md
 new file mode 100644
-index 0000000..c4e7de2
+index 0000000..d8ffdbc
 --- /dev/null
 +++ b/us-treasury-trading/README.md
-@@ -0,0 +1,33 @@
-+## TraderX State 016 Runtime
+@@ -0,0 +1,22 @@
++## TraderX State 017 Runtime
 +
-+This directory defines the compose runtime for:
++This directory defines the Compose runtime for `017-us-treasury-trading`.
 +
-+- `016-cdm-generic-instruments`
-+
-+It extends the order-management runtime with:
-+
-+- An instrument model shaped after the FINOS Common Domain Model (CDM)
-+- `reference-data` serving `/instruments` and `/instruments/{ticker}`; `/stocks` is removed, not aliased
-+- CDM asset identifiers (`BBGTICKER`, `FIGI`) baked into seed data offline
-+- Exchange-traded funds (SPY, QQQ, IWM, VTI, GLD) alongside equities, as a second CDM `securityType`
++State 017 extends State 016 with five fixed-rate U.S. Treasury instruments,
++simulated clean prices and approximate YTM, long-only face-amount trading,
++authoritative synchronous Treasury booking, retry-safe pending executions, and
++unified stock/ETF/Treasury tickets and blotters.
 +
 +Primary endpoints:
 +
 +- TraderX UI: `http://localhost:8080`
++- API explorer: `http://localhost:8080/api/docs`
 +- Instruments: `http://localhost:18085/instruments`
-+- Grafana dashboards (via ingress): `http://localhost:8080/grafana/`
-+- Grafana (direct): `http://localhost:3001`
++- Price publisher: `http://localhost:18100/prices`
++- Order matcher health/metrics: `http://localhost:18110/health`, `http://localhost:18110/metrics`
++- Grafana: `http://localhost:8080/grafana/`
 +- Prometheus: `http://localhost:9090`
-+- Loki: `http://localhost:3100`
-+- Tempo: `http://localhost:3200`
 +- NATS monitor: `http://localhost:8222/varz`
-+- Price publisher: `http://localhost:18100/health`
-+- Order matcher: `http://localhost:18110/health`
 +
-+Grafana access:
-+
-+- Dashboards are anonymous Viewer surfaces through ingress for demos.
-+- Local admin access is available at the direct Grafana URL.
-+- The generated start script prints the active admin credential on startup.
-+- Defaults are state-scoped: `TRADERX_GRAFANA_ADMIN_USER` falls back to `traderx-admin`; `TRADERX_GRAFANA_ADMIN_PASSWORD` falls back to `traderx-state-016`.
-+- Override those values before startup for any shared or long-lived environment.
++Treasury prices are simulated clean percent-of-par prices. Accrued interest,
++dirty settlement value, coupons, and maturity repayment are outside this state.
 diff --git a/us-treasury-trading/docker-compose.yml b/us-treasury-trading/docker-compose.yml
 new file mode 100644
-index 0000000..11f096e
+index 0000000..12e33dc
 --- /dev/null
 +++ b/us-treasury-trading/docker-compose.yml
-@@ -0,0 +1,345 @@
+@@ -0,0 +1,347 @@
 +name: traderx-state-017
 +
 +services:
@@ -4211,6 +4790,8 @@ index 0000000..11f096e
 +      DATABASE_DBPASS: "traderx"
 +      NATS_BROKER_HOST: "nats-broker"
 +      REFERENCE_DATA_HOST: "reference-data"
++      REFERENCE_DATA_CONNECT_TIMEOUT_MS: "${REFERENCE_DATA_CONNECT_TIMEOUT_MS:-2000}"
++      REFERENCE_DATA_READ_TIMEOUT_MS: "${REFERENCE_DATA_READ_TIMEOUT_MS:-5000}"
 +      TRADERX_FIXED_UTC_INSTANT: "${TRADERX_FIXED_UTC_INSTANT:-}"
 +      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-*}"
 +      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,prometheus,info"
@@ -4452,7 +5033,7 @@ index 0000000..981da60
 +      preferred_ip_protocol: "ip4"
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-logs-errors.json b/us-treasury-trading/observability/grafana/dashboards/traderx-logs-errors.json
 new file mode 100644
-index 0000000..66b6d6b
+index 0000000..af31310
 --- /dev/null
 +++ b/us-treasury-trading/observability/grafana/dashboards/traderx-logs-errors.json
 @@ -0,0 +1,158 @@
@@ -4483,7 +5064,7 @@ index 0000000..66b6d6b
 +      },
 +      "targets": [
 +        {
-+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"}[1m]))",
++          "expr": "sum by (service) (rate({compose_project=\"traderx-state-017\",service=~\"$service\"}[1m]))",
 +          "refId": "A"
 +        }
 +      ],
@@ -4515,7 +5096,7 @@ index 0000000..66b6d6b
 +      },
 +      "targets": [
 +        {
-+          "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
++          "expr": "sum by (service) (rate({compose_project=\"traderx-state-017\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\" [1m]))",
 +          "refId": "A"
 +        }
 +      ],
@@ -4542,7 +5123,7 @@ index 0000000..66b6d6b
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"}",
++          "expr": "{compose_project=\"traderx-state-017\",service=~\"$service\"}",
 +          "refId": "A"
 +        }
 +      ],
@@ -4569,7 +5150,7 @@ index 0000000..66b6d6b
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-016\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
++          "expr": "{compose_project=\"traderx-state-017\",service=~\"$service\"} |~ \"(?i)(error|warn|exception|fail)\"",
 +          "refId": "A"
 +        }
 +      ],
@@ -4601,7 +5182,7 @@ index 0000000..66b6d6b
 +        "label": "Service",
 +        "multi": true,
 +        "name": "service",
-+        "query": "label_values({compose_project=\"traderx-state-016\"}, service)",
++        "query": "label_values({compose_project=\"traderx-state-017\"}, service)",
 +        "type": "query"
 +      }
 +    ]
@@ -4704,7 +5285,7 @@ index 0000000..c6d3a81
 +}
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-nats-messaging-overview.json b/us-treasury-trading/observability/grafana/dashboards/traderx-nats-messaging-overview.json
 new file mode 100644
-index 0000000..d5a6efd
+index 0000000..8c8b5cc
 --- /dev/null
 +++ b/us-treasury-trading/observability/grafana/dashboards/traderx-nats-messaging-overview.json
 @@ -0,0 +1,19 @@
@@ -4722,14 +5303,14 @@ index 0000000..d5a6efd
 +    {"id": 1, "type": "stat", "title": "NATS Monitor Endpoint", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }, "targets": [{ "refId": "A", "expr": "max(probe_success{job=\"traderx-http-probe\",instance=\"http://nats-broker:8222/varz\"})" }], "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}}},
 +    {"id": 2, "type": "stat", "title": "Ingress NATS-WS Route", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }, "targets": [{ "refId": "A", "expr": "max(probe_success{job=\"traderx-http-probe\",instance=\"http://ingress:8080/nats-ws\"})" }], "fieldConfig": {"defaults": {"min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}, {"color": "green", "value": 1}]}}}},
 +    {"id": 3, "type": "timeseries", "title": "NATS + Gateway Endpoint Latency", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }, "targets": [{ "refId": "A", "expr": "probe_duration_seconds{job=\"traderx-http-probe\",instance=~\"http://nats-broker:8222/varz|http://ingress:8080/nats-ws\"}" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 4, "type": "timeseries", "title": "NATS + Messaging Service Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"nats-broker|trade-service|trade-processor|web-front-end-angular\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 5, "type": "logs", "title": "NATS Broker Logs", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=\"nats-broker\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}},
-+    {"id": 6, "type": "logs", "title": "Messaging Errors (Trade/Processor/Web)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=~\"trade-service|trade-processor|web-front-end-angular\"} |~ \"(?i)(error|warn|exception|fail|nats|websocket)\"" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
++    {"id": 4, "type": "timeseries", "title": "NATS + Messaging Service Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-017\",service=~\"nats-broker|trade-service|trade-processor|web-front-end-angular\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
++    {"id": 5, "type": "logs", "title": "NATS Broker Logs", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-017\",service=\"nats-broker\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}},
++    {"id": 6, "type": "logs", "title": "Messaging Errors (Trade/Processor/Web)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-017\",service=~\"trade-service|trade-processor|web-front-end-angular\"} |~ \"(?i)(error|warn|exception|fail|nats|websocket)\"" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
 +  ]
 +}
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-observability-control-plane.json b/us-treasury-trading/observability/grafana/dashboards/traderx-observability-control-plane.json
 new file mode 100644
-index 0000000..ef799d5
+index 0000000..28c38be
 --- /dev/null
 +++ b/us-treasury-trading/observability/grafana/dashboards/traderx-observability-control-plane.json
 @@ -0,0 +1,268 @@
@@ -4959,7 +5540,7 @@ index 0000000..ef799d5
 +      },
 +      "targets": [
 +        {
-+          "expr": "{compose_project=\"traderx-state-016\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
++          "expr": "{compose_project=\"traderx-state-017\",service=~\"grafana|loki|tempo|otel-collector|prometheus|promtail\"}",
 +          "refId": "A"
 +        }
 +      ],
@@ -5003,7 +5584,7 @@ index 0000000..ef799d5
 +}
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-order-management-observability.json b/us-treasury-trading/observability/grafana/dashboards/traderx-order-management-observability.json
 new file mode 100644
-index 0000000..f7849d0
+index 0000000..4dabcf9
 --- /dev/null
 +++ b/us-treasury-trading/observability/grafana/dashboards/traderx-order-management-observability.json
 @@ -0,0 +1,170 @@
@@ -5165,7 +5746,7 @@ index 0000000..f7849d0
 +      "targets": [
 +        {
 +          "refId": "A",
-+          "expr": "{compose_project=\"traderx-state-016\",service=\"order-matcher\"}"
++          "expr": "{compose_project=\"traderx-state-017\",service=\"order-matcher\"}"
 +        }
 +      ],
 +      "options": {
@@ -5428,7 +6009,7 @@ index 0000000..1e099f9
 +}
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-pricing-pipeline-health.json b/us-treasury-trading/observability/grafana/dashboards/traderx-pricing-pipeline-health.json
 new file mode 100644
-index 0000000..e6c4652
+index 0000000..feebcfd
 --- /dev/null
 +++ b/us-treasury-trading/observability/grafana/dashboards/traderx-pricing-pipeline-health.json
 @@ -0,0 +1,20 @@
@@ -5448,8 +6029,8 @@ index 0000000..e6c4652
 +    {"id": 3, "type": "stat", "title": "Pricing Endpoint p95 (5m)", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }, "targets": [{ "refId": "A", "expr": "quantile_over_time(0.95, probe_duration_seconds{job=\"traderx-http-probe\",instance=\"http://price-publisher:18100/prices/IBM\"}[5m])" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}},
 +    {"id": 4, "type": "stat", "title": "Trade API p95 (5m)", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 }, "targets": [{ "refId": "A", "expr": "quantile_over_time(0.95, probe_duration_seconds{job=\"traderx-http-probe\",instance=\"http://trade-service:18092/v3/api-docs\"}[5m])" }], "fieldConfig": {"defaults": {"unit": "s", "decimals": 3}}},
 +    {"id": 5, "type": "timeseries", "title": "Pricing + Trade Endpoints Success", "datasource": { "type": "prometheus", "uid": "prometheus" }, "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }, "targets": [{ "refId": "A", "expr": "probe_success{job=\"traderx-http-probe\",instance=~\"http://price-publisher:18100/.*|http://trade-service:18092/.*|http://trade-processor:18091/system/health\"}" }], "fieldConfig": {"defaults": {"min": 0, "max": 1}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 6, "type": "timeseries", "title": "Pricing Pipeline Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-016\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
-+    {"id": 7, "type": "logs", "title": "Pipeline Logs (Price / Trade / Position)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-016\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
++    {"id": 6, "type": "timeseries", "title": "Pricing Pipeline Log Throughput", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }, "targets": [{ "refId": "A", "expr": "sum by (service) (rate({compose_project=\"traderx-state-017\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}[1m]))" }], "fieldConfig": {"defaults": {"unit": "lines/s"}}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}}},
++    {"id": 7, "type": "logs", "title": "Pipeline Logs (Price / Trade / Position)", "datasource": { "type": "loki", "uid": "loki" }, "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 }, "targets": [{ "refId": "A", "expr": "{compose_project=\"traderx-state-017\",service=~\"price-publisher|trade-service|trade-processor|position-service\"}" }], "options": {"showLabels": true, "showTime": true, "wrapLogMessage": true, "enableLogDetails": true}}
 +  ]
 +}
 diff --git a/us-treasury-trading/observability/grafana/dashboards/traderx-runtime-health.json b/us-treasury-trading/observability/grafana/dashboards/traderx-runtime-health.json

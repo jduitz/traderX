@@ -60,13 +60,21 @@ Open:
 
 ```bash
 ./scripts/status-state-017-us-treasury-trading-generated.sh
-./scripts/test-state-017-us-treasury-trading.sh
+./scripts/test-state-017-us-treasury-trading.sh --skip-messaging
+./scripts/test-state-017-us-treasury-trading.sh --skip-messaging
 ```
 
-The State 017 smoke creates State 009's required lingering IBM order before
-chaining State 016 and State 009. Use `--skip-messaging` only to isolate the
+The two runs are an acceptance pair: do not reset the PostgreSQL volume between
+them. The smoke reuses State 009's required lingering IBM order, validates the
+five fixed seed trades without assuming immutable aggregate totals, and pauses
+then unpauses `trade-processor` to verify HTTP 502 pending reconciliation and
+exactly-once recovery. Its exit trap tolerates an already-unpaused processor.
+Use `--skip-messaging` only to isolate the
 inherited ingress NATS-WebSocket issue; the direct `ws://localhost:8081`
 diagnostic is not a generated State 017 setting.
+
+Do not run `docker compose down -v` as routine remediation. An unexpected
+database condition requires a separate, explicitly approved volume reset.
 
 ## Stop
 
@@ -108,5 +116,20 @@ Verified on 2026-07-30/31 from `spec/017-us-treasury-trading`:
   copies. It was not captured in State 017 sources.
 - `./scripts/stop-state-017-us-treasury-trading-generated.sh` stopped the
   verified runtime.
+
+Focused reliability remediation was verified on 2026-08-03:
+
+- State 017 was regenerated into isolated parent, candidate, and clean output
+  roots. The overlay was mechanically recaptured from the exact tested
+  snapshots, and the clean regeneration matched the tested candidate.
+- Affected Node, Gradle, and Angular suites passed, followed by the SpecKit,
+  readiness, coverage, generated-contract, compile-preflight, UI metadata, and
+  lineage gates.
+- The generated runtime was rebuilt and started without resetting PostgreSQL.
+  The ignored local NATS browser workaround was applied after generation.
+- `./scripts/test-state-017-us-treasury-trading.sh --skip-messaging` passed
+  twice consecutively on the same volume. Both runs passed the full inherited
+  State 009 -> 016 -> 017 chain, including the expected HTTP 502 during the
+  controlled processor pause and exact-once reconciliation after unpause.
 
 Manual UI acceptance remains a separate handoff step.

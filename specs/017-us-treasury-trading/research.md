@@ -29,6 +29,29 @@ that route and adds a trade-processor HTTP dependency only for Treasury fills.
 A stable trade ID prevents duplicate processor mutation, while four pending
 fields preserve the request whose response is uncertain. Both are necessary:
 idempotency alone cannot tell the matcher that reconciliation remains due.
+Reconciliation snapshots pending identity, quantity, and price under the
+order-ID stripe, releases that stripe for processor HTTP, and reapplies only to
+an unchanged pending record. A transient in-flight set suppresses duplicate
+in-process requests without becoming durable state.
+
+## Locking and timeout decisions
+
+Matcher creation uses account/security stripes; fill, cancellation, and
+reconciliation use order-ID stripes. No implemented path nests the two sets.
+The Treasury sell position lookup remains inside its account/security stripe:
+the two/five-second bounded network call can delay only the same account and
+security, and that serialization closes the over-reservation race.
+
+Processor booking uses fixed trade-ID stripes before database position locks.
+Only canonical `UST-` keys trigger reference-data lookup, which happens before
+the transaction and must return authoritative `US_TREASURY`/`Debt` metadata.
+This convention is deliberately load-bearing in State 017; supporting other
+debt-key forms requires a future registry classification design.
+
+Concurrent first-buy insertion for a missing position row remains out of scope.
+`findForUpdate` cannot lock an absent row, though the inherited retry path can
+self-heal a primary-key collision. All five supported Treasury position rows
+are seeded, so insert-safe/upsert handling is deferred with new instruments.
 
 ## Pricing model
 
@@ -39,8 +62,11 @@ analytics only; transaction value always uses clean price.
 
 ## Operational precedents
 
-The State 009 smoke requires a lingering open order on a pristine database, so
-State 017 creates one before chaining the parent checks. State 016's snapshot
+The State 009 smoke requires a lingering open order, so State 017 reuses a
+matching open IBM prerequisite or creates it once before chaining the parent
+checks. Seed validation identifies the five fixed trades rather than assuming
+absolute mutable totals, and two consecutive runs on one volume verify actual
+repeatability. State 016's snapshot
 wrapper-path issue is avoided during manual verification by using direct Docker
 Compose if necessary. The inherited NATS ingress WebSocket workaround is not
 captured in generated source.

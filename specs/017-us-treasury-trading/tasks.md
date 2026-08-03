@@ -31,3 +31,14 @@
 - [X] T01726 Show full Treasury names and internal keys in ticket details.
 - [X] T01727 Add full hover text for truncated position-blotter headers.
 - [X] T01728 Cover short-label formatting and header tooltips in frontend tests.
+
+## Follow-up: Focused reliability remediation
+
+- [X] T01729 Generate an isolated State 017 candidate and add focused failing regression coverage.
+- [X] T01730 Restore stock/ETF force-fill and replace matcher global locking with fixed stripes and snapshot reconciliation.
+- [X] T01731 Add fixed processor booking stripes, pre-transaction canonical Treasury metadata resolution, and configurable timeouts.
+- [X] T01732 Restore unknown-equity fallback pricing and inherited finite Prometheus buckets without redefining latency measurement.
+- [X] T01733 Make the IBM prerequisite, seed checks, mutation assertions, and controlled timeout reconciliation smoke repeatable.
+- [X] T01734 Recapture the overlay from exact tested parent/candidate snapshots and prove clean regeneration equivalence.
+- [X] T01735 Pass affected component suites and repository contract, compile, readiness, coverage, and lineage gates.
+- [X] T01736 Rebuild without a database reset and pass two consecutive full smoke chains on the same volume.
