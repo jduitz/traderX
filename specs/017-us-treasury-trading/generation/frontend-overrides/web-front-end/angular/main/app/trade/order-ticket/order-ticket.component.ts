@@ -17,6 +17,7 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
   @Input() stocks: Stock[] = [];
   @Input() account: Account | undefined;
   @Input() presetSecurity = '';
+  @Input() serverError = '';
   @Output() create = new EventEmitter<OrderCreateRequest>();
   @Output() cancel = new EventEmitter<void>();
 
@@ -34,6 +35,7 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
   selectedQuote?: PriceTick;
   selectedPrice: number | null = null;
   selectedPriceAsOf: string | null = null;
+  validationError = '';
   private selectedPriceTicker: string | null = null;
   private selectedPriceAsOfEpoch = 0;
   private priceStreamUnsubscribeFn?: Function;
@@ -66,10 +68,11 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onSelect(e: TypeaheadMatch): void {
+    this.validationError = '';
     const selectedStock = e.item as Stock & { matchLabel?: string };
     this.selectedInstrument = selectedStock;
     this.ticket.security = selectedStock.instrumentKey;
-    this.selectedCompany = selectedStock.matchLabel || this.toMatchLabel(selectedStock);
+    this.selectedCompany = this.toShortLabel(selectedStock);
     this.subscribeToTickerPrice(selectedStock.instrumentKey);
   }
 
@@ -89,9 +92,18 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onCreate() {
-    if (!this.ticket.security || this.ticket.quantity <= 0 || this.ticket.limitPrice <= 0
-        || this.isMatured || (this.isTreasury && this.ticket.quantity % 100 !== 0)) {
+    this.validationError = '';
+    if (!this.ticket.security || this.ticket.limitPrice <= 0 || this.isMatured
+        || (!this.isTreasury && this.ticket.quantity <= 0)) {
       console.warn('Order ticket is incomplete');
+      return;
+    }
+    if (this.isTreasury && (!Number.isFinite(this.ticket.quantity) || this.ticket.quantity < 100)) {
+      this.validationError = 'Treasury quantity must be at least 100.';
+      return;
+    }
+    if (this.isTreasury && this.ticket.quantity % 100 !== 0) {
+      this.validationError = 'Treasury quantity must be a multiple of 100.';
       return;
     }
     this.create.emit({
@@ -226,7 +238,22 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private toMatchLabel(stock: Stock): string {
+    if (stock.assetClass === 'US_TREASURY') {
+      const coupon = stock.debtEconomics?.fixedInterest?.couponRatePercent;
+      const maturity = stock.debtEconomics?.maturityDate;
+      if (coupon != null && maturity) {
+        const maturityDate = new Date(`${maturity}T00:00:00Z`);
+        const month = maturityDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+        const year = String(maturityDate.getUTCFullYear()).slice(-2);
+        return `${this.toShortLabel(stock)} — ${Number(coupon).toFixed(3)}% ${month}-${year}`;
+      }
+      return this.toShortLabel(stock);
+    }
     return `${stock.instrumentKey} - ${stock.displayName}`;
+  }
+
+  private toShortLabel(stock: Stock): string {
+    return stock.shortDisplayName || stock.instrumentKey;
   }
 
   private refreshFilteredStocks(): void {
@@ -250,7 +277,7 @@ export class OrderTicketComponent implements OnInit, OnChanges, OnDestroy {
     if (matched) {
       this.selectedInstrument = matched;
       this.ticket.security = matched.instrumentKey;
-      this.selectedCompany = this.toMatchLabel(matched);
+      this.selectedCompany = this.toShortLabel(matched);
       this.subscribeToTickerPrice(matched.instrumentKey);
       return;
     }

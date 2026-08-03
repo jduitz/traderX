@@ -29,7 +29,8 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
     private readonly baseColumns: ColDef[] = [
         {
             headerName: 'SECURITY',
-            field: 'security'
+            field: 'security',
+            valueFormatter: ({ value }) => this.formatSecurity(value)
         },
         {
             headerName: 'PRICE',
@@ -289,6 +290,10 @@ export class TradeBlotterComponent implements OnChanges, OnDestroy {
 
     private instrumentFor(security: string): Stock | undefined {
         return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+    }
+
+    private formatSecurity(security: string): string {
+        return this.instrumentFor(security)?.shortDisplayName || security || '-';
     }
 
     private isVisibleSecurity(security: string): boolean {

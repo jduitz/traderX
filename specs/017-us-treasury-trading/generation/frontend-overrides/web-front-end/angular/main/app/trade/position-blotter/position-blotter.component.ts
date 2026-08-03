@@ -38,10 +38,12 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
   columnDefs: ColDef[] = [
     {
       field: 'security',
-      headerName: 'SECURITY'
+      headerName: 'SECURITY',
+      valueFormatter: ({ value }) => this.formatSecurity(value)
     },
     {
       headerName: 'QUANTITY / FACE',
+      headerTooltip: 'Quantity / Face Amount',
       field: 'quantity',
       enableCellChangeFlash: true,
       headerClass: 'ag-right-aligned-header',
@@ -50,6 +52,7 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     },
     {
       headerName: 'AVG COST / CLEAN PURCHASE',
+      headerTooltip: 'Average Cost / Clean Purchase Price',
       field: 'averageCostBasis',
       headerClass: 'ag-right-aligned-header',
       cellClass: 'ag-right-aligned-cell',
@@ -89,6 +92,7 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
     },
     {
       headerName: 'POSITION VALUE',
+      headerTooltip: 'Position Value',
       field: 'marketValue',
       enableCellChangeFlash: true,
       headerClass: 'ag-right-aligned-header',
@@ -581,6 +585,10 @@ export class PositionBlotterComponent implements OnChanges, OnDestroy {
 
   private instrumentFor(security?: string): Stock | undefined {
     return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+  }
+
+  private formatSecurity(security?: string): string {
+    return this.instrumentFor(security)?.shortDisplayName || security || '-';
   }
 
   private isTreasury(security?: string): boolean {

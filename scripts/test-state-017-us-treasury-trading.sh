@@ -60,6 +60,25 @@ http_with_body() {
   fi
 }
 
+assert_http_detail() {
+  local response="$1"
+  local expected_status="$2"
+  local expected_detail="$3"
+  local context="$4"
+  local actual_status
+  local actual_detail
+  actual_status="$(echo "${response}" | tail -n1)"
+  actual_detail="$(echo "${response}" | sed '$d' | jq -r '.detail // .message // empty')"
+  [[ "${actual_status}" == "${expected_status}" ]] || {
+    echo "[error] ${context}: expected HTTP ${expected_status}, got ${actual_status}"
+    exit 1
+  }
+  [[ "${actual_detail}" == "${expected_detail}" ]] || {
+    echo "[error] ${context}: unexpected detail: ${actual_detail}"
+    exit 1
+  }
+}
+
 echo "[check] clean-database prerequisite for inherited State 009 smoke"
 lingering_response="$(
   http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
@@ -167,19 +186,34 @@ seed_counts="$(
   exit 1
 }
 
-echo "[check] invalid Treasury face amounts are rejected early"
-invalid_order="$(http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
+echo "[check] invalid Treasury face amounts return distinct validation messages"
+minimum_order="$(http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
+  '{"accountId":17017,"security":"UST-20360515","side":"Buy","quantity":50,"limitPrice":99.250}')"
+assert_http_detail \
+  "${minimum_order}" 400 "Treasury quantity must be at least 100." \
+  "Treasury order below minimum"
+increment_order="$(http_with_body POST "${INGRESS_URL}/order-matcher/orders" \
   '{"accountId":17017,"security":"UST-20360515","side":"Buy","quantity":150,"limitPrice":99.250}')"
-[[ "$(echo "${invalid_order}" | tail -n1)" == "400" ]] || {
-  echo "[error] expected HTTP 400 for a $150 Treasury order"
-  exit 1
-}
-invalid_trade="$(http_with_body POST "${INGRESS_URL}/trade-service/trade/" \
+assert_http_detail \
+  "${increment_order}" 400 "Treasury quantity must be a multiple of 100." \
+  "Treasury order invalid increment"
+minimum_trade="$(http_with_body POST "${INGRESS_URL}/trade-service/trade/" \
+  '{"accountId":17017,"security":"UST-20360515","side":"Buy","quantity":50}')"
+assert_http_detail \
+  "${minimum_trade}" 400 "Treasury quantity must be at least 100." \
+  "Treasury trade below minimum"
+increment_trade="$(http_with_body POST "${INGRESS_URL}/trade-service/trade/" \
   '{"accountId":17017,"security":"UST-20360515","side":"Buy","quantity":150}')"
-[[ "$(echo "${invalid_trade}" | tail -n1)" == "400" ]] || {
-  echo "[error] expected HTTP 400 for a $150 Treasury trade"
-  exit 1
-}
+assert_http_detail \
+  "${increment_trade}" 400 "Treasury quantity must be a multiple of 100." \
+  "Treasury trade invalid increment"
+
+oversold_trade="$(http_with_body POST "${INGRESS_URL}/trade-service/trade/" \
+  '{"accountId":17017,"security":"UST-20360515","side":"Sell","quantity":100100}')"
+assert_http_detail \
+  "${oversold_trade}" 409 \
+  "You cannot sell more Treasury face amount than you own and have available." \
+  "Treasury trade exceeds owned face amount"
 
 echo "[check] derived open-sell reservations prevent oversubscription"
 reserved_order="$(
@@ -197,6 +231,11 @@ over_reserved="$(
 )"
 [[ "$(echo "${over_reserved}" | tail -n1)" == "409" ]] || {
   echo "[error] expected HTTP 409 when Treasury sells exceed unreserved face amount"
+  exit 1
+}
+[[ "$(echo "${over_reserved}" | sed '$d' | jq -r '.detail // .message // empty')" == \
+  "You cannot sell more Treasury face amount than you own and have available." ]] || {
+  echo "[error] expected a user-facing Treasury oversell message"
   exit 1
 }
 curl -fsS -H 'Content-Type: application/json' -X POST -d '{}' \

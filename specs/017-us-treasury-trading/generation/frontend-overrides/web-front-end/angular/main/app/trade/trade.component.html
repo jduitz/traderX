@@ -24,11 +24,11 @@
                 Ticket creation is disabled in <strong>All Accounts</strong> mode.
             </div>
             <ng-template #tradeTicketTemplate>
-                <app-trade-ticket [stocks]="stocks" [account]="accountModel" (create)="createTradeTicket($event)" (cancel)="closeTicket()">
+                <app-trade-ticket [stocks]="stocks" [account]="accountModel" [serverError]="tradeTicketError" (create)="createTradeTicket($event)" (cancel)="closeTicket()">
                 </app-trade-ticket>
             </ng-template>
             <ng-template #orderTicketTemplate>
-                <app-order-ticket [stocks]="stocks" [account]="accountModel" [presetSecurity]="selectedOrderSecurity" (create)="createOrderTicket($event)" (cancel)="closeTicket()">
+                <app-order-ticket [stocks]="stocks" [account]="accountModel" [presetSecurity]="selectedOrderSecurity" [serverError]="orderTicketError" (create)="createOrderTicket($event)" (cancel)="closeTicket()">
                 </app-order-ticket>
             </ng-template>
             <alert

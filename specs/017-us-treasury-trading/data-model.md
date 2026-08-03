@@ -4,8 +4,11 @@
 
 `instrumentKey` is the public reference key. Stocks/ETFs use tickers;
 Treasuries use `UST-YYYYMMDD`. `displayName` is asset-neutral. Treasury
-`securityType=Debt` carries fixed interest, bullet par repayment, issuer,
-currency, dates, original term, and auction-price provenance.
+records also expose `shortDisplayName` (`UST 2Y`, `UST 5Y`, and so on) for
+compact UI surfaces. Transactional APIs continue to use `instrumentKey`, while
+the full `displayName` identifies the exact issue. Treasury `securityType=Debt`
+carries fixed interest, bullet par repayment, issuer, currency, dates, original
+term, and auction-price provenance.
 
 Transactional rows continue to use the existing `Security VARCHAR` columns.
 No surrogate key or FIGI migration is introduced.

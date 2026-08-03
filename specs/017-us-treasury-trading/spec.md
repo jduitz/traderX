@@ -42,11 +42,15 @@ and an approximate YTM with the same quote timestamp.
 As a trader, I can buy and sell Treasury face amount in $100 increments while
 the system prevents negative Treasury positions.
 
-1. Tickets and APIs reject non-positive or non-$100 Treasury quantities.
-2. Direct sells cannot exceed settled face amount.
-3. New sell orders cannot exceed settled face amount less remaining face
+1. Tickets show `Treasury quantity must be at least 100.` when Treasury face
+   amount is below $100.
+2. Tickets show `Treasury quantity must be a multiple of 100.` when Treasury
+   face amount is at least $100 but is not divisible by $100.
+3. Direct sells cannot exceed settled face amount and show
+   `You cannot sell more Treasury face amount than you own and have available.`
+4. New sell orders cannot exceed settled face amount less remaining face
    reserved by other open sell orders.
-4. The trade processor locks the position, persists authoritative rejection
+5. The trade processor locks the position, persists authoritative rejection
    reasons, and never mutates or publishes a position for a rejected trade.
 
 ### US4 — Reconcile uncertain Treasury executions
@@ -71,6 +75,11 @@ Treasuries, with optional asset-class filters.
 2. Treasury views use Face Amount, Clean Price, approximate YTM, coupon,
    maturity, clean value, and the accrued-interest exclusion.
 3. Treasury clean prices have no dollar prefix or equity direction arrow.
+4. Compact ticket and blotter surfaces show `UST 2Y`, `UST 5Y`, `UST 10Y`,
+   `UST 20Y`, or `UST 30Y`; full issue names remain visible in instrument
+   details and exact `UST-YYYYMMDD` keys remain the transactional identifiers.
+5. Truncated position-blotter headers expose their full financial labels on
+   hover.
 
 ## Functional Requirements
 

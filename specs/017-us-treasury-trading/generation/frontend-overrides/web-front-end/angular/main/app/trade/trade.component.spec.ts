@@ -9,9 +9,11 @@ import { MockAccountService, MockSymbolService, accounts } from '../test-utils/m
 import { SymbolService } from '../service/symbols.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TradeTicket, Side } from '../model/trade.model';
+import { OrderCreateRequest } from '../model/order.model';
 import { DropdownModule } from '../dropdown/dropdown.module';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { throwError } from 'rxjs';
 
 describe('TradeComponent', () => {
     let component: TradeComponent;
@@ -66,6 +68,45 @@ describe('TradeComponent', () => {
         component.createTradeTicket(ticket);
         expect((component as any).symbolService.createTicket).toHaveBeenCalledWith(ticket);
         expect(component.closeTicket).toHaveBeenCalled();
+    });
+
+    it('keeps the trade ticket open and exposes an API validation message', () => {
+        const ticket: TradeTicket = {
+            accountId: 1,
+            quantity: 200,
+            security: 'UST-20360515',
+            side: Side.Sell
+        };
+        spyOn((component as any).symbolService, 'createTicket').and.returnValue(throwError(() => ({
+            error: { detail: 'You cannot sell more Treasury face amount than you own and have available.' }
+        })));
+        spyOn(component, 'closeTicket');
+
+        component.createTradeTicket(ticket);
+
+        expect(component.tradeTicketError)
+            .toBe('You cannot sell more Treasury face amount than you own and have available.');
+        expect(component.closeTicket).not.toHaveBeenCalled();
+    });
+
+    it('keeps the order ticket open and exposes an API validation message', () => {
+        const order: OrderCreateRequest = {
+            accountId: 1,
+            quantity: 200,
+            security: 'UST-20360515',
+            side: 'Sell',
+            limitPrice: 99.25
+        };
+        spyOn((component as any).orderAdminService, 'createOrder').and.returnValue(throwError(() => ({
+            error: { detail: 'You cannot sell more Treasury face amount than you own and have available.' }
+        })));
+        spyOn(component, 'closeTicket');
+
+        component.createOrderTicket(order);
+
+        expect(component.orderTicketError)
+            .toBe('You cannot sell more Treasury face amount than you own and have available.');
+        expect(component.closeTicket).not.toHaveBeenCalled();
     });
 
     it('should get accounts and stocks on init', () => {

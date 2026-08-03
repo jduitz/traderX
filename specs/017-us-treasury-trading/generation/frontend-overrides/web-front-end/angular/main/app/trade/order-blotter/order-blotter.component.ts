@@ -37,7 +37,11 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
 
   private readonly baseColumns: ColDef<OrderRow>[] = [
     { headerName: 'ORDER ID', field: 'orderId' },
-    { headerName: 'SECURITY', field: 'security' },
+    {
+      headerName: 'SECURITY',
+      field: 'security',
+      valueFormatter: ({ value }) => this.formatSecurity(value)
+    },
     { headerName: 'SIDE', field: 'side' },
     {
       headerName: 'QTY',
@@ -410,6 +414,10 @@ export class OrderBlotterComponent implements OnChanges, OnDestroy {
 
   private instrumentFor(security?: string): Stock | undefined {
     return (this.instruments || []).find((instrument) => instrument.instrumentKey === security);
+  }
+
+  private formatSecurity(security?: string): string {
+    return this.instrumentFor(security)?.shortDisplayName || security || '-';
   }
 
   private isVisibleSecurity(security?: string): boolean {

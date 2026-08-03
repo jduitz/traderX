@@ -33,6 +33,7 @@ export interface DebtEconomics {
 export interface Stock {
     instrumentKey: string;
     displayName: string;
+    shortDisplayName?: string;
     assetClass: AssetClass;
     currency: string;
     securityType: 'Debt' | 'Equity' | 'Fund';

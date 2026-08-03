@@ -74,6 +74,12 @@ components:
         displayName:
           type: string
           example: U.S. Treasury Note 4.125% due June 30, 2028
+        shortDisplayName:
+          type: string
+          description: >-
+            Compact UI label for instruments that need one; transactional APIs
+            continue to use instrumentKey.
+          example: UST 2Y
         assetClass:
           type: string
           enum: [Stock, ETF, US_TREASURY]

@@ -120,6 +120,7 @@ describe('TradeTicketComponent', () => {
     const treasury: Stock = {
       instrumentKey: 'UST-20360515',
       displayName: 'U.S. Treasury Note 4.375% due May 15, 2036',
+      shortDisplayName: 'UST 10Y',
       assetClass: 'US_TREASURY',
       currency: 'USD',
       securityType: 'Debt',
@@ -158,11 +159,14 @@ describe('TradeTicketComponent', () => {
     expect(component.estimatedCleanValue).toBeCloseTo(99_257, 3);
     expect(component.remainingMaturity).toContain('days');
     expect(component.filteredStocks[0].selectorGroup).toBe('U.S. Treasuries');
+    expect(component.filteredStocks[0].matchLabel).toBe('UST 10Y — 4.375% May-36');
+    expect(component.selectedCompany).toBe('UST 10Y');
     expect(fixture.nativeElement.textContent).toContain('Face Amount');
+    expect(fixture.nativeElement.textContent).toContain('Internal key: UST-20360515');
     expect(fixture.nativeElement.textContent).toContain('Accrued interest and dirty settlement value are excluded');
   });
 
-  it('does not emit an invalid increment or matured Treasury trade', () => {
+  it('shows distinct minimum and increment errors before emitting a Treasury trade', () => {
     component.selectedInstrument = {
       instrumentKey: 'UST-20280630',
       displayName: 'Treasury',
@@ -173,13 +177,43 @@ describe('TradeTicketComponent', () => {
       observedAt: '2026-07-30T12:00:00Z'
     };
     component.ticket.security = 'UST-20280630';
-    component.ticket.quantity = 150;
+    component.ticket.quantity = 50;
     spyOn(component.create, 'emit');
     component.onCreate();
+    fixture.detectChanges();
+    expect(component.validationError).toBe('Treasury quantity must be at least 100.');
+    expect(fixture.nativeElement.querySelector('#treasuryQuantityError').textContent)
+      .toContain('Treasury quantity must be at least 100.');
+    expect(component.create.emit).not.toHaveBeenCalled();
+
+    component.ticket.quantity = 150;
+    component.onCreate();
+    fixture.detectChanges();
+    expect(component.validationError).toBe('Treasury quantity must be a multiple of 100.');
+    expect(fixture.nativeElement.querySelector('#treasuryQuantityError').textContent)
+      .toContain('Treasury quantity must be a multiple of 100.');
     expect(component.create.emit).not.toHaveBeenCalled();
 
     component.ticket.quantity = 100;
+    component.onCreate();
+    expect(component.validationError).toBe('');
+    expect(component.create.emit).toHaveBeenCalledWith(component.ticket);
+  });
+
+  it('does not emit a matured Treasury trade', () => {
+    component.selectedInstrument = {
+      instrumentKey: 'UST-20280630',
+      displayName: 'Treasury',
+      assetClass: 'US_TREASURY',
+      currency: 'USD',
+      securityType: 'Debt',
+      matured: false,
+      observedAt: '2026-07-30T12:00:00Z'
+    };
+    component.ticket.security = 'UST-20280630';
+    component.ticket.quantity = 100;
     component.selectedQuote = { ticker: 'UST-20280630', price: 99, matured: true } as any;
+    spyOn(component.create, 'emit');
     component.onCreate();
     expect(component.create.emit).not.toHaveBeenCalled();
   });

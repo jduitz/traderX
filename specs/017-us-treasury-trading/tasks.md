@@ -17,3 +17,17 @@
 - [X] T01715 Pass repository front-matter, SpecKit, readiness, spec-coverage, lineage, and prepublication gates.
 - [X] T01716 Start the clean State 017 Compose runtime, pass chained/API/database smoke, and stop it.
 - [X] T01717 Commit the verified feature branch and confirm a clean worktree.
+
+## Follow-up: Treasury ticket validation messages
+
+- [X] T01718 Add exact minimum, increment, and oversell message coverage.
+- [X] T01719 Surface client and server validation errors in both Treasury tickets.
+- [X] T01720 Split backend Treasury quantity validation and align oversell messages.
+- [X] T01721 Regenerate in isolation and pass targeted frontend/backend verification.
+- [X] T01722 Pass repository quality gates and review the final durable-source diff.
+- [X] T01723 Serialize trade-service validation failures with a stable `detail` field.
+- [X] T01724 Add HTTP-level regression coverage for the Treasury oversell 409 body.
+- [X] T01725 Add compact Treasury display labels without changing transactional keys.
+- [X] T01726 Show full Treasury names and internal keys in ticket details.
+- [X] T01727 Add full hover text for truncated position-blotter headers.
+- [X] T01728 Cover short-label formatting and header tooltips in frontend tests.

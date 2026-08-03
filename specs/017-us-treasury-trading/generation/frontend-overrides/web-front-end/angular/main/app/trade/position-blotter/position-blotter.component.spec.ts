@@ -53,6 +53,14 @@ describe('PositionBlotterComponent', () => {
     expect(firstRow.children[1].innerText).toEqual(component.positions[0].quantity.toString());
   });
 
+  it('provides full hover text for truncated position headers', () => {
+    const byField = new Map(component.columnDefs.map((column) => [column.field, column]));
+
+    expect(byField.get('quantity')?.headerTooltip).toBe('Quantity / Face Amount');
+    expect(byField.get('averageCostBasis')?.headerTooltip).toBe('Average Cost / Clean Purchase Price');
+    expect(byField.get('marketValue')?.headerTooltip).toBe('Position Value');
+  });
+
   it('should upsert an existing position row for matching security', () => {
     const applyTransaction = jasmine.createSpy('applyTransaction');
     const getRowNode = jasmine.createSpy('getRowNode').and.returnValue({
@@ -94,6 +102,7 @@ describe('PositionBlotterComponent', () => {
       {
         instrumentKey: 'UST-20360515',
         displayName: 'Treasury',
+        shortDisplayName: 'UST 10Y',
         assetClass: 'US_TREASURY',
         currency: 'USD',
         securityType: 'Debt',
@@ -151,6 +160,8 @@ describe('PositionBlotterComponent', () => {
     expect(stock.marketValue).toBe(1_100);
     expect(stock.pnl).toBe(100);
     expect((component as any).formatMarketPrice(99.5, 99.2, 'UST-20360515')).toBe('99.500%');
+    expect((component as any).formatSecurity('UST-20360515')).toBe('UST 10Y');
+    expect((component as any).formatSecurity('IBM')).toBe('IBM');
   });
 
 });
